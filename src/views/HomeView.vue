@@ -7,11 +7,11 @@
         </div>
         
         <h1 class="welcome-title">
-          Welcome to <span class="highlight">Fantasy Trash Talk</span>
+          Bem-vindo ao <span class="highlight">Fantasy Trash Talk</span>
         </h1>
         
         <p class="welcome-subtitle">
-          Build your dynasty, draft the future, and dominate the league
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit
         </p>
         
         <div class="welcome-actions">
@@ -23,24 +23,24 @@
             class="action-btn"
           >
             <v-icon left>mdi-clipboard-text</v-icon>
-            Start Draft
+            Começar Draft
           </v-btn>
           
           <v-btn
             size="large"
-            color="primary"
+            color="secondary"
             variant="outlined"
             @click="navigateToBigBoard"
             class="action-btn"
           >
             <v-icon left>mdi-view-dashboard</v-icon>
-            View Big Board
+            Ver Big Board
           </v-btn>
         </div>
       </div>
     </div>
     
-    <div class="features-grid">
+    <!-- <div class="features-grid">
       <FeatureCard
         icon="mdi-account-group"
         title="Dynasty Management"
@@ -64,7 +64,7 @@
         title="Championship Ready"
         description="Tools and insights to help you win your dynasty league"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -108,7 +108,6 @@ const navigateToBigBoard = () => {
 
 .welcome-icon {
   margin-bottom: 32px;
-  opacity: 0.8;
 }
 
 .welcome-title {
