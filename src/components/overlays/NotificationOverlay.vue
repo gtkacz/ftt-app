@@ -226,7 +226,7 @@ const formatTime = (timestamp: Date) => {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
   
   p {
     margin-top: 16px;
@@ -277,14 +277,14 @@ const formatTime = (timestamp: Date) => {
   
   p {
     font-size: 13px;
-    color: rgb(var(--v-theme-on-surface-variant));
+    color: rgb(var(--v-theme-on-surface));
     margin-bottom: 8px;
     line-height: 1.4;
   }
   
   small {
     font-size: 12px;
-    color: rgb(var(--v-theme-on-surface-variant));
+    color: rgb(var(--v-theme-on-surface));
   }
 }
 </style>

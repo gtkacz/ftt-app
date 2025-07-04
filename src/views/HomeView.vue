@@ -3,11 +3,11 @@
     <div class="welcome-container">
       <div class="welcome-content">
         <div class="welcome-icon">
-          <v-icon size="120" color="secondary">mdi-basketball</v-icon>
+          <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
         </div>
         
         <h1 class="welcome-title">
-          Welcome to <span class="highlight">NBA Dynasty Fantasy</span>
+          Welcome to <span class="highlight">Fantasy Trash Talk</span>
         </h1>
         
         <p class="welcome-subtitle">
@@ -129,7 +129,7 @@ const navigateToBigBoard = () => {
 
 .welcome-subtitle {
   font-size: 1.25rem;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
   margin-bottom: 40px;
   font-weight: 400;
   

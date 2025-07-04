@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-// NBA Dynasty Fantasy Logo - Basketball with draft board
+// Fantasy Trash Talk Logo - Basketball with draft board
 </script>
 
 <style lang="scss" scoped>

@@ -3,7 +3,7 @@
     @mouseleave="handleMouseLeave">
     <!-- Logo -->
     <div class="nav-logo">
-      <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="">
+      <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
     </div>
 
     <!-- Navigation Items -->

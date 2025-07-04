@@ -35,7 +35,7 @@
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .coming-soon {
@@ -53,7 +53,7 @@
   }
   
   p {
-    color: rgb(var(--v-theme-on-surface-variant));
+    color: rgb(var(--v-theme-on-surface));
     font-size: 1.1rem;
   }
 }

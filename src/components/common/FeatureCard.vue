@@ -61,7 +61,7 @@ defineProps<Props>()
 }
 
 .feature-description {
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
   line-height: 1.6;
   font-size: 1rem;
 }

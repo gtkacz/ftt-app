@@ -12,7 +12,7 @@
       :class="{ active: linkIsActive, centralize: !expanded }"
     >
       <div class="nav-item-icon">
-        <!-- <component :is="icon" size="24" /> -->
+        <!-- <v-icon :icon="`mdi-${icon}`" size="24" /> -->
         <span class="material-icons-round">{{ icon }}</span>
       </div>
       <transition name="fade">

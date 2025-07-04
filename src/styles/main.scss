@@ -1,13 +1,15 @@
-// Main SCSS file for NBA Dynasty Fantasy App
+// Main SCSS file for Fantasy Trash Talk App
+@import 'variables';
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
 // Global variables
 :root {
-  --primary-color: #0F183E;
-  --secondary-color: #FF9000;
-  --background-light: #FFFFFF;
-  --background-dark: #121212;
-  --surface-light: #FFFFFF;
-  --surface-dark: #1E1E1E;
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --background-light: #{$background-light};
+  --background-dark: #{$background-dark};
+  --surface-light: #{$surface-light};
+  --surface-dark: #{$surface-dark};
 }
 
 // Global styles
@@ -18,26 +20,28 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 // Utility classes
 .text-primary {
-  color: var(--primary-color) !important;
+  color: $primary-color !important;
 }
 
 .text-secondary {
-  color: var(--secondary-color) !important;
+  color: $secondary-color !important;
 }
 
 .bg-primary {
-  background-color: var(--primary-color) !important;
+  background-color: $primary-color !important;
 }
 
 .bg-secondary {
-  background-color: var(--secondary-color) !important;
+  background-color: $secondary-color !important;
 }
 
 // Custom scrollbar
@@ -47,12 +51,12 @@ body {
 
 ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  border-radius: $border-radius-sm;
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
+  border-radius: $border-radius-sm;
   
   &:hover {
     background: rgba(0, 0, 0, 0.4);
@@ -62,7 +66,7 @@ body {
 // Animation classes
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity $transition-normal;
 }
 
 .fade-enter-from,
@@ -72,7 +76,7 @@ body {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform $transition-normal;
 }
 
 .slide-enter-from {
@@ -90,35 +94,35 @@ body {
   letter-spacing: 0.5px;
   
   &.v-btn--elevated {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: $shadow-md;
     
     &:hover {
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: $shadow-lg;
     }
   }
 }
 
 // Custom card styles
 .v-card {
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   
   &.v-card--elevated {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: $shadow-sm;
     
     &:hover {
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      box-shadow: $shadow-md;
     }
   }
 }
 
 // Responsive utilities
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-sm) {
   .hide-on-mobile {
     display: none !important;
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: $breakpoint-sm + 1px) {
   .hide-on-desktop {
     display: none !important;
   }
