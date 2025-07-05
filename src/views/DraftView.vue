@@ -6,7 +6,7 @@
     </div>
     
     <div class="coming-soon">
-      <v-icon size="80" color="secondary">mdi-clipboard-text</v-icon>
+      <v-icon size="80" color="secondary" icon="assignment" />
       <h2>Draft Tools Coming Soon</h2>
       <p>Advanced draft functionality will be available here</p>
     </div>

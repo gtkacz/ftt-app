@@ -5,62 +5,50 @@
         <div class="welcome-icon">
           <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
         </div>
-        
+
         <h1 class="welcome-title">
           Bem-vindo ao <span class="highlight">Fantasy Trash Talk</span>
         </h1>
-        
+
         <p class="welcome-subtitle">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit
         </p>
-        
+
         <div class="welcome-actions">
-          <v-btn
-            size="large"
-            color="secondary"
-            variant="elevated"
-            @click="navigateToDraft"
-            class="action-btn"
-          >
-            <v-icon left>mdi-clipboard-text</v-icon>
+          <v-btn size="large" color="secondary" variant="elevated" @click="navigateToDraft" class="action-btn">
+            <v-icon left icon="start" />
             Começar Draft
           </v-btn>
-          
-          <v-btn
-            size="large"
-            color="secondary"
-            variant="outlined"
-            @click="navigateToBigBoard"
-            class="action-btn"
-          >
-            <v-icon left>mdi-view-dashboard</v-icon>
+
+          <v-btn size="large" color="on-surface" variant="outlined" @click="navigateToBigBoard" class="action-btn">
+            <v-icon left icon="dashboard" />
             Ver Big Board
           </v-btn>
         </div>
       </div>
     </div>
-    
+
     <!-- <div class="features-grid">
       <FeatureCard
-        icon="mdi-account-group"
+        icon="account-group"
         title="Dynasty Management"
         description="Build and manage your long-term dynasty roster with strategic depth"
       />
       
       <FeatureCard
-        icon="mdi-clipboard-text"
+        icon="assignment-text"
         title="Advanced Draft Tools"
         description="Comprehensive draft board with real-time updates and analytics"
       />
       
       <FeatureCard
-        icon="mdi-chart-line"
+        icon="chart-line"
         title="Player Analytics"
         description="Deep dive into player statistics and performance metrics"
       />
       
       <FeatureCard
-        icon="mdi-trophy"
+        icon="trophy"
         title="Championship Ready"
         description="Tools and insights to help you win your dynasty league"
       />
@@ -108,19 +96,28 @@ const navigateToBigBoard = () => {
 
 .welcome-icon {
   margin-bottom: 32px;
+
+  img {
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 }
 
 .welcome-title {
   font-size: 3rem;
-  font-weight: 700;
+  font-weight: normal;
   color: rgb(var(--v-theme-on-surface));
   margin-bottom: 16px;
   line-height: 1.2;
-  
+
   .highlight {
     color: rgb(var(--v-theme-secondary));
+    font-weight: bolder;
   }
-  
+
   @media (max-width: 768px) {
     font-size: 2rem;
   }
@@ -131,7 +128,7 @@ const navigateToBigBoard = () => {
   color: rgb(var(--v-theme-on-surface));
   margin-bottom: 40px;
   font-weight: 400;
-  
+
   @media (max-width: 768px) {
     font-size: 1.1rem;
   }

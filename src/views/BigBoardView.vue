@@ -6,7 +6,7 @@
     </div>
     
     <div class="coming-soon">
-      <v-icon size="80" color="secondary">mdi-view-dashboard</v-icon>
+      <v-icon size="80" color="secondary" icon="dashboard" />
       <h2>Big Board Coming Soon</h2>
       <p>Comprehensive player rankings and analytics will be available here</p>
     </div>

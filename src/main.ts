@@ -1,13 +1,13 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createVuetify } from 'vuetify'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
+import { aliases, md } from 'vuetify/iconsets/md'
 import router from './router'
 import App from './App.vue'
 
 // Vuetify
 import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 // Custom styles
 import './styles/main.scss'
@@ -50,10 +50,10 @@ const vuetify = createVuetify({
     },
   },
   icons: {
-    defaultSet: 'mdi',
+    defaultSet: 'md',
     aliases,
     sets: {
-      mdi,
+      md,
     },
   },
 })

@@ -8,7 +8,7 @@
         class="mobile-menu-btn d-sm-none"
         @click="toggleMobileNav"
       >
-        <v-icon>mdi-menu</v-icon>
+        <v-icon icon="menu" />
       </v-btn>
       
       <!-- Spacer -->
@@ -23,7 +23,7 @@
           @click="toggleTheme"
           class="action-btn"
         >
-          <v-icon>{{ isDark ? 'mdi-flash' : 'mdi-flash-off' }}</v-icon>
+          <v-icon :icon="isDark ? 'flash_on' : 'flash_off'" />
         </v-btn>
         
         <!-- Notifications -->
@@ -33,7 +33,7 @@
           @click="toggleNotifications"
           class="action-btn"
         >
-          <v-icon>mdi-bell</v-icon>
+          <v-icon icon="notifications" />
           <v-badge
             v-if="notificationCount > 0"
             :content="notificationCount"
@@ -50,7 +50,7 @@
           class="action-btn"
         >
           <v-avatar size="32" color="secondary">
-            <v-icon>mdi-account</v-icon>
+            <v-icon icon="person" />
           </v-avatar>
         </v-btn>
       </div>

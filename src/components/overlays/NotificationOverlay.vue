@@ -19,7 +19,7 @@
           size="small"
           @click="closeNotifications"
         >
-          <v-icon>mdi-close</v-icon>
+          <v-icon icon="close" />
         </v-btn>
       </v-card-title>
       
@@ -27,7 +27,7 @@
       
       <v-card-text class="notification-content">
         <div v-if="notifications.length === 0" class="no-notifications">
-          <v-icon size="48" color="grey-lighten-1">mdi-bell-off</v-icon>
+          <v-icon size="48" color="grey-lighten-1" icon="notifications_off" />
           <p>No new notifications</p>
         </div>
         
@@ -39,9 +39,7 @@
             :class="{ unread: !notification.read }"
           >
             <div class="notification-icon">
-              <v-icon :color="getIconColor(notification.type)">
-                {{ getIcon(notification.type) }}
-              </v-icon>
+              <v-icon :color="getIconColor(notification.type)" :icon="getIcon(notification.type)" />
             </div>
             
             <div class="notification-content">
@@ -57,7 +55,7 @@
               size="small"
               @click="markAsRead(notification.id)"
             >
-              <v-icon>mdi-check</v-icon>
+              <v-icon class="check" />
             </v-btn>
           </div>
         </div>
@@ -160,10 +158,10 @@ const clearAll = () => {
 
 const getIcon = (type: string) => {
   switch (type) {
-    case 'success': return 'mdi-check-circle'
-    case 'warning': return 'mdi-alert'
-    case 'error': return 'mdi-alert-circle'
-    default: return 'mdi-information'
+    case 'success': return 'check-circle'
+    case 'warning': return 'alert'
+    case 'error': return 'alert-circle'
+    default: return 'information'
   }
 }
 

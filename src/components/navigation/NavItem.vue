@@ -11,7 +11,7 @@
       @click="navigate"
       :class="{ active: linkIsActive, expanded }"
     >
-      <span class="nav-icon material-icons-round">{{ icon }}</span>
+      <v-icon class="nav-icon" :icon="icon" theme="outlined" />
       <transition name="fade">
         <span v-if="expanded" class="nav-item-label">{{ label }}</span>
       </transition>
@@ -23,7 +23,6 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
-import 'material-icons/iconfont/material-icons.css';
 
 interface Props {
   icon: string
@@ -52,6 +51,7 @@ const isActive = computed(() => {
   color: inherit;
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
   padding: 0 8px;
 }

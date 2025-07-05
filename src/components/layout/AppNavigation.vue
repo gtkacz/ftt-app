@@ -1,7 +1,7 @@
 <template>
   <nav class="app-navigation" :class="{ 'expanded': isHovered }" @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave">
-    <div class="nav-logo">
+    <div class="nav-logo" :class="{ 'expanded': isHovered }">
       <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
       <div class="nav-title-wrapper">
         <div class="nav-title" :class="{ 'hovered': isHovered }">Fantasy Trash Talk</div>
@@ -59,7 +59,7 @@ const navigationGroups = [
         name: 'Draft'
       },
       {
-        icon: 'checklist',
+        icon: 'contacts',
         label: 'League',
         name: 'Draft'
       },
@@ -69,7 +69,7 @@ const navigationGroups = [
     title: 'Draft',
     items: [
       {
-        icon: 'description',
+        icon: 'checklist',
         label: 'Draft',
         name: 'Draft'
       },
@@ -162,13 +162,14 @@ const handleMouseLeave = () => {
 .nav-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 16px;
   padding: 16px 8px;
   position: relative;
-
+  justify-content: center;
+  
   img {
+    position: absolute;
     width: 32px;
     height: 32px;
     transition: transform 0.3s ease;
@@ -191,7 +192,7 @@ const handleMouseLeave = () => {
   .nav-title {
     color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
-    font-weight: 600;
+    font-weight: bolder;
     white-space: nowrap;
     opacity: 0;
     transition: opacity 0.3s ease;

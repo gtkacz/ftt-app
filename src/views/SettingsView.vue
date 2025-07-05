@@ -6,7 +6,7 @@
     </div>
     
     <div class="coming-soon">
-      <v-icon size="80" color="secondary">mdi-cog</v-icon>
+      <v-icon size="80" color="secondary" icon="settings" />
       <h2>Settings Coming Soon</h2>
       <p>User preferences and configuration options will be available here</p>
     </div>
