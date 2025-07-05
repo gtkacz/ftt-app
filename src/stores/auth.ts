@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
 import { AuthService } from "../api/auth";
-import type { LoginData, RegisterData, AuthResponse } from "../types/auth";
+import type { LoginData, RegisterData, AuthResponse, User } from "../types/auth";
+import { decodeJwt } from "../utils/jwt";
 
 interface AuthState {
-  user: null | { id: number; username: string; email: string };
+  user: null | User,
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
@@ -23,10 +24,18 @@ export const useAuthStore = defineStore("auth", {
         this.isLoading = true;
         const response = await AuthService.login(data);
         this.setTokens(response.access, response.refresh);
-        if (response.user) {
-          this.user = response.user;
-        }
+
+        const decoded = decodeJwt(response.access);
+        if (!decoded) throw new Error('Invalid token');
+
+        this.user = {
+          id: decoded.user_id!,
+          username: decoded.username!,
+          email: '',
+          is_staff: decoded.is_staff || false
+        };
         return true;
+
       } catch (error) {
         console.error("Login failed:", error);
         return false;
@@ -55,6 +64,13 @@ export const useAuthStore = defineStore("auth", {
         localStorage.setItem("refresh_token", refresh);
       }
       localStorage.setItem("access_token", access);
+
+      if (access) {
+        const decoded = decodeJwt(access);
+        if (decoded && this.user) {
+          this.user.is_staff = decoded.is_staff || false;
+        }
+      }
     },
 
     async refreshAccessToken(): Promise<boolean> {
@@ -83,5 +99,10 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated(): boolean {
       return !!this.accessToken;
     },
+    isStaff(): boolean {
+      if (!this.accessToken) return false;
+      const decoded = decodeJwt(this.accessToken);
+      return decoded?.is_staff || false;
+    }
   },
 });

@@ -4,6 +4,15 @@ import { useAuthStore } from '../stores/auth';
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { 
+      requiresAuth: true,
+      requiresStaff: true //CRIEI ESSA ROTA/COMPONENTE SO PRA TESTAR A FLAG!
+    }
+  },
+  {
     path: '/',
     name: 'Home',
     component: () => import('../views/HomeView.vue'),
@@ -68,7 +77,7 @@ const routes: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -88,6 +97,10 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
     if (authStore.isAuthenticated) {
       try {
+        // if (to.meta.requiresStaff && !authStore.isStaff) {
+        //   next('/unauthorized'); ***** DESCOMENTA ISSO QUANDO TIVER A ROTA/PAGINA DE /unauthorized
+        //   return;
+        // }
         next();
       } catch (error) {
         authStore.logout();

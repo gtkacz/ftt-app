@@ -40,7 +40,6 @@ api.interceptors.response.use(
         }
       }
       
-      // Se chegou aqui, faz logout
       const authStore = useAuthStore();
       authStore.logout();
       window.location.href = "/login?redirect=" + encodeURIComponent(window.location.pathname);
