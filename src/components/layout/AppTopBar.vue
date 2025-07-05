@@ -23,7 +23,7 @@
           @click="toggleTheme"
           class="action-btn"
         >
-          <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+          <v-icon>{{ isDark ? 'mdi-flash' : 'mdi-flash-off' }}</v-icon>
         </v-btn>
         
         <!-- Notifications -->
@@ -98,7 +98,7 @@ const navigateToProfile = () => {
   left: 64px;
   right: 0;
   height: 64px;
-  background-color: rgb(var(--v-theme-surface));
+  background-color: transparent;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   z-index: 999;
   

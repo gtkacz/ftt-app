@@ -1,17 +1,18 @@
 <template>
   <nav class="app-navigation" :class="{ 'expanded': isHovered }" @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave">
-    <!-- Logo -->
     <div class="nav-logo">
       <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
+      <div class="nav-title-wrapper">
+        <div class="nav-title" :class="{ 'hovered': isHovered }">Fantasy Trash Talk</div>
+      </div>
     </div>
 
-    <!-- Navigation Items -->
     <div class="nav-items">
       <div v-for="(group, index) in navigationGroups" :key="index" class="nav-group">
-        <div class="nav-group-header">
-          <div class="nav-group-title" :class="{ 'visible': isHovered }">{{ group.title }}</div>
-          <div class="nav-divider" :class="{ 'visible': !isHovered }"></div>
+        <div class="nav-group-header" :class="{ 'expanded': isHovered }">
+          <div v-if="isHovered" class="nav-group-title" :class="{ 'hovered': isHovered }">{{ group.title }}</div>
+          <div class="nav-divider" :class="{ 'expanded': isHovered }"></div>
         </div>
 
         <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
@@ -36,7 +37,32 @@ const navigationGroups = [
         icon: 'home',
         label: 'Home',
         name: 'Home'
-      }
+      },
+      {
+        icon: 'workspaces',
+        label: 'Dashboard',
+        name: 'Draft'
+      },
+      {
+        icon: 'sports_basketball',
+        label: 'My Team',
+        name: 'Draft'
+      },
+    ]
+  },
+  {
+    title: 'Free Agency',
+    items: [
+      {
+        icon: 'people_alt',
+        label: 'Free Agents',
+        name: 'Draft'
+      },
+      {
+        icon: 'checklist',
+        label: 'League',
+        name: 'Draft'
+      },
     ]
   },
   {
@@ -55,7 +81,7 @@ const navigationGroups = [
     ]
   },
   {
-    title: 'Settings',
+    title: 'Account',
     items: [
       {
         icon: 'settings',
@@ -88,9 +114,20 @@ const handleMouseLeave = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
+
+  &>* {
+    width: 100%;
+  }
+
 
   &.expanded {
-    width: 240px;
+    animation: expandFromLeft 0.3s ease forwards;
+  }
+
+  &:not(.expanded) {
+    animation: shrinkToLeft 0.3s ease forwards;
   }
 
   @media (max-width: 768px) {
@@ -102,22 +139,65 @@ const handleMouseLeave = () => {
   }
 }
 
+@keyframes expandFromLeft {
+  from {
+    width: 64px;
+  }
+
+  to {
+    width: 240px;
+  }
+}
+
+@keyframes shrinkToLeft {
+  from {
+    width: 240px;
+  }
+
+  to {
+    width: 64px;
+  }
+}
+
 .nav-logo {
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 16px;
-  padding: 8px;
+  padding: 16px 8px;
+  position: relative;
 
   img {
-    width: 4vh;
-    height: auto;
-    aspect-ratio: 1 / 1;
+    width: 32px;
+    height: 32px;
     transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
 
     &:hover {
       transform: scale(1.1);
+    }
+  }
+
+  .nav-title-wrapper {
+    position: absolute;
+    left: 64px;
+    width: calc(100% - 64px);
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-title {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    &.hovered {
+      opacity: 1;
     }
   }
 }
@@ -138,8 +218,15 @@ const handleMouseLeave = () => {
 
 .nav-group-header {
   position: relative;
-  height: 32px; // Fixed height to prevent layout shift
+  height: 32px;
   margin-bottom: 4px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+
+  &.expanded {
+    align-items: inherit;
+  }
 }
 
 .nav-group-title {
@@ -153,7 +240,16 @@ const handleMouseLeave = () => {
   letter-spacing: 0.5px;
   padding: 0 16px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.1s ease;
+  background-color: var(--primary-color);
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.hovered {
+    opacity: 1;
+    z-index: 999;
+  }
 }
 
 .nav-divider {
@@ -162,12 +258,12 @@ const handleMouseLeave = () => {
   transform: translateY(-50%);
   height: 1px;
   width: calc(100% - 32px);
-  left: 16px;
   background-color: rgba(255, 255, 255, 0.1);
-  opacity: 0;
-}
+  transition: width 0.1s ease;
 
-.visible {
-  opacity: 1;
+  &.expanded {
+    right: 0;
+    margin-right: 3px;
+  }
 }
 </style>

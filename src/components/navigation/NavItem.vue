@@ -9,12 +9,9 @@
     <div
       class="nav-item-content"
       @click="navigate"
-      :class="{ active: linkIsActive, centralize: !expanded }"
+      :class="{ active: linkIsActive, expanded }"
     >
-      <div class="nav-item-icon">
-        <!-- <v-icon :icon="`mdi-${icon}`" size="24" /> -->
-        <span class="material-icons-round">{{ icon }}</span>
-      </div>
+      <span class="nav-icon material-icons-round">{{ icon }}</span>
       <transition name="fade">
         <span v-if="expanded" class="nav-item-label">{{ label }}</span>
       </transition>
@@ -53,20 +50,24 @@ const isActive = computed(() => {
 .nav-item {
   text-decoration: none;
   color: inherit;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 8px;
 }
 
 .nav-item-content {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 224px;
+  padding: 10px 0;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: rgba(255, 255, 255, 0.7);
-
-  &.centralize {
-    justify-content: center;
-  }
+  position: relative;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -83,16 +84,18 @@ const isActive = computed(() => {
   }
 }
 
-.nav-item-icon {
-  display: inline-flex;
+.nav-icon {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  min-width: 48px;
+  font-size: 24px;
 }
 
 .nav-item-label {
-  margin-left: 12px;
+  position: absolute;
+  left: 56px;
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;

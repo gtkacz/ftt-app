@@ -14,9 +14,12 @@ import './styles/main.scss'
 
 const pinia = createPinia()
 
+// Detect user's system theme preference
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
 const vuetify = createVuetify({
   theme: {
-    defaultTheme: 'light',
+    defaultTheme: prefersDark ? 'dark' : 'light',
     themes: {
       light: {
         colors: {
@@ -38,7 +41,7 @@ const vuetify = createVuetify({
           accent: '#FF9000',
           background: '#000012',
           surface: '#00001f',
-          'surface-variant': '#00002e',
+          'surface-variant': '#000017',
           'on-surface': '#FFFFFF',
           'on-primary': '#FFFFFF',
           'on-secondary': '#FFFFFF',
@@ -55,8 +58,9 @@ const vuetify = createVuetify({
   },
 })
 
-createApp(App)
+const app = createApp(App)
   .use(pinia)
   .use(router)
   .use(vuetify)
-  .mount('#app')
+
+app.mount('#app')
