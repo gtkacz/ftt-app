@@ -9,7 +9,7 @@
     <div
       class="nav-item-content"
       @click="navigate"
-      :class="{ active: linkIsActive, expanded }"
+      :class="{ active: linkIsActive && to.name !== '404', expanded }"
     >
       <v-icon class="nav-icon" :icon="icon" theme="outlined" />
       <transition name="fade">
@@ -36,10 +36,10 @@ const route = useRoute()
 
 const isActive = computed(() => {
   if (typeof props.to === 'string') {
-    return route.path === props.to
+    return route.path === props.to && route.path !== '/404'
   }
   if (props.to.name) {
-    return route.name === props.to.name
+    return route.name === props.to.name && route.name !== '404' && props.to.name !== '404'
   }
   return false
 })

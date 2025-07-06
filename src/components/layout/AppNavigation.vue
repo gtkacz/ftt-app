@@ -41,12 +41,12 @@ const navigationGroups = [
       {
         icon: 'workspaces',
         label: 'Dashboard',
-        name: 'Draft'
+        name: 'dashboard'
       },
       {
         icon: 'sports_basketball',
         label: 'My Team',
-        name: 'Draft'
+        name: 'team'
       },
     ]
   },
@@ -56,12 +56,12 @@ const navigationGroups = [
       {
         icon: 'people_alt',
         label: 'Free Agents',
-        name: 'Draft'
+        name: 'free-agency'
       },
       {
         icon: 'contacts',
         label: 'League',
-        name: 'Draft'
+        name: 'league'
       },
     ]
   },
@@ -84,10 +84,16 @@ const navigationGroups = [
     title: 'Account',
     items: [
       {
+        icon: 'manage_accounts',
+        label: 'Admin',
+        name: 'admin',
+        admin_only: true
+      },
+      {
         icon: 'settings',
         label: 'Settings',
         name: 'Settings'
-      }
+      },
     ]
   }
 ]

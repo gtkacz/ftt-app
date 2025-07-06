@@ -27,6 +27,44 @@ const routes: RouteRecordRaw[] = [
     name: 'User',
     component: () => import('../views/UserView.vue'),
   },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/501View.vue'),
+  },
+  {
+    path: '/team',
+    name: 'team',
+    component: () => import('../views/501View.vue'),
+  },
+  {
+    path: '/free-agency',
+    name: 'free-agency',
+    component: () => import('../views/501View.vue'),
+  },
+  {
+    path: '/league',
+    name: 'league',
+    component: () => import('../views/501View.vue'),
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/501View.vue'),
+  },
+  {
+    path: '/404',
+    name: '404',
+    component: () => import('../views/404View.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+  },
+  {
+    path: '/:pathMatch(.*)',
+    redirect: '/404',
+  },
 ]
 
 const router = createRouter({

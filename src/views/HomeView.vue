@@ -14,7 +14,7 @@
           Lorem ipsum dolor sit amet, consectetur adipiscing elit
         </p>
 
-        <div class="welcome-actions">
+        <!-- <div class="welcome-actions">
           <v-btn size="large" color="secondary" variant="elevated" @click="navigateToDraft" class="action-btn">
             <v-icon left icon="start" />
             Começar Draft
@@ -24,7 +24,7 @@
             <v-icon left icon="dashboard" />
             Ver Big Board
           </v-btn>
-        </div>
+        </div> -->
       </div>
     </div>
 
