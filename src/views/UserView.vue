@@ -6,7 +6,7 @@
     </div>
     
     <div class="coming-soon">
-      <v-icon size="80" color="secondary" icon="account /">
+      <v-icon size="80" color="secondary" icon="account" />
       <h2>User Profile Coming Soon</h2>
       <p>Account management and user preferences will be available here</p>
     </div>
