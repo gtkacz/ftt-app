@@ -1,6 +1,7 @@
 <template>
   <header class="app-top-bar">
     <div class="top-bar-content">
+    {{ user }}
       <!-- Mobile Menu Button -->
       <v-btn icon variant="text" class="mobile-menu-btn d-sm-none" @click="toggleMobileNav">
         <v-icon icon="menu" />
@@ -67,6 +68,7 @@ const theme = useTheme()
 const themeStore = useThemeStore()
 const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
+const user = authStore.user
 
 const isDark = computed(() => theme.global.current.value.dark)
 const notificationCount = computed(() => 3) // Mock notification count

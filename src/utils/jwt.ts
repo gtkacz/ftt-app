@@ -3,6 +3,9 @@ import { showError } from "../services/errorSnackbar";
 export interface JwtPayload {
   user_id?: number;
   username?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
   is_staff?: boolean;
   exp?: number;
 }

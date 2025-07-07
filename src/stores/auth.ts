@@ -28,17 +28,6 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     async login(data: LoginData): Promise<boolean> {
       if (this.isLoading) return false;
-      if (import.meta.env.VITE_USE_AUTH === "false" && import.meta.env.DEV) {
-        console.warn("Using mock authentication for development purposes.");
-        this.user = {
-          id: 1,
-          username: "testuser",
-          email: "somemail@gmail.com",
-          is_staff: true,
-        };
-        this.setTokens("fake_access_token", "fake_refresh_token");
-        return true;
-      }
       try {
         this.isLoading = true;
         const response = await AuthService.login(data);
@@ -50,8 +39,10 @@ export const useAuthStore = defineStore("auth", {
         this.user = {
           id: decoded.user_id!,
           username: decoded.username!,
-          email: "",
-          is_staff: decoded.is_staff || false,
+          first_name: decoded.first_name!,
+          last_name: decoded.last_name!,
+          email: decoded.email!,
+          is_staff: decoded.is_staff!,
         };
         return true;
       } catch (error) {
@@ -86,7 +77,10 @@ export const useAuthStore = defineStore("auth", {
       if (access) {
         const decoded = decodeJwt(access);
         if (decoded && this.user) {
-          this.user.is_staff = decoded.is_staff || false;
+          this.user.is_staff = decoded.is_staff!;
+          this.user.first_name = decoded.first_name!;
+          this.user.last_name = decoded.last_name!;
+          this.user.email = decoded.email!;
         }
       }
     },
