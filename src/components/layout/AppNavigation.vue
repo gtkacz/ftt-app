@@ -1,11 +1,8 @@
 <template>
   <nav class="app-navigation" :class="{ 'expanded': isHovered }" @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave">
-    <div class="nav-logo" :class="{ 'expanded': isHovered }">
-      <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
-      <div class="nav-title-wrapper">
-        <div class="nav-title" :class="{ 'hovered': isHovered }">Fantasy Trash Talk</div>
-      </div>
+    <div class="nav-logo">
+      <LogoNav label="Fantasy Trash Talk" :expanded="isHovered" />
     </div>
 
     <div class="nav-items">
@@ -25,6 +22,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import NavItem from '../navigation/NavItem.vue'
+import LogoNav from '../navigation/LogoNav.vue'
 
 const isHovered = ref(false)
 
@@ -39,7 +37,7 @@ const navigationGroups = [
         name: 'Home'
       },
       {
-        icon: 'workspaces',
+        icon: 'dashboard',
         label: 'Dashboard',
         name: 'dashboard'
       },
@@ -51,17 +49,22 @@ const navigationGroups = [
     ]
   },
   {
-    title: 'Free Agency',
+    title: 'Rosters',
     items: [
-      {
-        icon: 'people_alt',
-        label: 'Free Agents',
-        name: 'free-agency'
-      },
       {
         icon: 'contacts',
         label: 'League',
         name: 'league'
+      },
+      {
+        icon: 'people_alt',
+        label: 'Free Agency',
+        name: 'free-agency'
+      },
+      {
+        icon: 'swap_horiz',
+        label: 'Trades',
+        name: '404'
       },
     ]
   },
@@ -69,15 +72,20 @@ const navigationGroups = [
     title: 'Draft',
     items: [
       {
-        icon: 'checklist',
+        icon: 'workspaces',
         label: 'Draft',
         name: 'Draft'
       },
       {
-        icon: 'dashboard',
+        icon: 'interests',
         label: 'Big Board',
         name: 'BigBoard'
-      }
+      },
+      {
+        icon: 'format_list_numbered',
+        label: 'Lottery',
+        name: 'BigBoard'
+      },
     ]
   },
   {
@@ -173,23 +181,9 @@ const handleMouseLeave = () => {
   padding: 16px 8px;
   position: relative;
   justify-content: center;
+  gap: 16px;
   
-  img {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    transition: transform 0.3s ease;
-    position: relative;
-    z-index: 2;
-
-    &:hover {
-      transform: scale(1.1);
-    }
-  }
-
   .nav-title-wrapper {
-    position: absolute;
-    left: 64px;
     width: calc(100% - 64px);
     display: flex;
     align-items: center;

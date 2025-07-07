@@ -158,9 +158,9 @@ const clearAll = () => {
 
 const getIcon = (type: string) => {
   switch (type) {
-    case 'success': return 'check-circle'
+    case 'success': return 'check_circle'
     case 'warning': return 'alert'
-    case 'error': return 'alert-circle'
+    case 'error': return 'alert_circle'
     default: return 'information'
   }
 }
@@ -191,8 +191,8 @@ const formatTime = (timestamp: Date) => {
 <style lang="scss" scoped>
 .notification-overlay {
   position: fixed;
-  top: 64px;
-  right: 16px;
+  top: 25vh;
+  left: 40vw;
   z-index: 2000;
 }
 

@@ -71,7 +71,7 @@ const isActive = computed(() => {
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255);
   }
   
   &.active {

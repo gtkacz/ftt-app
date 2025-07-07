@@ -7,7 +7,6 @@ import App from './App.vue'
 
 // Vuetify
 import 'vuetify/styles'
-import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 // Custom styles
 import './styles/main.scss'
