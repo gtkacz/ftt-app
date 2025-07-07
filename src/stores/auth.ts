@@ -19,24 +19,26 @@ interface AuthState {
 
 export const useAuthStore = defineStore("auth", {
   persist: true,
-  state: (): AuthState => ({
-    user: localStorage.getItem("access_token") 
-      ? (() => {
-          try {
-            const decoded = decodeJwt(localStorage.getItem("access_token")!);
-            return decoded ? {
-              id: decoded.user_id || 0,
-              username: decoded.username || '',
-              first_name: decoded.first_name || '',
-              last_name: decoded.last_name || '',
-              email: decoded.email || '',
-              is_staff: decoded.is_staff || false,
-            } : null;
-          } catch {
-            return null;
-          }
-        })()
-      : null,
+state: (): AuthState => ({
+  user: localStorage.getItem("access_token") 
+    ? (() => {
+        try {
+          const decoded = decodeJwt(localStorage.getItem("access_token")!);
+          return decoded ? {
+            id: decoded.user_id || 0,
+            username: decoded.username || '',
+            first_name: decoded.first_name || '',
+            last_name: decoded.last_name || '',
+            email: decoded.email || '',
+            is_superuser: decoded.is_superuser || false,
+            date_joined: decoded.date_joined || '',
+            created_at: decoded.created_at || ''
+          } : null;
+        } catch {
+          return null;
+        }
+      })()
+    : null,
     accessToken: localStorage.getItem("access_token"),
     refreshToken: localStorage.getItem("refresh_token"),
     isLoading: false,
@@ -59,7 +61,9 @@ export const useAuthStore = defineStore("auth", {
           first_name: decoded.first_name!,
           last_name: decoded.last_name!,
           email: decoded.email!,
-          is_staff: decoded.is_staff!,
+          is_superuser: decoded.is_superuser!,
+          date_joined: decoded.date_joined!,
+          created_at: decoded.created_at!
         };
         return true;
       } catch (error) {
@@ -94,12 +98,14 @@ export const useAuthStore = defineStore("auth", {
       const decoded = decodeJwt(access);
       if (decoded) {
         this.user = {
-        id: decoded.user_id!,
-        username: decoded.username!,
-        first_name: decoded.first_name!,
-        last_name: decoded.last_name!,
-        email: decoded.email!,
-        is_staff: decoded.is_staff!,
+          id: decoded.user_id!,
+          username: decoded.username!,
+          first_name: decoded.first_name!,
+          last_name: decoded.last_name!,
+          email: decoded.email!,
+          is_superuser: decoded.is_superuser!,
+          date_joined: decoded.date_joined!,
+          created_at: decoded.created_at! 
         };
       }
     },
@@ -137,8 +143,8 @@ getters: {
     const decoded = decodeJwt(this.accessToken);
     return decoded?.exp ? decoded.exp > Date.now() / 1000 : false;
   },
-  isStaff(): boolean {
-    return this.user?.is_staff || false;
-  },
+  isSuperuser(): boolean {
+    return this.user?.is_superuser || false;
+  }
 },
 });

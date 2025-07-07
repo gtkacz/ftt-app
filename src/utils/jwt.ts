@@ -6,10 +6,11 @@ export interface JwtPayload {
   first_name?: string;
   last_name?: string;
   email?: string;
-  is_staff?: boolean;
+  is_superuser?: boolean;
+  date_joined?: string;
+  created_at?: string;
   exp?: number;
 }
-
 export function decodeJwt(token: string): JwtPayload | null {
   try {
     const base64Url = token.split('.')[1];
