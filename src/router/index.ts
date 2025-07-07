@@ -4,58 +4,33 @@ import { useAuthStore } from '../stores/auth';
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/admin',
-    name: 'Admin',
-    component: () => import('../views/AdminView.vue'),
-    meta: { 
-      requiresAuth: true,
-      requiresStaff: true //CRIEI ESSA ROTA/COMPONENTE SO PRA TESTAR A FLAG!
-    }
-  },
-  {
     path: '/',
     name: 'Home',
     component: () => import('../views/HomeView.vue'),
-    meta: { 
-      requiresAuth: false,
-      title: 'Home - Fantasy Trash Talk'
-    }
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('../views/LoginView.vue'),
-    meta: { 
+    meta: {
+      title: 'Login - Fantasy Trash Talk',
       requiresAuth: false,
-      title: 'Login - Fantasy Trash Talk'
-    }
+    },
   },
   {
     path: '/draft',
     name: 'Draft',
     component: () => import('../views/DraftView.vue'),
-    meta: { 
-      requiresAuth: false,
-      title: 'Draft - Fantasy Trash Talk'
-    }
   },
   {
     path: '/big-board',
     name: 'BigBoard',
     component: () => import('../views/BigBoardView.vue'),
-    meta: { 
-      requiresAuth: false,
-      title: 'Big Board - Fantasy Trash Talk'
-    }
   },
   {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/SettingsView.vue'),
-    meta: { 
-      requiresAuth: false,
-      title: 'Settings - Fantasy Trash Talk'
-    }
   },
   {
     path: '/user',
@@ -98,17 +73,22 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/501View.vue'),
   },
   {
-    path: '/404',
-    name: '404',
+    path: '/unauthorized',
+    name: 'unauthorized',
+    component: () => import('../views/401View.vue'),
+  },
+  {
+    path: '/not-found',
+    name: 'not-found',
     component: () => import('../views/404View.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/404',
+    redirect: '/not-found',
   },
   {
     path: '/:pathMatch(.*)',
-    redirect: '/404',
+    redirect: '/not-found',
   },
 ]
 
@@ -130,13 +110,13 @@ router.beforeEach(async (to, from, next) => {
   const title = to.meta.title as string || 'Fantasy Trash Talk';
   document.title = title;
 
-  if (to.meta.requiresAuth) {
+  if (typeof to.meta.requiresAuth !== 'undefined' ? to.meta.requiresAuth : true) {
     if (authStore.isAuthenticated) {
       try {
-        // if (to.meta.requiresStaff && !authStore.isStaff) {
-        //   next('/unauthorized'); ***** DESCOMENTA ISSO QUANDO TIVER A ROTA/PAGINA DE /unauthorized
-        //   return;
-        // }
+        if (to.meta.requiresStaff && !authStore.isStaff) {
+          next('/unauthorized');
+          return;
+        }
         next();
       } catch (error) {
         authStore.logout();
