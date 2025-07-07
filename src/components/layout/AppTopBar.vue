@@ -100,10 +100,10 @@ const handleLogout = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: 65px;
   background-color: transparent;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  z-index: 999;
+  z-index: 1000;
 
   @media (max-width: 768px) {
     left: 0;

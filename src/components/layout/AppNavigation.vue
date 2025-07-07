@@ -29,7 +29,7 @@ const isHovered = ref(false)
 // Navigation structure data
 const navigationGroups = [
   {
-    title: 'Main',
+    title: 'General',
     items: [
       {
         icon: 'home',
@@ -124,7 +124,7 @@ const handleMouseLeave = () => {
   width: 64px;
   background-color: rgb(var(--v-theme-primary));
   transition: width 0.3s ease;
-  z-index: 1000;
+  z-index: 999;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -176,7 +176,6 @@ const handleMouseLeave = () => {
 .nav-logo {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 16px;
   padding: 16px 8px;
   position: relative;

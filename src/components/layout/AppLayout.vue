@@ -2,15 +2,18 @@
   <div class="app-layout">
     <!-- Main Navigation (apenas quando autenticado) -->
     <AppNavigation v-if="isAuthenticated" />
-    
+
     <!-- Top Bar -->
     <AppTopBar v-if="isAuthenticated" />
-    
+    <v-btn v-else icon variant="text" @click="toggleTheme" class="action-btn">
+      <v-icon :icon="isDark ? 'flash_on' : 'flash_off'" />
+    </v-btn>
+
     <!-- Main Content -->
     <main class="main-content" :class="{ 'full-width': !isAuthenticated }">
       <router-view />
     </main>
-    
+
     <!-- Notification Overlay -->
     <NotificationOverlay />
   </div>
@@ -22,9 +25,20 @@ import { useAuthStore } from '@/stores/auth';
 import AppNavigation from './AppNavigation.vue';
 import AppTopBar from './AppTopBar.vue';
 import NotificationOverlay from '../overlays/NotificationOverlay.vue';
+import { useTheme } from 'vuetify'
+import { useThemeStore } from '../../stores/theme'
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const theme = useTheme()
+const themeStore = useThemeStore()
+
+const isDark = computed(() => theme.global.current.value.dark)
+
+const toggleTheme = () => {
+  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+  themeStore.toggleTheme()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -43,11 +57,11 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
   padding: 24px;
   background-color: rgb(var(--v-theme-background));
   transition: margin-left 0.3s ease;
-  
+
   &.full-width {
     margin-left: 0;
   }
-  
+
   @media (max-width: 768px) {
     margin-left: 0;
     padding: 16px;

@@ -27,6 +27,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a {
+  text-decoration: none;
+  color: $secondary-color;
+}
+
 // Utility classes
 .text-primary {
   color: $primary-color !important;
