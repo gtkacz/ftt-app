@@ -33,27 +33,23 @@ createAuthRefreshInterceptor(
   }
 );
 
-// global response interceptor
 api.interceptors.response.use(
   response => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     const status = error.response?.status;
+    const authStore = useAuthStore();
 
-    // On 401 without retry, logout and redirect
-    if (status === 401 && !(error.config as any)?._retry) {
-      useAuthStore().logout();
-      window.location.href =
-        "/login?redirect=" + encodeURIComponent(window.location.pathname);
+    if (status !== 401 || (error.config as any)?._retry) {
       return Promise.reject(error);
     }
 
-    // Rethrow all HTTP errors in 400 and 500 range
-    if (status && status >= 400 && status < 600) {
-      // You can customize error message or wrap error here
-      return Promise.reject(error);
+    if (authStore.isAuthenticated) {
+      authStore.logout();
+      setTimeout(() => {
+        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      }, 0);
     }
 
-    // Non-HTTP or unknown errors
     return Promise.reject(error);
   }
 );

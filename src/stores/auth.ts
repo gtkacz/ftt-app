@@ -18,8 +18,25 @@ interface AuthState {
 }
 
 export const useAuthStore = defineStore("auth", {
+  persist: true,
   state: (): AuthState => ({
-    user: null,
+    user: localStorage.getItem("access_token") 
+      ? (() => {
+          try {
+            const decoded = decodeJwt(localStorage.getItem("access_token")!);
+            return decoded ? {
+              id: decoded.user_id || 0,
+              username: decoded.username || '',
+              first_name: decoded.first_name || '',
+              last_name: decoded.last_name || '',
+              email: decoded.email || '',
+              is_staff: decoded.is_staff || false,
+            } : null;
+          } catch {
+            return null;
+          }
+        })()
+      : null,
     accessToken: localStorage.getItem("access_token"),
     refreshToken: localStorage.getItem("refresh_token"),
     isLoading: false,
@@ -74,31 +91,36 @@ export const useAuthStore = defineStore("auth", {
       }
       localStorage.setItem("access_token", access);
 
-      if (access) {
-        const decoded = decodeJwt(access);
-        if (decoded && this.user) {
-          this.user.is_staff = decoded.is_staff!;
-          this.user.first_name = decoded.first_name!;
-          this.user.last_name = decoded.last_name!;
-          this.user.email = decoded.email!;
-        }
+      const decoded = decodeJwt(access);
+      if (decoded) {
+        this.user = {
+        id: decoded.user_id!,
+        username: decoded.username!,
+        first_name: decoded.first_name!,
+        last_name: decoded.last_name!,
+        email: decoded.email!,
+        is_staff: decoded.is_staff!,
+        };
       }
     },
 
-    async refreshAccessToken(): Promise<boolean> {
-      try {
-        if (!this.refreshToken) throw new Error("No refresh token available");
-        const response = await AuthService.refreshToken({
-          refresh: this.refreshToken,
-        });
-        this.setTokens(response.access, response.refresh);
-        return true;
-      } catch (error) {
+  async refreshAccessToken(): Promise<boolean> {
+    try {
+      if (!this.refreshToken) {
         this.logout();
-        showError("Token refresh failed:", error);
         return false;
       }
-    },
+    
+      const response = await AuthService.refreshToken({
+        refresh: this.refreshToken,
+      });
+      this.setTokens(response.access, response.refresh);
+      return true;
+    } catch (error) {
+      this.logout();
+      return false;
+    }
+  },
 
     logout(): void {
       this.user = null;
@@ -109,14 +131,14 @@ export const useAuthStore = defineStore("auth", {
     },
   },
 
-  getters: {
-    isAuthenticated(): boolean {
-      return !!this.accessToken;
-    },
-    isStaff(): boolean {
-      if (!this.accessToken) return false;
-      const decoded = decodeJwt(this.accessToken);
-      return decoded?.is_staff || false;
-    },
+getters: {
+  isAuthenticated(): boolean {
+    if (!this.accessToken) return false;
+    const decoded = decodeJwt(this.accessToken);
+    return decoded?.exp ? decoded.exp > Date.now() / 1000 : false;
   },
+  isStaff(): boolean {
+    return this.user?.is_staff || false;
+  },
+},
 });

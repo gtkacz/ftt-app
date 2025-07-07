@@ -4,6 +4,7 @@ import { createVuetify } from 'vuetify'
 import { aliases, md } from 'vuetify/iconsets/md'
 import router from './router'
 import App from './App.vue'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 // Vuetify
 import 'vuetify/styles'
@@ -15,6 +16,7 @@ import './styles/main.scss'
 import errorSnackbarPlugin from '@/plugins/errorSnackbar'
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 // Detect user's system theme preference
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches

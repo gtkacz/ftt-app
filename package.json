@@ -15,6 +15,7 @@
     "axios-auth-refresh": "^3.3.6",
     "material-icons": "^1.13.14",
     "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.4.1",
     "sass": "^1.89.2",
     "vue": "^3.4.38",
     "vue-router": "^4.5.1",
