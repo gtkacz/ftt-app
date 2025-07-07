@@ -34,3 +34,36 @@ export interface User {
 export interface RefreshTokenResponse {
   access: string;
 }
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_admin: boolean;
+  date_joined: string;
+}
+
+export interface UserRequest {
+  username: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  is_admin?: boolean;
+}
+
+export interface PatchedUserRequest {
+  username?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  is_admin?: boolean;
+}
+
+export interface PaginatedUserList {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: User[];
+}
