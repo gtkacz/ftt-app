@@ -1,3 +1,5 @@
+import { showError } from "../services/errorSnackbar";
+
 export interface JwtPayload {
   user_id?: number;
   username?: string;
@@ -17,7 +19,7 @@ export function decodeJwt(token: string): JwtPayload | null {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Failed to decode JWT:', error);
+    showError('Failed to decode JWT:', error);
     return null;
   }
 }
