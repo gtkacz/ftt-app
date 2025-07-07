@@ -34,7 +34,7 @@ const navigationGroups = [
       {
         icon: 'home',
         label: 'Home',
-        name: 'Home'
+        name: 'home'
       },
       {
         icon: 'dashboard',
@@ -74,17 +74,17 @@ const navigationGroups = [
       {
         icon: 'workspaces',
         label: 'Draft',
-        name: 'Draft'
+        name: 'draft'
       },
       {
         icon: 'interests',
         label: 'Big Board',
-        name: 'BigBoard'
+        name: 'big-board'
       },
       {
         icon: 'format_list_numbered',
         label: 'Lottery',
-        name: 'BigBoard'
+        name: 'lottery'
       },
     ]
   },
@@ -100,7 +100,7 @@ const navigationGroups = [
       {
         icon: 'settings',
         label: 'Settings',
-        name: 'Settings'
+        name: 'settings'
       },
     ]
   }

@@ -90,7 +90,7 @@ const navigateToProfile = () => {
 
 const handleLogout = () => {
   authStore.logout();
-  router.push({ name: 'Login' })
+  router.push({ name: 'login' })
 }
 </script>
 

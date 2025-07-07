@@ -5,13 +5,24 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import { useAuthStore } from "./stores/auth";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import AppLayout from './components/layout/AppLayout.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
+
+// Watch for authentication state changes
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (!isAuthenticated && route.name !== 'login') {
+    router.push({
+      name: 'login',
+      query: { redirect: route.fullPath }
+    });
+  }
+});
 
 onMounted(async () => {
   if (authStore.isAuthenticated) {
@@ -19,7 +30,10 @@ onMounted(async () => {
       await authStore.refreshAccessToken();
     } catch (error) {
       authStore.logout();
-      router.push("/login");
+      router.push({
+        name: 'login',
+        query: { redirect: route.fullPath }
+      });
     }
   }
 });

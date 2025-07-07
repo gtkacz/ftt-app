@@ -4,7 +4,7 @@
     <AppNavigation v-if="isAuthenticated" />
     
     <!-- Top Bar -->
-    <AppTopBar />
+    <AppTopBar v-if="isAuthenticated" />
     
     <!-- Main Content -->
     <main class="main-content" :class="{ 'full-width': !isAuthenticated }">
