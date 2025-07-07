@@ -1,13 +1,13 @@
 <template>
   <div class="app-layout">
-    <!-- Main Navigation -->
-    <AppNavigation />
+    <!-- Main Navigation (apenas quando autenticado) -->
+    <AppNavigation v-if="isAuthenticated" />
     
     <!-- Top Bar -->
     <AppTopBar />
     
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" :class="{ 'full-width': !isAuthenticated }">
       <router-view />
     </main>
     
@@ -17,9 +17,14 @@
 </template>
 
 <script setup lang="ts">
-import AppNavigation from './AppNavigation.vue'
-import AppTopBar from './AppTopBar.vue'
-import NotificationOverlay from '../overlays/NotificationOverlay.vue'
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import AppNavigation from './AppNavigation.vue';
+import AppTopBar from './AppTopBar.vue';
+import NotificationOverlay from '../overlays/NotificationOverlay.vue';
+
+const authStore = useAuthStore();
+const isAuthenticated = computed(() => authStore.isAuthenticated);
 </script>
 
 <style lang="scss" scoped>
@@ -37,6 +42,11 @@ import NotificationOverlay from '../overlays/NotificationOverlay.vue'
   overflow-y: auto;
   padding: 24px;
   background-color: rgb(var(--v-theme-background));
+  transition: margin-left 0.3s ease;
+  
+  &.full-width {
+    margin-left: 0;
+  }
   
   @media (max-width: 768px) {
     margin-left: 0;

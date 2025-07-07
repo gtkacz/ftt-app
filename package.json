@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "axios": "^1.10.0",
+    "material-icons": "^1.13.14",
     "pinia": "^3.0.3",
     "sass": "^1.89.2",
     "vue": "^3.4.38",
