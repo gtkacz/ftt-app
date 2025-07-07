@@ -1,5 +1,5 @@
 <template>
-  <div v-if="authStore.isSuperUser">
+  <div v-if="authStore.isStaff">
     <h1>Painel Administrativo</h1>
   </div>
   <div v-else>

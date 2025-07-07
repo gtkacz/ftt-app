@@ -133,7 +133,7 @@ router.beforeEach(async (to, from, next) => {
           next(from.fullPath ? from.fullPath : "/");
           return;
         }
-        if (to.meta.requiresStaff && !authStore.isSuperuser) {
+        if (to.meta.requiresStaff && !authStore.isStaff) {
           next("/unauthorized");
           return;
         }

@@ -19,26 +19,24 @@ interface AuthState {
 
 export const useAuthStore = defineStore("auth", {
   persist: true,
-state: (): AuthState => ({
-  user: localStorage.getItem("access_token") 
-    ? (() => {
-        try {
-          const decoded = decodeJwt(localStorage.getItem("access_token")!);
-          return decoded ? {
-            id: decoded.user_id || 0,
-            username: decoded.username || '',
-            first_name: decoded.first_name || '',
-            last_name: decoded.last_name || '',
-            email: decoded.email || '',
-            is_superuser: decoded.is_superuser || false,
-            date_joined: decoded.date_joined || '',
-            created_at: decoded.created_at || ''
-          } : null;
-        } catch {
-          return null;
-        }
-      })()
-    : null,
+  state: (): AuthState => ({
+    user: localStorage.getItem("access_token") 
+      ? (() => {
+          try {
+            const decoded = decodeJwt(localStorage.getItem("access_token")!);
+            return decoded ? {
+              id: decoded.user_id || 0,
+              username: decoded.username || '',
+              first_name: decoded.first_name || '',
+              last_name: decoded.last_name || '',
+              email: decoded.email || '',
+              is_staff: decoded.is_staff || false,
+            } : null;
+          } catch {
+            return null;
+          }
+        })()
+      : null,
     accessToken: localStorage.getItem("access_token"),
     refreshToken: localStorage.getItem("refresh_token"),
     isLoading: false,
@@ -61,9 +59,7 @@ state: (): AuthState => ({
           first_name: decoded.first_name!,
           last_name: decoded.last_name!,
           email: decoded.email!,
-          is_superuser: decoded.is_superuser!,
-          date_joined: decoded.date_joined!,
-          created_at: decoded.created_at!
+          is_staff: decoded.is_staff!,
         };
         return true;
       } catch (error) {
@@ -98,14 +94,12 @@ state: (): AuthState => ({
       const decoded = decodeJwt(access);
       if (decoded) {
         this.user = {
-          id: decoded.user_id!,
-          username: decoded.username!,
-          first_name: decoded.first_name!,
-          last_name: decoded.last_name!,
-          email: decoded.email!,
-          is_superuser: decoded.is_superuser!,
-          date_joined: decoded.date_joined!,
-          created_at: decoded.created_at! 
+        id: decoded.user_id!,
+        username: decoded.username!,
+        first_name: decoded.first_name!,
+        last_name: decoded.last_name!,
+        email: decoded.email!,
+        is_staff: decoded.is_staff!,
         };
       }
     },
@@ -143,8 +137,8 @@ getters: {
     const decoded = decodeJwt(this.accessToken);
     return decoded?.exp ? decoded.exp > Date.now() / 1000 : false;
   },
-  isSuperuser(): boolean {
-    return this.user?.is_superuser || false;
-  }
+  isStaff(): boolean {
+    return this.user?.is_staff || false;
+  },
 },
 });

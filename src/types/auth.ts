@@ -28,9 +28,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
-  is_superuser: boolean;
-  date_joined: string;
-  created_at: string;
+  is_staff: boolean;
 }
 
 export interface RefreshTokenResponse {
