@@ -1,10 +1,17 @@
 import { defineStore } from "pinia";
 import { AuthService } from "../api/auth";
-import type { LoginData, RegisterData, AuthResponse, User } from "../types/auth";
+import type {
+  LoginData,
+  RegisterData,
+  AuthResponse,
+  User,
+} from "../types/auth";
 import { decodeJwt } from "../utils/jwt";
 
+import { showError } from "../services/errorSnackbar";
+
 interface AuthState {
-  user: null | User,
+  user: null | User;
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
@@ -38,18 +45,17 @@ export const useAuthStore = defineStore("auth", {
         this.setTokens(response.access, response.refresh);
 
         const decoded = decodeJwt(response.access);
-        if (!decoded) throw new Error('Invalid token');
+        if (!decoded) throw new Error("Invalid token");
 
         this.user = {
           id: decoded.user_id!,
           username: decoded.username!,
-          email: '',
-          is_staff: decoded.is_staff || false
+          email: "",
+          is_staff: decoded.is_staff || false,
         };
         return true;
-
       } catch (error) {
-        console.error("Login failed:", error);
+        showError("Login failed:", error);
         return false;
       } finally {
         this.isLoading = false;
@@ -62,7 +68,7 @@ export const useAuthStore = defineStore("auth", {
         await AuthService.register(data);
         return true;
       } catch (error) {
-        console.error("Registration failed:", error);
+        showError("Registration failed:", error);
         return false;
       } finally {
         this.isLoading = false;
@@ -88,12 +94,14 @@ export const useAuthStore = defineStore("auth", {
     async refreshAccessToken(): Promise<boolean> {
       try {
         if (!this.refreshToken) throw new Error("No refresh token available");
-        const response = await AuthService.refreshToken({ refresh: this.refreshToken });
+        const response = await AuthService.refreshToken({
+          refresh: this.refreshToken,
+        });
         this.setTokens(response.access, response.refresh);
         return true;
       } catch (error) {
         this.logout();
-        console.error("Token refresh failed:", error);
+        showError("Token refresh failed:", error);
         return false;
       }
     },
@@ -115,6 +123,6 @@ export const useAuthStore = defineStore("auth", {
       if (!this.accessToken) return false;
       const decoded = decodeJwt(this.accessToken);
       return decoded?.is_staff || false;
-    }
+    },
   },
 });

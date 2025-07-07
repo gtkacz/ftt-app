@@ -11,6 +11,9 @@ import 'vuetify/styles'
 // Custom styles
 import './styles/main.scss'
 
+// Custom plugins
+import errorSnackbarPlugin from '@/plugins/errorSnackbar'
+
 const pinia = createPinia()
 
 // Detect user's system theme preference
@@ -63,5 +66,6 @@ const app = createApp(App)
   .use(pinia)
   .use(router)
   .use(vuetify)
+  .use(errorSnackbarPlugin)
 
 app.mount('#app')

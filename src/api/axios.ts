@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import { useAuthStore } from "../stores/auth";
 
@@ -9,33 +9,52 @@ const api = axios.create({
 });
 
 // attach token on every request
-api.interceptors.request.use(cfg => {
+api.interceptors.request.use((cfg: AxiosRequestConfig) => {
   const token = localStorage.getItem("access_token");
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  if (token && cfg.headers) {
+    cfg.headers.Authorization = `Bearer ${token}`;
+  }
   return cfg;
 });
 
 // handle 401 + refresh + retry
-createAuthRefreshInterceptor(api, async (failedRequest) => {
-  const auth = useAuthStore();
-  await auth.refreshAccessToken();
-  failedRequest.response.config.headers.Authorization =
-    `Bearer ${auth.accessToken}`;
-  return Promise.resolve();
-}, {
-  // only attempt once per request
-  statusCodes: [401]
-});
+createAuthRefreshInterceptor(
+  api,
+  async (failedRequest) => {
+    const auth = useAuthStore();
+    await auth.refreshAccessToken();
+    failedRequest.response!.config.headers!['Authorization'] =
+      `Bearer ${auth.accessToken}`;
+    return Promise.resolve();
+  },
+  {
+    // only attempt once per request
+    statusCodes: [401],
+  }
+);
 
-// optional: global logout-on-failed-refresh
+// global response interceptor
 api.interceptors.response.use(
-  res => res,
-  err => {
-    if (err.response?.status === 401 && !err.config._retry) {
+  response => response,
+  (error: AxiosError) => {
+    const status = error.response?.status;
+
+    // On 401 without retry, logout and redirect
+    if (status === 401 && !(error.config as any)?._retry) {
       useAuthStore().logout();
-      window.location.href = "/login?redirect=" + encodeURIComponent(window.location.pathname);
+      window.location.href =
+        "/login?redirect=" + encodeURIComponent(window.location.pathname);
+      return Promise.reject(error);
     }
-    return Promise.reject(err);
+
+    // Rethrow all HTTP errors in 400 and 500 range
+    if (status && status >= 400 && status < 600) {
+      // You can customize error message or wrap error here
+      return Promise.reject(error);
+    }
+
+    // Non-HTTP or unknown errors
+    return Promise.reject(error);
   }
 );
 

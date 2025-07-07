@@ -17,24 +17,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, onErrorCaptured, ref } from "vue";
-import { useAuthStore } from "./stores/auth";
-import { useRouter, useRoute } from "vue-router";
-import AppLayout from './components/layout/AppLayout.vue';
 import axios from 'axios';
+import { getCurrentInstance, onErrorCaptured, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import AppLayout from './components/layout/AppLayout.vue';
+import { useAuthStore } from "./stores/auth";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-// Error snackbar state
-const errorSnackbar = ref({
-  show: false,
-  message: '',
-  timeout: 6000
-});
+const { proxy } = getCurrentInstance()!
+const errorSnackbar = proxy!.$errorSnackbar
 
-// Function to show error
 const showError = (message: string) => {
   errorSnackbar.value = {
     show: true,
@@ -47,7 +42,7 @@ const showError = (message: string) => {
 onErrorCaptured((error: Error) => {
   console.error('Global error caught:', error);
   showError(error.message || 'An unexpected error occurred');
-  
+
   // Return false to propagate the error
   return false;
 });
@@ -57,14 +52,14 @@ axios.interceptors.response.use(
   response => response,
   error => {
     console.error('Axios error:', error);
-    
+
     let message = 'An unexpected error occurred';
-    
+
     if (error.response) {
       // Server responded with error status
-      message = error.response.data?.message || 
-                error.response.data?.error || 
-                `Error: ${error.response.status} ${error.response.statusText}`;
+      message = error.response.data?.message ||
+        error.response.data?.error ||
+        `Error: ${error.response.status} ${error.response.statusText}`;
     } else if (error.request) {
       // Request made but no response
       message = 'Network error: No response from server';
@@ -72,9 +67,9 @@ axios.interceptors.response.use(
       // Something else happened
       message = error.message || message;
     }
-    
+
     showError(message);
-    
+
     // Re-throw the error so it can be handled by calling code
     return Promise.reject(error);
   }
