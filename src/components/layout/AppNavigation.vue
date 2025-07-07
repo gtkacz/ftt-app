@@ -64,7 +64,7 @@ const navigationGroups = [
       {
         icon: 'swap_horiz',
         label: 'Trades',
-        name: '404'
+        name: 'trades'
       },
     ]
   },

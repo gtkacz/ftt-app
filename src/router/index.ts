@@ -53,6 +53,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/501View.vue'),
   },
   {
+    path: '/trades',
+    name: 'trades',
+    component: () => import('../views/501View.vue'),
+  },
+  {
     path: '/admin',
     name: 'admin',
     component: () => import('../views/501View.vue'),
@@ -73,7 +78,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
 
