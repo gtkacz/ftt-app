@@ -36,7 +36,7 @@
         </v-card>
 
         <div class="text-center mt-4">
-          <span class="text-on-surface">Don't have an account? <router-link to="sign-up">Sign Up</router-link></span>
+          <span class="text-on-surface">Don't have an account? <router-link to="signup">Sign Up</router-link></span>
         </div>
       </v-col>
     </v-row>

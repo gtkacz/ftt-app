@@ -31,6 +31,7 @@ const vuetify = createVuetify({
           'on-surface': '#0F183E',
           'on-primary': '#FFFFFF',
           'on-secondary': '#FFFFFF',
+          'danger': '#E53935',
         },
       },
       dark: {
@@ -44,6 +45,7 @@ const vuetify = createVuetify({
           'on-surface': '#FFFFFF',
           'on-primary': '#FFFFFF',
           'on-secondary': '#FFFFFF',
+          'danger': '#E53935',
         },
       },
     },

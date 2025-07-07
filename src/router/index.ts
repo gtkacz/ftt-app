@@ -18,6 +18,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/signup",
+    name: "signup",
+    component: () => import("../views/SignUpView.vue"),
+    meta: {
+      title: "Signup - Fantasy Trash Talk",
+      requiresAuth: false,
+    },
+  },
+  {
     path: "/draft",
     name: "draft",
     component: () => import("../views/DraftView.vue"),

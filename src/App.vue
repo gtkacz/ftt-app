@@ -1,18 +1,84 @@
 <template>
   <v-app>
     <AppLayout />
+
+    <v-snackbar v-model="errorSnackbar.show" :timeout="errorSnackbar.timeout" color="danger" location="top" multi-line>
+      <v-icon icon="dangerous" class="mr-2" size="large" />
+      <span class="text-on-error">Error:</span>
+      {{ errorSnackbar.message }}
+
+      <template v-slot:actions>
+        <v-btn icon variant="text" @click="errorSnackbar.show = false">
+          <v-icon icon="close" />
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from "vue";
+import { onMounted, watch, onErrorCaptured, ref } from "vue";
 import { useAuthStore } from "./stores/auth";
 import { useRouter, useRoute } from "vue-router";
 import AppLayout from './components/layout/AppLayout.vue';
+import axios from 'axios';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+
+// Error snackbar state
+const errorSnackbar = ref({
+  show: false,
+  message: '',
+  timeout: 6000
+});
+
+// Function to show error
+const showError = (message: string) => {
+  errorSnackbar.value = {
+    show: true,
+    message,
+    timeout: 6000
+  };
+};
+
+// Global error handler for Vue errors
+onErrorCaptured((error: Error) => {
+  console.error('Global error caught:', error);
+  showError(error.message || 'An unexpected error occurred');
+  
+  // Return false to propagate the error
+  return false;
+});
+
+// Axios interceptor for HTTP errors
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('Axios error:', error);
+    
+    let message = 'An unexpected error occurred';
+    
+    if (error.response) {
+      // Server responded with error status
+      message = error.response.data?.message || 
+                error.response.data?.error || 
+                `Error: ${error.response.status} ${error.response.statusText}`;
+    } else if (error.request) {
+      // Request made but no response
+      message = 'Network error: No response from server';
+    } else {
+      // Something else happened
+      message = error.message || message;
+    }
+    
+    showError(message);
+    
+    // Re-throw the error so it can be handled by calling code
+    return Promise.reject(error);
+  }
+);
 
 // Watch for authentication state changes
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
