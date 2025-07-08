@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { User, UserRequest, PatchedUserRequest } from "../types/auth";
+import type { UserRequest, PatchedUserRequest } from "../types/auth";
 
 export const UserService = {
   async getUsers(page?: number) {

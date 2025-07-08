@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 import { UserService } from "../api/users";
-import type { User, UserRequest, PatchedUserRequest } from "../types/auth";
+import type { UserRecord, UserRequest, PatchedUserRequest } from "../types/auth";
 
 interface UserState {
-  users: User[];
-  currentUser: User | null;
+  users: UserRecord[];
+  currentUser: UserRecord | null;
   isLoading: boolean;
   error: string | null;
   pagination: {
@@ -164,11 +164,11 @@ export const useUserStore = defineStore("users", {
   },
 
   getters: {
-    adminUsers(state): User[] {
-      return state.users.filter(user => user.is_staff);
+    adminUsers(state): UserRecord[] {
+      return state.users.filter(user => user.is_admin);
     },
-    regularUsers(state): User[] {
-      return state.users.filter(user => !user.is_staff);
+    regularUsers(state): UserRecord[] {
+      return state.users.filter(user => !user.is_admin);
     },
     getUserById: (state) => (id: number) => {
       return state.users.find(user => user.id === id) || null;

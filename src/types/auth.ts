@@ -35,7 +35,7 @@ export interface RefreshTokenResponse {
   access: string;
 }
 
-export interface User {
+export interface UserRecord {
   id: number;
   username: string;
   email: string;
