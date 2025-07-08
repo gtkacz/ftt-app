@@ -8,6 +8,8 @@ export interface JwtPayload {
   email?: string;
   is_staff?: boolean;
   exp?: number;
+  is_active?: boolean;
+  is_approved?: boolean;
 }
 
 export function decodeJwt(token: string): JwtPayload | null {

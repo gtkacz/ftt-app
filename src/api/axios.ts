@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import { useAuthStore } from "../stores/auth";
 
@@ -8,10 +8,10 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// attach token on every request
-api.interceptors.request.use((cfg: AxiosRequestConfig) => {
+api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem("access_token");
-  if (token && cfg.headers) {
+  if (token) {
+    cfg.headers = cfg.headers || {};
     cfg.headers.Authorization = `Bearer ${token}`;
   }
   return cfg;

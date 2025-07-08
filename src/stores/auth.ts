@@ -31,16 +31,18 @@ export const useAuthStore = defineStore("auth", {
               last_name: decoded.last_name || '',
               email: decoded.email || '',
               is_staff: decoded.is_staff || false,
-            } : null;
-          } catch {
-            return null;
-          }
-        })()
-      : null,
-    accessToken: localStorage.getItem("access_token"),
-    refreshToken: localStorage.getItem("refresh_token"),
-    isLoading: false,
-  }),
+              is_active: decoded.is_active || false,
+              is_approved: decoded.is_approved || false,
+          } : null;
+        } catch {
+          return null;
+        }
+      })()
+    : null,
+  accessToken: localStorage.getItem("access_token"),
+  refreshToken: localStorage.getItem("refresh_token"),
+  isLoading: false,
+}),
 
   actions: {
     async login(data: LoginData): Promise<boolean> {
@@ -60,6 +62,8 @@ export const useAuthStore = defineStore("auth", {
           last_name: decoded.last_name!,
           email: decoded.email!,
           is_staff: decoded.is_staff!,
+          is_active: decoded.is_active!,
+          is_approved: decoded.is_approved!,
         };
         return true;
       } catch (error) {
@@ -100,6 +104,8 @@ export const useAuthStore = defineStore("auth", {
         last_name: decoded.last_name!,
         email: decoded.email!,
         is_staff: decoded.is_staff!,
+        is_active: decoded.is_active!,
+        is_approved: decoded.is_approved!,
         };
       }
     },
@@ -114,6 +120,7 @@ export const useAuthStore = defineStore("auth", {
       const response = await AuthService.refreshToken({
         refresh: this.refreshToken,
       });
+    
       this.setTokens(response.access, response.refresh);
       return true;
     } catch (error) {

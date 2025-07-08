@@ -29,6 +29,8 @@ export interface User {
   last_name: string;
   email: string;
   is_staff: boolean;
+  is_approved: boolean;
+  is_active: boolean;
 }
 
 export interface RefreshTokenResponse {
