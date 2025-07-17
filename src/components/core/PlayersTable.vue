@@ -1,16 +1,6 @@
 <template>
-	<v-container fluid>
-		<v-card class="pa-4 player-table">
-			<!-- Header with search -->
-			<v-card-title class="d-flex align-center pb-4">
-				<v-icon start icon="group" />
-				<span class="text-h5 font-weight-medium">Player Directory</span>
-				<v-spacer></v-spacer>
-				<v-text-field rounded v-model="search" prepend-inner-icon="search" label="Search players..." single-line
-					hide-details clearable density="compact" variant="outlined" class="search-field"
-					style="max-width: 400px"></v-text-field>
-			</v-card-title>
-
+	<v-container fluid class="pa-0">
+		<v-card class="pa-4 player-table" elevation="10">
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
 
@@ -18,6 +8,11 @@
 			<v-expand-transition>
 				<v-card-text v-if="!loading" class="pa-0">
 					<v-row class="mb-4">
+						<v-col cols="12" sm="6" md="3">
+							<v-text-field rounded v-model="search" prepend-inner-icon="search" label="Search players..."
+								single-line hide-details clearable density="compact" variant="outlined"
+								class="search-field" style="max-width: 400px"></v-text-field>
+						</v-col>
 						<v-col cols="12" sm="6" md="3">
 							<v-select rounded v-model="filters.team" :items="teams" label="Team" clearable
 								density="compact" variant="outlined" prepend-inner-icon="recent_actors" multiple chips
@@ -64,8 +59,8 @@
 								{{ item.first_name }} {{ item.last_name }}
 							</div>
 							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center gap-1">
-								<img src="https://cdn.nba.com/teams/uploads/sites/1610612752/2022/10/NYK2223-PRIMARY-LOGO.svg" style="width: 16px; height: 16px">
-								{{ item.real_team }}
+								<n-b-a-team-icon :team="item.real_team.abbreviation" size="16" />
+								{{ item.real_team.abbreviation }}
 							</div>
 						</div>
 					</div>
@@ -135,6 +130,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api/axios'
+import NBATeamIcon from '@/components/core/NBATeamIcon.vue'
 
 // State
 const players = ref([])

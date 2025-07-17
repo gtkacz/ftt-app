@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from 'vue-router';
 
@@ -70,12 +70,15 @@ const handleCreateTeam = async () => {
 	payload.append('name', teamName.value);
 	if (teamIcon.value) payload.append('icon', teamIcon.value);
 
-	const success = await authStore.createTeam(payload);
-	isLoading.value = false;
-
-	if (success) {
+	try {
+		await authStore.createTeam(payload);
 		router.push('/');
+	} catch (error) {
+		console.error('Failed to create team:', error);
+	} finally {
+		isLoading.value = false;
 	}
+	isLoading.value = false;
 };
 </script>
 
