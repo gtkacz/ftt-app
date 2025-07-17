@@ -39,5 +39,5 @@ export const UserService = {
   }) {
     const response = await api.get("/api/users/", { params });
     return response.data;
-  }
+  },
 };

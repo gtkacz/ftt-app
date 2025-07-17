@@ -4,7 +4,7 @@
       <div class="feature-icon">
         <v-icon :icon="icon" size="48" color="secondary" />
       </div>
-      
+
       <h3 class="feature-title">{{ title }}</h3>
       <p class="feature-description">{{ description }}</p>
     </v-card-text>
@@ -26,7 +26,7 @@ defineProps<Props>()
   height: 100%;
   transition: all 0.3s ease;
   border-radius: 12px;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);

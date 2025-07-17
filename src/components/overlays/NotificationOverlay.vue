@@ -1,79 +1,48 @@
 <template>
-  <v-overlay
-    v-model="showNotifications"
-    class="notification-overlay"
-    persistent
-    location-strategy="connected"
-    origin="top right"
-  >
-    <v-card
-      class="notification-card"
-      width="400"
-      max-height="500"
-    >
+  <v-overlay v-model="showNotifications" class="notification-overlay" persistent location-strategy="connected"
+    origin="top right">
+    <v-card class="notification-card" width="400" max-height="500">
       <v-card-title class="notification-header">
         <span>Notifications</span>
-        <v-btn
-          icon
-          variant="text"
-          size="small"
-          @click="closeNotifications"
-        >
+        <v-btn icon variant="text" size="small" @click="closeNotifications">
           <v-icon icon="close" />
         </v-btn>
       </v-card-title>
-      
+
       <v-divider />
-      
+
       <v-card-text class="notification-content">
         <div v-if="notifications.length === 0" class="no-notifications">
           <v-icon size="48" color="grey-lighten-1" icon="notifications_off" />
           <p>No new notifications</p>
         </div>
-        
+
         <div v-else class="notification-list">
-          <div
-            v-for="notification in notifications"
-            :key="notification.id"
-            class="notification-item"
-            :class="{ unread: !notification.read }"
-          >
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item"
+            :class="{ unread: !notification.read }">
             <div class="notification-icon">
               <v-icon :color="getIconColor(notification.type)" :icon="getIcon(notification.type)" />
             </div>
-            
+
             <div class="notification-content">
               <h4>{{ notification.title }}</h4>
               <p>{{ notification.message }}</p>
               <small>{{ formatTime(notification.timestamp) }}</small>
             </div>
-            
-            <v-btn
-              v-if="!notification.read"
-              icon
-              variant="text"
-              size="small"
-              @click="markAsRead(notification.id)"
-            >
+
+            <v-btn v-if="!notification.read" icon variant="text" size="small" @click="markAsRead(notification.id)">
               <v-icon class="check" />
             </v-btn>
           </div>
         </div>
       </v-card-text>
-      
+
       <v-card-actions v-if="notifications.length > 0">
-        <v-btn
-          variant="text"
-          @click="markAllAsRead"
-          :disabled="!hasUnreadNotifications"
-        >
+        <v-btn variant="text" @click="markAllAsRead" :disabled="!hasUnreadNotifications">
           Mark all as read
         </v-btn>
         <v-spacer />
-        <v-btn
-          variant="text"
-          @click="clearAll"
-        >
+        <v-btn variant="text" @click="clearAll">
           Clear all
         </v-btn>
       </v-card-actions>
@@ -133,7 +102,7 @@ const notifications = ref<Notification[]>([
   },
 ])
 
-const hasUnreadNotifications = computed(() => 
+const hasUnreadNotifications = computed(() =>
   notifications.value.some(n => !n.read)
 )
 
@@ -180,7 +149,7 @@ const formatTime = (timestamp: Date) => {
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
-  
+
   if (days > 0) return `${days}d ago`
   if (hours > 0) return `${hours}h ago`
   if (minutes > 0) return `${minutes}m ago`
@@ -205,7 +174,7 @@ const formatTime = (timestamp: Date) => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  
+
   span {
     font-size: 18px;
     font-weight: 600;
@@ -225,7 +194,7 @@ const formatTime = (timestamp: Date) => {
   justify-content: center;
   padding: 40px 20px;
   color: rgb(var(--v-theme-on-surface));
-  
+
   p {
     margin-top: 16px;
     font-size: 16px;
@@ -243,16 +212,16 @@ const formatTime = (timestamp: Date) => {
   padding: 16px 20px;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   transition: background-color 0.2s ease;
-  
+
   &:hover {
     background-color: rgba(var(--v-theme-on-surface), 0.04);
   }
-  
+
   &.unread {
     background-color: rgba(var(--v-theme-secondary), 0.05);
     border-left: 4px solid rgb(var(--v-theme-secondary));
   }
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -265,21 +234,21 @@ const formatTime = (timestamp: Date) => {
 
 .notification-content {
   flex: 1;
-  
+
   h4 {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 4px;
     color: rgb(var(--v-theme-on-surface));
   }
-  
+
   p {
     font-size: 13px;
     color: rgb(var(--v-theme-on-surface));
     margin-bottom: 8px;
     line-height: 1.4;
   }
-  
+
   small {
     font-size: 12px;
     color: rgb(var(--v-theme-on-surface));

@@ -152,11 +152,19 @@ router.beforeEach(async (to, from, next) => {
           next("/approval");
           return;
         }
-        if (authStore.user?.is_approved && !authStore.user?.team && to.name !== "create-team") {
+        if (
+          authStore.user?.is_approved &&
+          !authStore.user?.team &&
+          to.name !== "create-team"
+        ) {
           next("/create-team");
           return;
         }
-        if (authStore.user?.is_approved && !!authStore.user?.team && to.name === "create-team") {
+        if (
+          authStore.user?.is_approved &&
+          !!authStore.user?.team &&
+          to.name === "create-team"
+        ) {
           next("/");
           return;
         }

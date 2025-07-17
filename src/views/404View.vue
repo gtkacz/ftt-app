@@ -38,13 +38,13 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  
+
   h2 {
     margin: 24px 0 16px;
     font-size: 1.8rem;
     color: rgb(var(--v-theme-on-surface));
   }
-  
+
   p {
     color: rgb(var(--v-theme-on-surface));
     font-size: 1.1rem;

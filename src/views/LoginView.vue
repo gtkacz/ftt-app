@@ -77,5 +77,4 @@ const handleLogin = async () => {
   background-color: transparent;
   border: 1px solid rgb(var(--v-theme-on-surface));
 }
-
 </style>

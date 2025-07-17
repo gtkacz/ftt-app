@@ -4,7 +4,7 @@
       <h1 class="page-title">Settings</h1>
       <p class="page-subtitle">Configure your preferences</p>
     </div>
-    
+
     <div class="coming-soon">
       <v-icon size="80" color="secondary" icon="settings" />
       <h2>Settings Coming Soon</h2>
@@ -45,13 +45,13 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  
+
   h2 {
     margin: 24px 0 16px;
     font-size: 1.8rem;
     color: rgb(var(--v-theme-on-surface));
   }
-  
+
   p {
     color: rgb(var(--v-theme-on-surface));
     font-size: 1.1rem;

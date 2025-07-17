@@ -23,8 +23,9 @@ createAuthRefreshInterceptor(
   async (failedRequest) => {
     const auth = useAuthStore();
     await auth.refreshAccessToken();
-    failedRequest.response!.config.headers!['Authorization'] =
-      `Bearer ${auth.accessToken}`;
+    failedRequest.response!.config.headers![
+      "Authorization"
+    ] = `Bearer ${auth.accessToken}`;
     return Promise.resolve();
   },
   {
@@ -34,7 +35,7 @@ createAuthRefreshInterceptor(
 );
 
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error: AxiosError) => {
     const status = error.response?.status;
     const authStore = useAuthStore();
@@ -46,7 +47,9 @@ api.interceptors.response.use(
     if (authStore.isAuthenticated) {
       authStore.logout();
       setTimeout(() => {
-        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        window.location.href = `/login?redirect=${encodeURIComponent(
+          window.location.pathname
+        )}`;
       }, 0);
     }
 

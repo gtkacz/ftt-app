@@ -4,7 +4,7 @@
       <h1 class="page-title">501 - Not Implemented</h1>
       <p class="page-subtitle">Sorry, this page has not yet been implemented.</p>
     </div>
-    
+
     <div class="coming-soon">
       <v-icon size="80" color="secondary" icon="build" />
       <h2>Under Construction</h2>
@@ -44,13 +44,13 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  
+
   h2 {
     margin: 24px 0 16px;
     font-size: 1.8rem;
     color: rgb(var(--v-theme-on-surface));
   }
-  
+
   p {
     color: rgb(var(--v-theme-on-surface));
     font-size: 1.1rem;

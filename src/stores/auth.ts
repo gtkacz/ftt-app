@@ -19,7 +19,7 @@ interface AuthState {
 export const useAuthStore = defineStore("auth", {
   persist: true,
   state: (): AuthState => ({
-    user: localStorage.getItem("user") 
+    user: localStorage.getItem("user")
       ? JSON.parse(localStorage.getItem("user")!)
       : null,
     accessToken: localStorage.getItem("access_token"),
@@ -33,11 +33,11 @@ export const useAuthStore = defineStore("auth", {
       try {
         this.isLoading = true;
         const response = await AuthService.login(data);
-        
+
         this.setTokens(response.access, response.refresh);
-        
+
         this.setUser(response.user);
-        
+
         return true;
       } catch (error) {
         showError("Login failed:", error);
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore("auth", {
     setTokens(access: string, refresh?: string): void {
       this.accessToken = access;
       localStorage.setItem("access_token", access);
-      
+
       if (refresh) {
         this.refreshToken = refresh;
         localStorage.setItem("refresh_token", refresh);
@@ -107,11 +107,11 @@ export const useAuthStore = defineStore("auth", {
           this.logout();
           return false;
         }
-      
+
         const response = await AuthService.refreshToken({
           refresh: this.refreshToken,
         });
-      
+
         this.setTokens(response.access, response.refresh);
         return true;
       } catch (error) {

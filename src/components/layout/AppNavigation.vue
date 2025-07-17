@@ -14,7 +14,8 @@
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.name }" :expanded="isHovered" :admin_only="item.admin_only ?? false" :disabled="item.disabled ?? false" />
+            :to="{ name: item.name }" :expanded="isHovered" :admin_only="item.admin_only ?? false"
+            :disabled="item.disabled ?? false" />
         </div>
       </div>
     </div>
@@ -285,7 +286,7 @@ const handleMouseLeave = () => {
   }
 }
 
-.nav-footer{
+.nav-footer {
   width: 100%;
   text-align: center;
   color: rgba(255, 255, 255, 0.35);

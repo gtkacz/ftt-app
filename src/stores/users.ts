@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { UserService } from "../api/users";
-import type { UserRecord, UserRequest, PatchedUserRequest } from "../types/auth";
+import type {
+  UserRecord,
+  UserRequest,
+  PatchedUserRequest,
+} from "../types/auth";
 
 interface UserState {
   users: UserRecord[];
@@ -23,8 +27,8 @@ export const useUserStore = defineStore("users", {
     pagination: {
       count: 0,
       next: null,
-      previous: null
-    }
+      previous: null,
+    },
   }),
 
   actions: {
@@ -36,7 +40,7 @@ export const useUserStore = defineStore("users", {
         this.pagination = {
           count: data.count,
           next: data.next,
-          previous: data.previous
+          previous: data.previous,
         };
       } catch (error) {
         this.error = "Failed to fetch users";
@@ -77,7 +81,7 @@ export const useUserStore = defineStore("users", {
       try {
         this.isLoading = true;
         const updatedUser = await UserService.updateUser(id, userData);
-        const index = this.users.findIndex(u => u.id === id);
+        const index = this.users.findIndex((u) => u.id === id);
         if (index !== -1) {
           this.users.splice(index, 1, updatedUser);
         }
@@ -98,7 +102,7 @@ export const useUserStore = defineStore("users", {
       try {
         this.isLoading = true;
         const updatedUser = await UserService.partialUpdateUser(id, userData);
-        const index = this.users.findIndex(u => u.id === id);
+        const index = this.users.findIndex((u) => u.id === id);
         if (index !== -1) {
           this.users.splice(index, 1, updatedUser);
         }
@@ -119,7 +123,7 @@ export const useUserStore = defineStore("users", {
       try {
         this.isLoading = true;
         await UserService.deleteUser(id);
-        this.users = this.users.filter(u => u.id !== id);
+        this.users = this.users.filter((u) => u.id !== id);
         if (this.currentUser?.id === id) {
           this.currentUser = null;
         }
@@ -144,7 +148,7 @@ export const useUserStore = defineStore("users", {
         this.pagination = {
           count: data.count,
           next: data.next,
-          previous: data.previous
+          previous: data.previous,
         };
       } catch (error) {
         this.error = "Failed to search users";
@@ -160,18 +164,18 @@ export const useUserStore = defineStore("users", {
 
     clearError() {
       this.error = null;
-    }
+    },
   },
 
   getters: {
     adminUsers(state): UserRecord[] {
-      return state.users.filter(user => user.is_admin);
+      return state.users.filter((user) => user.is_admin);
     },
     regularUsers(state): UserRecord[] {
-      return state.users.filter(user => !user.is_admin);
+      return state.users.filter((user) => !user.is_admin);
     },
     getUserById: (state) => (id: number) => {
-      return state.users.find(user => user.id === id) || null;
+      return state.users.find((user) => user.id === id) || null;
     },
     hasNextPage(state): boolean {
       return !!state.pagination.next;
@@ -181,6 +185,6 @@ export const useUserStore = defineStore("users", {
     },
     totalUsers(state): number {
       return state.pagination.count;
-    }
-  }
+    },
+  },
 });

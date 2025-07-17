@@ -23,13 +23,13 @@
                   :rules="[rules.required]" class="mb-3" color="secondary" />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field rounded v-model="lastName" label="Last Name" variant="outlined" append-inner-icon="fingerprint"
-                  :rules="[rules.required]" class="mb-3" color="secondary" />
+                <v-text-field rounded v-model="lastName" label="Last Name" variant="outlined"
+                  append-inner-icon="fingerprint" :rules="[rules.required]" class="mb-3" color="secondary" />
               </v-col>
             </v-row>
 
-            <v-text-field rounded v-model="email" label="Email" type="email" variant="outlined" append-inner-icon="email"
-              :rules="[rules.required, rules.email]" class="mb-3" color="secondary" />
+            <v-text-field rounded v-model="email" label="Email" type="email" variant="outlined"
+              append-inner-icon="email" :rules="[rules.required, rules.email]" class="mb-3" color="secondary" />
 
             <v-row>
               <v-col cols="12" sm="6">
@@ -37,9 +37,9 @@
                   append-inner-icon="lock" :rules="[rules.required, rules.min(8)]" class="mb-3" color="secondary" />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field rounded v-model="passwordConfirm" label="Confirm Password" type="password" variant="outlined"
-                  append-inner-icon="lock" :rules="[rules.required, rules.passwordMatch]" class="mb-6"
-                  color="secondary" />
+                <v-text-field rounded v-model="passwordConfirm" label="Confirm Password" type="password"
+                  variant="outlined" append-inner-icon="lock" :rules="[rules.required, rules.passwordMatch]"
+                  class="mb-6" color="secondary" />
               </v-col>
             </v-row>
 

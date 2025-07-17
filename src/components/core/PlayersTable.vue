@@ -1,48 +1,112 @@
 <template>
 	<v-container fluid class="pa-0">
-		<v-card class="pa-4 player-table" elevation="10">
+		<v-card class="pa-4 bg-surface-variant" elevation="10">
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
 
 			<!-- Filters and Column Settings -->
 			<v-expand-transition>
 				<v-card-text v-if="!loading" class="pa-0">
-					<v-row class="mb-4">
-						<v-col cols="12" sm="6" md="3">
+					<v-row class="mb-4" align="center">
+						<!-- Search bar - 75% width -->
+						<v-col cols="9">
 							<v-text-field rounded v-model="search" prepend-inner-icon="search" label="Search players..."
 								single-line hide-details clearable density="compact" variant="outlined"
-								class="search-field" style="max-width: 400px"></v-text-field>
+								class="search-field"></v-text-field>
 						</v-col>
-						<v-col cols="12" sm="6" md="3">
-							<v-select rounded v-model="filters.team" :items="teams" label="Team" clearable
-								density="compact" variant="outlined" prepend-inner-icon="recent_actors" multiple chips
-								closable-chips></v-select>
-						</v-col>
-						<v-col cols="12" sm="6" md="3">
-							<v-select rounded v-model="filters.realTeam" :items="realTeams" label="NBA Team" clearable
-								density="compact" variant="outlined" prepend-inner-icon="sports_basketball" multiple
-								chips closable-chips></v-select>
-						</v-col>
-						<v-col cols="12" sm="6" md="3">
-							<v-select rounded v-model="filters.position" :items="positions" label="Position" clearable
-								density="compact" variant="outlined" prepend-inner-icon="sports_basketball" multiple
-								chips closable-chips></v-select>
-						</v-col>
-						<v-col cols="12" sm="6" md="3">
-							<v-select rounded v-model="filters.status" :items="statuses" label="Status" clearable
-								density="compact" variant="outlined" prepend-inner-icon="info" multiple chips
-								closable-chips></v-select>
-						</v-col>
-						<v-col cols="12" sm="6" md="3">
-							<v-btn @click="clearFilters" variant="text" prepend-icon="filter_alt_off"
-								:disabled="!hasActiveFilters">
-								Clear Filters
-							</v-btn>
-						</v-col>
-						<v-col cols="12" sm="6" md="3" class="text-right">
-							<v-btn @click="columnDialog = true" variant="text" prepend-icon="view_column">
-								Manage Columns
-							</v-btn>
+
+						<!-- Icon buttons - 25% width -->
+						<v-col cols="3" class="d-flex justify-end gap-2">
+							<!-- Filter button with menu -->
+							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
+								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+									<v-btn v-bind="props" icon variant="outlined" size="small"
+										:color="hasActiveFilters ? 'primary' : undefined">
+										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
+											color="error">
+											<v-icon icon="filter_list" />
+										</v-badge>
+									</v-btn>
+								</template>
+								<v-card min-width="500" density="comfortable" class="pa-4">
+									<template v-slot:title class="text-h6">Filters</template>
+									<template v-slot:append><v-btn variant="text" icon @click="filterMenu = false"
+											size="small"><v-icon icon="close" /></v-btn></template>
+									<v-divider />
+									<v-card-text>
+										<v-row>
+											<v-col cols="12">
+												<v-select rounded v-model="filters.team" :items="teams" label="Team"
+													clearable density="compact" variant="outlined"
+													prepend-inner-icon="recent_actors" multiple chips
+													closable-chips></v-select>
+											</v-col>
+											<v-col cols="12">
+												<v-select rounded v-model="filters.realTeam" :items="realTeams"
+													label="NBA Team" clearable density="compact" variant="outlined"
+													prepend-inner-icon="sports_basketball" multiple chips
+													closable-chips></v-select>
+											</v-col>
+											<v-col cols="12">
+												<v-select rounded v-model="filters.position" :items="positions"
+													label="Position" clearable density="compact" variant="outlined"
+													prepend-inner-icon="sports_basketball" multiple chips
+													closable-chips></v-select>
+											</v-col>
+											<v-col cols="12">
+												<v-select rounded v-model="filters.status" :items="statuses"
+													label="Status" clearable density="compact" variant="outlined"
+													prepend-inner-icon="info" multiple chips closable-chips></v-select>
+											</v-col>
+										</v-row>
+									</v-card-text>
+									<v-card-actions>
+										<v-spacer></v-spacer>
+										<v-btn @click="clearFilters" icon variant="outlined" size="small"
+											:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
+											<v-icon icon="filter_alt_off" />
+										</v-btn>
+									</v-card-actions>
+								</v-card>
+							</v-menu>
+
+							<!-- Manage columns button -->
+							<v-menu v-model="columnDialog" max-width="500" transition="fade-transition"
+								:close-on-content-click="false" location="bottom">
+								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+									<v-btn v-bind="props" icon variant="outlined" size="small"
+										:color="hasActiveFilters ? 'primary' : undefined">
+										<v-icon icon="view_column" />
+									</v-btn>
+								</template>
+								<v-card min-width="500" density="comfortable" class="pa-4">
+									<v-card-title>Manage Columns</v-card-title>
+									<v-divider />
+									<v-card-text>
+										<v-list>
+											<v-list-item v-for="(header, index) in editableHeaders" :key="header.key"
+												:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'">
+												<template v-slot:prepend>
+													<v-icon v-if="header.key !== 'player'" @mousedown="startDrag(index)"
+														style="cursor: move;">drag_handle</v-icon>
+													<v-icon v-else>lock</v-icon>
+												</template>
+												<v-list-item-title>{{ header.title }}</v-list-item-title>
+												<template v-slot:append>
+													<v-checkbox v-model="header.visible"
+														:disabled="header.key === 'player'" hide-details
+														density="compact"></v-checkbox>
+												</template>
+											</v-list-item>
+										</v-list>
+									</v-card-text>
+									<v-card-actions>
+										<v-spacer></v-spacer>
+										<v-btn icon variant="outlined" @click="saveColumnSettings" color="success"
+											size="small"><v-icon icon="check" /></v-btn>
+									</v-card-actions>
+								</v-card>
+							</v-menu>
 						</v-col>
 					</v-row>
 				</v-card-text>
@@ -50,8 +114,10 @@
 
 			<!-- Data table -->
 			<v-data-table v-if="!loading" :headers="activeHeaders" :items="filteredPlayers" :search="search"
-				:custom-filter="customSearch" :sort-by="[{ key: 'last_name', order: 'asc' }]" fixed-header
-				density="comfortable" class="elevation-1" hide-no-data hover sort-asc-icon="arrow_drop_up"
+				:custom-filter="customSearch" :sort-by="[{ key: 'last_name', order: 'asc' }]" fixed-header fixed-footer
+				height="calc(100vh - 200px)" :loading="loading" :no-data-text="'No players found'"
+				:no-results-text="'No matching players'" density="comfortable"
+				class="elevation-1 pa-4 bg-surface-variant" hide-no-data hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
 				@click:row="(event, { item }) => viewPlayer(item)">
 
@@ -68,7 +134,7 @@
 						</v-avatar>
 						<div>
 							<div class="font-weight-medium">
-								{{ item.first_name }} {{ item.last_name }}
+								{{ item.last_name }}, {{ item.first_name }}
 							</div>
 							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center gap-1">
 								<nba-team-icon :team="item.real_team.abbreviation" :size="16" />
@@ -142,13 +208,13 @@
 										class="items-per-page-select" />
 									<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
 										density="compact">
-										<v-icon>first_page</v-icon>
+										<v-icon icon="first_page" />
 									</v-btn>
 									<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
 										:total-visible="5" density="compact" rounded />
 									<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount"
 										:icon="true" density="compact">
-										<v-icon>last_page</v-icon>
+										<v-icon icon="last_page" />
 									</v-btn>
 								</v-row>
 							</v-col>
@@ -162,35 +228,6 @@
 				{{ error }}
 			</v-alert>
 		</v-card>
-
-		<!-- Column Management Dialog -->
-		<v-dialog v-model="columnDialog" max-width="500">
-			<v-card>
-				<v-card-title>Manage Columns</v-card-title>
-				<v-card-text>
-					<v-list>
-						<v-list-item v-for="(header, index) in editableHeaders" :key="header.key"
-							:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'">
-							<template v-slot:prepend>
-								<v-icon v-if="header.key !== 'player'" @mousedown="startDrag(index)"
-									style="cursor: move;">drag_handle</v-icon>
-								<v-icon v-else>lock</v-icon>
-							</template>
-							<v-list-item-title>{{ header.title }}</v-list-item-title>
-							<template v-slot:append>
-								<v-checkbox v-model="header.visible" :disabled="header.key === 'player'" hide-details
-									density="compact"></v-checkbox>
-							</template>
-						</v-list-item>
-					</v-list>
-				</v-card-text>
-				<v-card-actions>
-					<v-spacer></v-spacer>
-					<v-btn variant="text" @click="columnDialog = false">Cancel</v-btn>
-					<v-btn variant="tonal" @click="saveColumnSettings">Save</v-btn>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
 	</v-container>
 </template>
 
@@ -207,6 +244,7 @@ const search = ref('')
 const itemsPerPage = ref(25)
 const page = ref(1)
 const columnDialog = ref(false)
+const filterMenu = ref(false)
 const draggedIndex = ref(null)
 const filters = ref({
 	team: [],
@@ -353,6 +391,13 @@ const hasActiveFilters = computed(() => {
 		filters.value.realTeam.length > 0 ||
 		filters.value.position.length > 0 ||
 		filters.value.status.length > 0
+})
+
+const activeFilterCount = computed(() => {
+	return filters.value.team.length +
+		filters.value.realTeam.length +
+		filters.value.position.length +
+		filters.value.status.length
 })
 
 // Pagination computed values

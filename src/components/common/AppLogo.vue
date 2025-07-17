@@ -1,6 +1,6 @@
 <template>
   <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true"
-    alt="Fantasy Trash Talk" :class="{ 'app-logo' : isReactive }" :style="{ width: logoSize, height: logoSize }" />
+    alt="Fantasy Trash Talk" :class="{ 'app-logo': isReactive }" :style="{ width: logoSize, height: logoSize }" />
 </template>
 
 <script setup lang="ts">

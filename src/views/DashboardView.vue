@@ -1,29 +1,17 @@
 <template>
   <div class="home-view">
     <div class="features-grid">
-      <FeatureCard
-        icon="account-group"
-        title="Dynasty Management"
-        description="Build and manage your long-term dynasty roster with strategic depth"
-      />
-      
-      <FeatureCard
-        icon="assignment-text"
-        title="Advanced Draft Tools"
-        description="Comprehensive draft board with real-time updates and analytics"
-      />
-      
-      <FeatureCard
-        icon="chart-line"
-        title="Player Analytics"
-        description="Deep dive into player statistics and performance metrics"
-      />
-      
-      <FeatureCard
-        icon="trophy"
-        title="Championship Ready"
-        description="Tools and insights to help you win your dynasty league"
-      />
+      <FeatureCard icon="account-group" title="Dynasty Management"
+        description="Build and manage your long-term dynasty roster with strategic depth" />
+
+      <FeatureCard icon="assignment-text" title="Advanced Draft Tools"
+        description="Comprehensive draft board with real-time updates and analytics" />
+
+      <FeatureCard icon="chart-line" title="Player Analytics"
+        description="Deep dive into player statistics and performance metrics" />
+
+      <FeatureCard icon="trophy" title="Championship Ready"
+        description="Tools and insights to help you win your dynasty league" />
     </div>
   </div>
 </template>

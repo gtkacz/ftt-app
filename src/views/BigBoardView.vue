@@ -4,7 +4,7 @@
       <h1 class="page-title">Big Board</h1>
       <p class="page-subtitle">Player rankings and analytics</p>
     </div>
-    
+
     <div class="coming-soon">
       <v-icon size="80" color="secondary" icon="dashboard" />
       <h2>Big Board Coming Soon</h2>
@@ -45,13 +45,13 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  
+
   h2 {
     margin: 24px 0 16px;
     font-size: 1.8rem;
     color: rgb(var(--v-theme-on-surface));
   }
-  
+
   p {
     color: rgb(var(--v-theme-on-surface));
     font-size: 1.1rem;
