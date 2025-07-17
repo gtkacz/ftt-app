@@ -4,7 +4,7 @@
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
 
-			<!-- Filters -->
+			<!-- Filters and Column Settings -->
 			<v-expand-transition>
 				<v-card-text v-if="!loading" class="pa-0">
 					<v-row class="mb-4">
@@ -17,6 +17,11 @@
 							<v-select rounded v-model="filters.team" :items="teams" label="Team" clearable
 								density="compact" variant="outlined" prepend-inner-icon="recent_actors" multiple chips
 								closable-chips></v-select>
+						</v-col>
+						<v-col cols="12" sm="6" md="3">
+							<v-select rounded v-model="filters.realTeam" :items="realTeams" label="NBA Team" clearable
+								density="compact" variant="outlined" prepend-inner-icon="sports_basketball" multiple
+								chips closable-chips></v-select>
 						</v-col>
 						<v-col cols="12" sm="6" md="3">
 							<v-select rounded v-model="filters.position" :items="positions" label="Position" clearable
@@ -34,15 +39,22 @@
 								Clear Filters
 							</v-btn>
 						</v-col>
+						<v-col cols="12" sm="6" md="3" class="text-right">
+							<v-btn @click="columnDialog = true" variant="text" prepend-icon="view_column">
+								Manage Columns
+							</v-btn>
+						</v-col>
 					</v-row>
 				</v-card-text>
 			</v-expand-transition>
 
 			<!-- Data table -->
-			<v-data-table v-if="!loading" :headers="headers" :items="filteredPlayers" :search="search"
-				:sort-by="[{ key: 'last_name', order: 'asc' }]" fixed-header density="comfortable" class="elevation-1"
-				hide-no-data hover multi-sort sort-asc-icon="arrow_drop_up" sort-desc-icon="arrow_drop_down"
-				:items-per-page="itemsPerPage" @click:row="(event, { item }) => viewPlayer(item)">
+			<v-data-table v-if="!loading" :headers="activeHeaders" :items="filteredPlayers" :search="search"
+				:custom-filter="customSearch" :sort-by="[{ key: 'last_name', order: 'asc' }]" fixed-header
+				density="comfortable" class="elevation-1" hide-no-data hover sort-asc-icon="arrow_drop_up"
+				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
+				@click:row="(event, { item }) => viewPlayer(item)">
+
 				<!-- Player photo and name -->
 				<template v-slot:item.player="{ item }">
 					<div class="d-flex align-center py-2">
@@ -59,7 +71,7 @@
 								{{ item.first_name }} {{ item.last_name }}
 							</div>
 							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center gap-1">
-								<n-b-a-team-icon :team="item.real_team.abbreviation" size="16" />
+								<nba-team-icon :team="item.real_team.abbreviation" size="16" />
 								{{ item.real_team.abbreviation }}
 							</div>
 						</div>
@@ -111,11 +123,22 @@
 				<!-- Pagination footer -->
 				<template v-slot:bottom>
 					<v-divider />
-					<div class="d-flex align-center justify-end pa-2">
-						<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
-							:item-title="item => item === -1 ? 'All' : item" label="Items per page" density="compact"
-							variant="outlined" hide-details class="items-per-page-select"></v-select>
-					</div>
+					<v-container class="pa-2 mt-2">
+						<v-row justify="space-between" align="center">
+							<v-col cols="auto">
+								<span class="text-caption">
+									Showing {{ paginationText }}
+								</span>
+							</v-col>
+							<v-col cols="auto" class="d-flex gap-2">
+								<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
+									:item-title="item => item === -1 ? 'All' : item" label="Items per page"
+									density="compact" variant="outlined" hide-details class="items-per-page-select" />
+								<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount" :total-visible="5"
+									density="compact" rounded />
+							</v-col>
+						</v-row>
+					</v-container>
 				</template>
 			</v-data-table>
 
@@ -124,13 +147,42 @@
 				{{ error }}
 			</v-alert>
 		</v-card>
+
+		<!-- Column Management Dialog -->
+		<v-dialog v-model="columnDialog" max-width="500">
+			<v-card>
+				<v-card-title>Manage Columns</v-card-title>
+				<v-card-text>
+					<v-list>
+						<v-list-item v-for="(header, index) in editableHeaders" :key="header.key"
+							:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'">
+							<template v-slot:prepend>
+								<v-icon v-if="header.key !== 'player'" @mousedown="startDrag(index)"
+									style="cursor: move;">drag_handle</v-icon>
+								<v-icon v-else>lock</v-icon>
+							</template>
+							<v-list-item-title>{{ header.title }}</v-list-item-title>
+							<template v-slot:append>
+								<v-checkbox v-model="header.visible" :disabled="header.key === 'player'" hide-details
+									density="compact"></v-checkbox>
+							</template>
+						</v-list-item>
+					</v-list>
+				</v-card-text>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn variant="text" @click="columnDialog = false">Cancel</v-btn>
+					<v-btn variant="tonal" @click="saveColumnSettings">Save</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 	</v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api/axios'
-import NBATeamIcon from '@/components/core/NBATeamIcon.vue'
+import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
 
 // State
 const players = ref([])
@@ -138,52 +190,83 @@ const loading = ref(true)
 const error = ref(null)
 const search = ref('')
 const itemsPerPage = ref(25)
+const page = ref(1)
+const columnDialog = ref(false)
+const draggedIndex = ref(null)
 const filters = ref({
 	team: [],
+	realTeam: [],
 	position: [],
 	status: []
 })
 
-// Table headers
-const headers = [
+// Column configuration
+const allHeaders = ref([
 	{
 		title: 'Player',
 		key: 'player',
 		value: 'last_name',
 		sortable: true,
-		width: '300px'
+		width: '300px',
+		visible: true,
+		locked: true
 	},
 	{
 		title: 'Position',
 		key: 'primary_position',
 		align: 'center',
-		width: '120px'
+		width: '120px',
+		visible: true
 	},
 	{
 		title: 'Team',
 		key: 'team',
-		width: '150px'
+		width: '150px',
+		visible: true
 	},
 	{
 		title: 'Salary',
 		key: 'salary',
 		align: 'end',
-		width: '120px'
+		width: '120px',
+		visible: true
 	},
 	{
 		title: 'Status',
 		key: 'status',
 		align: 'center',
-		width: '120px'
+		width: '120px',
+		visible: true
 	}
-]
+])
+
+const editableHeaders = ref([])
+
+// Computed headers based on visibility
+const activeHeaders = computed(() => {
+	return allHeaders.value.filter(h => h.visible)
+})
+
+// Custom search function to include first name
+const customSearch = (value: any, search: string, item: any) => {
+	if (!search) return true
+	const searchLower = search.toLowerCase()
+	const fullName = `${item.first_name} ${item.last_name}`.toLowerCase()
+	return fullName.includes(searchLower)
+}
 
 // Computed filter options
 const teams = computed(() => {
 	const uniqueTeams = [...new Set(players.value.map(p => p.team).filter(Boolean))]
 	const sortedTeams = uniqueTeams.sort()
-	// Add Free Agent option at the beginning
 	return [{ title: 'Free Agent', value: 'FREE_AGENT' }, ...sortedTeams]
+})
+
+const realTeams = computed(() => {
+	const uniqueRealTeams = [...new Set(players.value
+		.map(p => p.real_team?.abbreviation)
+		.filter(Boolean))]
+	return uniqueRealTeams.sort()
 })
 
 const positions = computed(() => {
@@ -198,7 +281,9 @@ const positions = computed(() => {
 const statuses = [
 	{ title: 'Restricted Free Agent', value: 'rfa' },
 	{ title: 'Team Option', value: 'to' },
-	{ title: 'Injured Reserve', value: 'ir' }
+	{ title: 'Injured Reserve', value: 'ir' },
+	{ title: 'In the NBA', value: 'in_nba' },
+	{ title: 'Out of the NBA', value: 'out_of_nba' }
 ]
 
 // Computed filtered players
@@ -212,6 +297,13 @@ const filteredPlayers = computed(() => {
 				return !p.team || filters.value.team.includes(p.team)
 			}
 			return filters.value.team.includes(p.team)
+		})
+	}
+
+	// Apply real team filters
+	if (filters.value.realTeam.length > 0) {
+		result = result.filter(p => {
+			return p.real_team && filters.value.realTeam.includes(p.real_team.abbreviation)
 		})
 	}
 
@@ -231,6 +323,8 @@ const filteredPlayers = computed(() => {
 					case 'rfa': return p.is_rfa
 					case 'to': return p.is_to
 					case 'ir': return p.is_ir
+					case 'in_nba': return p.real_team
+					case 'out_of_nba': return !p.real_team
 					default: return false
 				}
 			})
@@ -242,8 +336,25 @@ const filteredPlayers = computed(() => {
 
 const hasActiveFilters = computed(() => {
 	return filters.value.team.length > 0 ||
+		filters.value.realTeam.length > 0 ||
 		filters.value.position.length > 0 ||
 		filters.value.status.length > 0
+})
+
+// Pagination computed values
+const pageCount = computed(() => {
+	if (itemsPerPage.value === -1) return 1
+	return Math.ceil(filteredPlayers.value.length / itemsPerPage.value)
+})
+
+const paginationText = computed(() => {
+	const total = filteredPlayers.value.length
+	if (total === 0) return '0 of 0 entries'
+	if (itemsPerPage.value === -1) return `${total} of ${total} entries`
+
+	const start = (page.value - 1) * itemsPerPage.value + 1
+	const end = Math.min(page.value * itemsPerPage.value, total)
+	return `${start}-${end} of ${total} entries`
 })
 
 // Methods
@@ -274,6 +385,7 @@ const formatCurrency = (amount) => {
 const clearFilters = () => {
 	filters.value = {
 		team: [],
+		realTeam: [],
 		position: [],
 		status: []
 	}
@@ -285,15 +397,60 @@ const viewPlayer = (player) => {
 	// Example: router.push(`/players/${player.id}`)
 }
 
-// Lifecycle
+// Column management
+const startDrag = (index: number) => {
+	if (editableHeaders.value[index].key === 'player') return
+	draggedIndex.value = index
+
+	const onMouseMove = (e: MouseEvent) => {
+		e.preventDefault()
+	}
+
+	const onMouseUp = (e: MouseEvent) => {
+		const elements = document.querySelectorAll('.v-list-item')
+		let targetIndex = null
+
+		elements.forEach((el, idx) => {
+			const rect = el.getBoundingClientRect()
+			if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+				targetIndex = idx
+			}
+		})
+
+		if (targetIndex !== null && targetIndex !== draggedIndex.value && targetIndex > 0) {
+			const [removed] = editableHeaders.value.splice(draggedIndex.value, 1)
+			editableHeaders.value.splice(targetIndex, 0, removed)
+		}
+
+		document.removeEventListener('mousemove', onMouseMove)
+		document.removeEventListener('mouseup', onMouseUp)
+		draggedIndex.value = null
+	}
+
+	document.addEventListener('mousemove', onMouseMove)
+	document.addEventListener('mouseup', onMouseUp)
+}
+
+const saveColumnSettings = () => {
+	allHeaders.value = [...editableHeaders.value]
+	columnDialog.value = false
+	page.value = 1
+}
+
+// Watchers
 onMounted(() => {
 	fetchAllPlayers()
+	editableHeaders.value = JSON.parse(JSON.stringify(allHeaders.value))
 })
 </script>
 
 <style scoped lang="scss">
 .gap-1 {
 	gap: 4px;
+}
+
+.gap-2 {
+	gap: 8px;
 }
 
 .items-per-page-select {
@@ -313,5 +470,11 @@ onMounted(() => {
 	align-items: center;
 	justify-content: center;
 	gap: 4px;
+}
+
+:deep(.v-pagination) {
+	.v-pagination__list {
+		margin-bottom: 0;
+	}
 }
 </style>
