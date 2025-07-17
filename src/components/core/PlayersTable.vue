@@ -69,7 +69,7 @@
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.position" :items="positions"
 													label="Position" clearable density="compact" variant="outlined"
-													prepend-inner-icon="sports_basketball" multiple chips
+													prepend-inner-icon="sports_handball" multiple chips
 													closable-chips></v-select>
 											</v-col>
 											<v-col cols="12" class="py-2">
@@ -207,7 +207,7 @@
 							</div>
 							<div v-else class="text-caption text-grey-darken-1 d-flex align-center gap-1">
 								<nba-team-icon team="NBA" :size="12" />
-								<span>Unsigned ({{ item.metadata?.TO_YEAR }})</span>
+								<span>Unsigned ({{ getSeasonFromYear(item.metadata?.TO_YEAR) }})</span>
 							</div>
 							<div class="text-caption text-grey d-flex align-center gap-1" v-if="(showHeight || showWeight) &&(item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
 								<span v-if="showHeight && item.metadata?.HEIGHT">{{ parseHeight(item.metadata?.HEIGHT) }}</span>
@@ -628,6 +628,11 @@ const parseWeight = (weight) => {
 
 const removeNBAFilter = (value) => {
 	filters.value.realTeam = filters.value.realTeam.filter(v => v !== value)
+}
+
+const getSeasonFromYear = (year) => {
+	if (!year) return 'Unknown'
+	return `${year}-${ String(Number(year) + 1).slice(-2)}`
 }
 
 // Watchers
