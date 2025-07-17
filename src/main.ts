@@ -17,6 +17,7 @@ import errorSnackbarPlugin from "@/plugins/errorSnackbar";
 
 // Custom components
 import AppLogo from "@/components/common/AppLogo.vue";
+import ThemeChanger from "@/components/common/ThemeChanger.vue";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -80,6 +81,7 @@ const app = createApp(App)
   .use(router)
   .use(vuetify)
   .use(errorSnackbarPlugin)
-  .component("AppLogo", AppLogo);
+  .component("AppLogo", AppLogo)
+  .component("ThemeChanger", ThemeChanger);
 
 app.mount("#app");

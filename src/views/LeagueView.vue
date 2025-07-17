@@ -13,24 +13,4 @@
 import PlayersTable from '../components/core/PlayersTable.vue';
 </script>
 
-<style lang="scss" scoped>
-.page-view {
-  padding: 24px;
-}
-
-.page-header {
-  margin-bottom: 32px;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 8px;
-}
-
-.page-subtitle {
-  font-size: 1.1rem;
-  color: rgb(var(--v-theme-on-surface));
-}
-</style>
+<style lang="scss" scoped></style>

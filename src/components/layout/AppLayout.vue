@@ -5,9 +5,7 @@
 
     <!-- Top Bar -->
     <AppTopBar v-if="isAuthenticated" />
-    <v-btn v-else icon variant="text" @click="toggleTheme" class="action-btn">
-      <v-icon :icon="isDark ? 'flash_on' : 'flash_off'" />
-    </v-btn>
+    <theme-changer v-else />
 
     <!-- Main Content -->
     <main class="main-content" :class="{ 'full-width': !isAuthenticated }">
@@ -25,21 +23,11 @@ import { useAuthStore } from '@/stores/auth';
 import AppNavigation from './AppNavigation.vue';
 import AppTopBar from './AppTopBar.vue';
 import NotificationOverlay from '../overlays/NotificationOverlay.vue';
-import { useTheme } from 'vuetify'
-import { useThemeStore } from '../../stores/theme'
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isApproved = computed(() => authStore.isApproved);
 const hasTeam = computed(() => !!authStore.user.team);
-const theme = useTheme()
-const themeStore = useThemeStore()
-
-const isDark = computed(() => theme.global.current.value.dark)
-
-const toggleTheme = () => {
-  themeStore.toggleTheme()
-}
 </script>
 
 <style lang="scss" scoped>

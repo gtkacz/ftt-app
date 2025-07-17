@@ -5,6 +5,9 @@ import { LoginData, RegisterData, RegisterTeamData } from "../types/auth";
 export const AuthService = {
   async login(data: LoginData) {
     const response = await api.post("/auth/login/", data);
+    if (!response.data.user.is_active) {
+      throw new Error("User is not active");
+    }
     return response.data;
   },
   async register(data: RegisterData) {

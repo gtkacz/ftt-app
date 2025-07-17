@@ -14,7 +14,7 @@
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.name }" :expanded="isHovered" :admin_only="item.admin_only ?? false"
+            :to="{ name: item.name }" :expanded="isHovered" :commission_only="item.commission_only ?? false"
             :disabled="item.disabled ?? false" />
         </div>
       </div>
@@ -48,6 +48,7 @@ const navigationGroups = [
         icon: 'dashboard',
         label: 'Dashboard',
         name: 'dashboard',
+        disabled: true
       },
       {
         icon: 'sports_basketball',
@@ -112,9 +113,9 @@ const navigationGroups = [
     items: [
       {
         icon: 'manage_accounts',
-        label: 'Admin',
-        name: 'admin',
-        admin_only: true
+        label: 'Commission',
+        name: 'commission',
+        commission_only: true
       },
       {
         icon: 'settings',

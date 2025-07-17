@@ -12,9 +12,7 @@
       <!-- User Actions -->
       <div class="user-actions">
         <!-- Theme Toggle -->
-        <v-btn icon variant="text" @click="toggleTheme" class="action-btn">
-          <v-icon :icon="isDark ? 'flash_on' : 'flash_off'" />
-        </v-btn>
+        <theme-changer />
 
         <!-- Notifications -->
         <v-btn icon variant="text" @click="toggleNotifications" class="action-btn">
@@ -57,19 +55,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTheme } from 'vuetify'
 import { useThemeStore } from '../../stores/theme'
 import { useNavigationStore } from '../../stores/navigation'
 import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
-const theme = useTheme()
 const themeStore = useThemeStore()
 const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 
-const isDark = computed(() => theme.global.current.value.dark)
+const isDark = computed(() => themeStore.isDark)
 const notificationCount = computed(() => 3) // Mock notification count
 
 const initials = computed(() => {

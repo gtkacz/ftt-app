@@ -1,10 +1,11 @@
 <template>
-  <span class="nav-item-content disabled" v-if="disabled && !(user && user.is_superuser)">
+  <!-- TODO: REMOVE FALSE CHECK -->
+  <span class="nav-item-content disabled" v-if="disabled && !(user && user.is_superuser && false)">
     <v-icon class="nav-icon" :icon="icon" theme="outlined" />
     <span v-if="expanded" class="nav-item-label">{{ label }}</span>
   </span>
   <router-link :to="to" class="nav-item" :class="{ active: isActive }" custom
-    v-slot="{ navigate, isActive: linkIsActive }" v-else-if="!admin_only || (user && user.is_staff)">
+    v-slot="{ navigate, isActive: linkIsActive }" v-else-if="!commission_only || (user && user.is_staff)">
     <div class="nav-item-content" @click="navigate" :class="{ active: linkIsActive && to.name !== '404', expanded }">
       <v-icon class="nav-icon" :icon="icon" theme="outlined" />
       <transition name="fade">
@@ -24,7 +25,7 @@ interface Props {
   label: string
   to: RouteLocationRaw
   expanded: boolean,
-  admin_only?: boolean
+  commission_only?: boolean
   disabled?: boolean
 }
 
@@ -45,73 +46,4 @@ const isActive = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.nav-item {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 0 8px;
-}
-
-.nav-item-content {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  max-width: 224px;
-  padding: 10px 0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: rgba(255, 255, 255, 0.7);
-  position: relative;
-
-  &.disabled {
-    cursor: not-allowed;
-    color: rgba(255, 255, 255, 0.3);
-  }
-
-  &:hover:not(.disabled) {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255);
-  }
-
-  &.active:not(.disabled) {
-    background-color: rgba(var(--v-theme-secondary), 0.2);
-    color: rgb(var(--v-theme-secondary));
-
-    &:hover:not(.disabled) {
-      background-color: rgba(var(--v-theme-secondary), 0.3);
-    }
-  }
-}
-
-.nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  min-width: 48px;
-  font-size: 24px;
-}
-
-.nav-item-label {
-  position: absolute;
-  left: 56px;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
 </style>

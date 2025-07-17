@@ -82,9 +82,54 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/501View.vue"),
   },
   {
-    path: "/admin",
-    name: "admin",
-    component: () => import("../views/501View.vue"),
+    path: "/commission",
+    component: () => import("../views/AdminView.vue"),
+    meta: {
+      requiresStaff: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "commission",
+        redirect: { name: "commission-settings" },
+      },
+      {
+        path: "settings",
+        name: "commission-settings",
+        component: () => import("../views/501View.vue"),
+        meta: {
+          title: "Commission Settings - Fantasy Trash Talk",
+          requiresStaff: true,
+        },
+      },
+      {
+        path: "users",
+        name: "commission-users",
+        component: () => import("../views/admin/UserView.vue"),
+        meta: {
+          title: "Comission Users - Fantasy Trash Talk",
+          requiresStaff: true,
+        },
+      },
+      {
+        path: "teams",
+        name: "commission-teams",
+        component: () => import("../views/501View.vue"),
+        meta: {
+          title: "Admin Teams - Fantasy Trash Talk",
+          requiresStaff: true,
+        },
+      },
+      {
+        path: "players",
+        name: "commission-players",
+        component: () => import("../views/501View.vue"),
+        meta: {
+          title: "Admin Players - Fantasy Trash Talk",
+          requiresStaff: true,
+        },
+      },
+    ],
   },
   {
     path: "/league-draft",
@@ -113,10 +158,6 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/not-found",
-  },
-  {
-    path: "/:pathMatch(.*)",
     redirect: "/not-found",
   },
 ];
@@ -163,7 +204,10 @@ router.beforeEach(async (to, from, next) => {
         if (
           authStore.user?.is_approved &&
           !!authStore.user?.team &&
-          to.name === "create-team"
+          (to.name === "create-team" ||
+            to.name === "approval" ||
+            to.name === "login" ||
+            to.name === "signup")
         ) {
           next("/");
           return;
