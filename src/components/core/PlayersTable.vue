@@ -35,25 +35,44 @@
 									<v-divider />
 									<v-card-text>
 										<v-row>
-											<v-col cols="12">
+											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.team" :items="teams" label="Team"
 													clearable density="compact" variant="outlined"
 													prepend-inner-icon="recent_actors" multiple chips
 													closable-chips></v-select>
 											</v-col>
-											<v-col cols="12">
+											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.realTeam" :items="realTeams"
 													label="NBA Team" clearable density="compact" variant="outlined"
-													prepend-inner-icon="sports_basketball" multiple chips
-													closable-chips></v-select>
+													prepend-inner-icon="sports_basketball" multiple chips closable-chips
+													single-line counter>
+													<template v-slot:item="{ item, props }">
+														<v-list-item v-bind="props">
+															<template v-slot:prepend
+																v-if="!isSpecialNBAFilter(item.value)">
+																<nba-team-icon :team="item.value" :size="20"
+																	class="mr-2" />
+															</template>
+														</v-list-item>
+													</template>
+													<template v-slot:chip="{ item }">
+														<v-chip closable @click:close="removeNBAFilter(item.value)">
+															<template v-slot:prepend
+																v-if="!isSpecialNBAFilter(item.value)">
+																<nba-team-icon :team="item.value" :size="16"
+																	class="mr-1" />
+															</template>
+														</v-chip>
+													</template>
+												</v-select>
 											</v-col>
-											<v-col cols="12">
+											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.position" :items="positions"
 													label="Position" clearable density="compact" variant="outlined"
 													prepend-inner-icon="sports_basketball" multiple chips
 													closable-chips></v-select>
 											</v-col>
-											<v-col cols="12">
+											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.status" :items="statuses"
 													label="Status" clearable density="compact" variant="outlined"
 													prepend-inner-icon="info" multiple chips closable-chips></v-select>
@@ -71,7 +90,7 @@
 							</v-menu>
 
 							<!-- Manage columns button -->
-							<v-menu v-model="columnDialog" max-width="500" transition="fade-transition"
+							<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
 								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
 									<v-btn v-bind="props" icon variant="outlined" size="small"
@@ -105,6 +124,52 @@
 										<v-btn icon variant="outlined" @click="saveColumnSettings" color="success"
 											size="small"><v-icon icon="check" /></v-btn>
 									</v-card-actions>
+								</v-card>
+							</v-menu>
+
+							<!-- Settings -->
+							<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
+								:close-on-content-click="false" location="bottom">
+								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+									<v-btn v-bind="props" icon variant="outlined" size="small">
+										<v-icon icon="settings" />
+									</v-btn>
+								</template>
+								<v-card min-width="500" density="comfortable" class="pa-4">
+									<v-card-title>Display Settings</v-card-title>
+									<v-divider />
+									<v-card-text>
+										<v-list>
+											<v-list-item>
+												<v-list-item-title>Show players' weight</v-list-item-title>
+												<template v-slot:append>
+													<v-checkbox v-model="showWeight" hide-details
+														density="compact" />
+												</template>
+											</v-list-item>
+											<v-list-item>
+												<v-list-item-title>Show players' height</v-list-item-title>
+												<template v-slot:append>
+													<v-checkbox v-model="showHeight" hide-details
+														density="compact" />
+												</template>
+											</v-list-item>
+											<v-list-item>
+												<v-list-item-title>Use metric weight units</v-list-item-title>
+												<template v-slot:append>
+													<v-checkbox v-model="convertWeight" hide-details
+														density="compact" />
+												</template>
+											</v-list-item>
+											<v-list-item>
+												<v-list-item-title>Use metric height units</v-list-item-title>
+												<template v-slot:append>
+													<v-checkbox v-model="convertHeight" hide-details
+														density="compact" />
+												</template>
+											</v-list-item>
+										</v-list>
+									</v-card-text>
 								</v-card>
 							</v-menu>
 						</v-col>
@@ -142,7 +207,11 @@
 							</div>
 							<div v-else class="text-caption text-grey-darken-1 d-flex align-center gap-1">
 								<nba-team-icon team="NBA" :size="12" />
-								Unsigned
+								<span>Unsigned ({{ item.metadata?.TO_YEAR }})</span>
+							</div>
+							<div class="text-caption text-grey d-flex align-center gap-1" v-if="(showHeight || showWeight) &&(item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
+								<span v-if="showHeight && item.metadata?.HEIGHT">{{ parseHeight(item.metadata?.HEIGHT) }}</span>
+								<span v-if="showWeight && item.metadata?.WEIGHT">{{ parseWeight(item.metadata?.WEIGHT) }}</span>
 							</div>
 						</div>
 					</div>
@@ -243,8 +312,13 @@ const error = ref(null)
 const search = ref('')
 const itemsPerPage = ref(25)
 const page = ref(1)
-const columnDialog = ref(false)
+const settingsMenu = ref(false)
+const columnMenu = ref(false)
 const filterMenu = ref(false)
+const showHeight = ref(false)
+const showWeight = ref(false)
+const convertWeight = ref(true)
+const convertHeight = ref(false)
 const draggedIndex = ref(null)
 const filters = ref({
 	team: [],
@@ -305,14 +379,28 @@ const customSearch = (value: any, search: string, item: any) => {
 const teams = computed(() => {
 	const uniqueTeams = [...new Set(players.value.map(p => p.team).filter(Boolean))]
 	const sortedTeams = uniqueTeams.sort()
-	return [{ title: 'Free Agent', value: 'FREE_AGENT' }, ...sortedTeams]
+	const specialOptions = [{ title: 'Free Agent', value: 'FREE_AGENT' }]
+
+	if (sortedTeams.length > 0) {
+		return [...specialOptions, ...sortedTeams]
+	}
+	return specialOptions
 })
 
 const realTeams = computed(() => {
 	const uniqueRealTeams = [...new Set(players.value
 		.map(p => p.real_team?.abbreviation)
 		.filter(Boolean))]
-	return uniqueRealTeams.sort()
+	const sortedTeams = uniqueRealTeams.sort().map(team => ({ title: team, value: team }))
+	const specialOptions = [
+		{ title: 'In the NBA', value: 'IN_NBA' },
+		{ title: 'Out of the NBA', value: 'OUT_OF_NBA' }
+	]
+
+	if (sortedTeams.length > 0) {
+		return [...specialOptions, ...sortedTeams]
+	}
+	return specialOptions
 })
 
 const positions = computed(() => {
@@ -327,10 +415,13 @@ const positions = computed(() => {
 const statuses = [
 	{ title: 'Restricted Free Agent', value: 'rfa' },
 	{ title: 'Team Option', value: 'to' },
-	{ title: 'Injured Reserve', value: 'ir' },
-	{ title: 'In the NBA', value: 'in_nba' },
-	{ title: 'Out of the NBA', value: 'out_of_nba' }
+	{ title: 'Injured Reserve', value: 'ir' }
 ]
+
+// Helper method to check if a filter value is special
+const isSpecialNBAFilter = (value) => {
+	return value === 'IN_NBA' || value === 'OUT_OF_NBA'
+}
 
 // Computed filtered players
 const filteredPlayers = computed(() => {
@@ -347,10 +438,14 @@ const filteredPlayers = computed(() => {
 		})
 	}
 
-	// Apply real team filters
+	// Apply real team filters (including In/Out of NBA)
 	if (filters.value.realTeam.length > 0) {
 		result = result.filter(p => {
-			return p.real_team && filters.value.realTeam.includes(p.real_team.abbreviation)
+			return filters.value.realTeam.some(filter => {
+				if (filter === 'IN_NBA') return p.real_team
+				if (filter === 'OUT_OF_NBA') return !p.real_team
+				return p.real_team && filter === p.real_team.abbreviation
+			})
 		})
 	}
 
@@ -364,18 +459,12 @@ const filteredPlayers = computed(() => {
 
 	// Apply status filters
 	if (filters.value.status.length > 0) {
-		if (filters.value.status.includes('in_nba') && filters.value.status.includes('out_of_nba')) {
-			filters.value.status = filters.value.status.filter(s => s !== 'out_of_nba')
-		}
-
 		result = result.filter(p => {
 			return filters.value.status.some(status => {
 				switch (status) {
 					case 'rfa': return p.is_rfa
 					case 'to': return p.is_to
 					case 'ir': return p.is_ir
-					case 'in_nba': return p.real_team
-					case 'out_of_nba': return !p.real_team
 					default: return false
 				}
 			})
@@ -423,7 +512,21 @@ const fetchAllPlayers = async () => {
 
 	try {
 		const response = await api.get('players/?limit=10000')
-		players.value = response.data.results
+		let raw_data = structuredClone(response.data.results)
+
+		raw_data.forEach(player => {
+			if (player.metadata) {
+				try {
+					player.metadata = JSON.parse(JSON.stringify(structuredClone(player.metadata)).replaceAll("NaN", "null"))
+					if (typeof player.metadata === 'string') {
+						player.metadata = JSON.parse(player.metadata)
+					}
+				} catch (e) {
+					console.error('Failed to parse player metadata:', e)
+				}
+			}
+		})
+		players.value = raw_data
 	} catch (err) {
 		console.error('Error fetching players:', err)
 		error.value = 'Failed to load players. Please try again later.'
@@ -492,7 +595,7 @@ const startDrag = (index: number) => {
 
 const saveColumnSettings = () => {
 	allHeaders.value = [...editableHeaders.value]
-	columnDialog.value = false
+	columnMenu.value = false
 	page.value = 1
 }
 
@@ -503,6 +606,28 @@ const getPositionTooltip = (position) => {
 		F: 'Forward',
 	}
 	return tooltips[position] || position
+}
+
+const parseHeight = (height) => {
+	if (!height) return '—'
+	if (convertHeight.value) {
+		const [feet, inches] = height.split('-').map(Number)
+		return `${((feet * 12 + inches) * 0.0254).toFixed(2)} m`
+	}
+	const [feet, inches] = height.split('-').map(Number)
+	return `${feet}′ ${inches}″`
+}
+
+const parseWeight = (weight) => {
+	if (!weight) return '—'
+	if (convertWeight.value) {
+		return `${Math.round(weight * 0.453592)} kg`
+	}
+	return `${weight} lbs`
+}
+
+const removeNBAFilter = (value) => {
+	filters.value.realTeam = filters.value.realTeam.filter(v => v !== value)
 }
 
 // Watchers
@@ -543,6 +668,18 @@ onMounted(() => {
 :deep(.v-pagination) {
 	.v-pagination__list {
 		margin-bottom: 0;
+	}
+}
+
+/* Prevent v-select expansion when chips are selected */
+:deep(.v-select) {
+	.v-field__input {
+		flex-wrap: nowrap;
+		overflow: hidden;
+	}
+
+	.v-chip {
+		flex-shrink: 0;
 	}
 }
 </style>
