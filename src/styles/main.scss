@@ -1,6 +1,6 @@
-@use 'variables' as *;
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap');
+@use "variables" as *;
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap");
 
 // Global variables
 :root {
@@ -62,7 +62,7 @@ a {
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.3);
   border-radius: $border-radius-sm;
-  
+
   &:hover {
     background: rgba(0, 0, 0, 0.4);
   }
@@ -97,16 +97,17 @@ a {
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0.5px;
-  
+
   &.v-btn--elevated {
     box-shadow: $shadow-md;
-    
+
     &:hover {
       box-shadow: $shadow-lg;
     }
   }
 
-  &.v-btn--disabled, .v-btn--disabled * {
+  &.v-btn--disabled,
+  .v-btn--disabled * {
     cursor: not-allowed !important;
   }
 }
@@ -114,10 +115,10 @@ a {
 // Custom card styles
 .v-card {
   border-radius: $border-radius-lg;
-  
+
   &.v-card--elevated {
     box-shadow: $shadow-sm;
-    
+
     &:hover {
       box-shadow: $shadow-md;
     }
@@ -148,11 +149,19 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    transition: background-color 5000s ease-in-out 0s;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 // Border radius
-.has-border-radius-sm {border-radius: $border-radius-sm}
-.has-border-radius-md {border-radius: $border-radius-md}
-.has-border-radius-lg {border-radius: $border-radius-lg}
-.has-border-radius-xl {border-radius: $border-radius-xl}
+.has-border-radius-sm {
+  border-radius: $border-radius-sm;
+}
+.has-border-radius-md {
+  border-radius: $border-radius-md;
+}
+.has-border-radius-lg {
+  border-radius: $border-radius-lg;
+}
+.has-border-radius-xl {
+  border-radius: $border-radius-xl;
+}

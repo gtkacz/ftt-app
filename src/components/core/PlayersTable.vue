@@ -71,8 +71,12 @@
 								{{ item.first_name }} {{ item.last_name }}
 							</div>
 							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center gap-1">
-								<nba-team-icon :team="item.real_team.abbreviation" size="16" />
+								<nba-team-icon :team="item.real_team.abbreviation" :size="16" />
 								{{ item.real_team.abbreviation }}
+							</div>
+							<div v-else class="text-caption text-grey-darken-1 d-flex align-center gap-1">
+								<nba-team-icon team="NBA" :size="12" />
+								Unsigned
 							</div>
 						</div>
 					</div>
@@ -80,21 +84,21 @@
 
 				<!-- Position -->
 				<template v-slot:item.primary_position="{ item }">
-					<div class="position-display">
-						<v-chip v-if="item.primary_position" size="small" variant="tonal">
+					<v-chip-group v-if="item.primary_position" column>
+						<v-chip v-tooltip="getPositionTooltip(item.primary_position)">
 							{{ item.primary_position }}
 						</v-chip>
-						<v-chip v-if="item.secondary_position" size="small" variant="tonal">
+						<v-chip v-if="item.secondary_position" v-tooltip="getPositionTooltip(item.secondary_position)">
 							{{ item.secondary_position }}
 						</v-chip>
 						<span v-if="!item.primary_position && !item.secondary_position" class="text-grey">—</span>
-					</div>
+					</v-chip-group>
 				</template>
 
 				<!-- Team -->
 				<template v-slot:item.team="{ item }">
 					<span v-if="item.team">{{ item.team }}</span>
-					<span v-else class="text-grey">Free Agent</span>
+					<span v-else class="text-grey-darken-1">Free Agent</span>
 				</template>
 
 				<!-- Salary -->
@@ -123,19 +127,30 @@
 				<!-- Pagination footer -->
 				<template v-slot:bottom>
 					<v-divider />
-					<v-container class="pa-2 mt-2">
+					<v-container class="pa-2 mt-4">
 						<v-row justify="space-between" align="center">
-							<v-col cols="auto">
+							<v-col cols="3">
 								<span class="text-caption">
 									Showing {{ paginationText }}
 								</span>
 							</v-col>
-							<v-col cols="auto" class="d-flex gap-2">
-								<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
-									:item-title="item => item === -1 ? 'All' : item" label="Items per page"
-									density="compact" variant="outlined" hide-details class="items-per-page-select" />
-								<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount" :total-visible="5"
-									density="compact" rounded />
+							<v-col cols="6" class="d-flex gap-2">
+								<v-row class="gap-2" align="center" justify="end">
+									<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
+										:item-title="item => item === -1 ? 'All' : item" label="Items per page"
+										density="compact" variant="outlined" hide-details
+										class="items-per-page-select" />
+									<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
+										density="compact">
+										<v-icon>first_page</v-icon>
+									</v-btn>
+									<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
+										:total-visible="5" density="compact" rounded />
+									<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount"
+										:icon="true" density="compact">
+										<v-icon>last_page</v-icon>
+									</v-btn>
+								</v-row>
 							</v-col>
 						</v-row>
 					</v-container>
@@ -214,7 +229,7 @@ const allHeaders = ref([
 	{
 		title: 'Position',
 		key: 'primary_position',
-		align: 'center',
+		// align: 'center',
 		width: '120px',
 		visible: true
 	},
@@ -231,13 +246,6 @@ const allHeaders = ref([
 		width: '120px',
 		visible: true
 	},
-	{
-		title: 'Status',
-		key: 'status',
-		align: 'center',
-		width: '120px',
-		visible: true
-	}
 ])
 
 const editableHeaders = ref([])
@@ -251,7 +259,7 @@ const activeHeaders = computed(() => {
 const customSearch = (value: any, search: string, item: any) => {
 	if (!search) return true
 	const searchLower = search.toLowerCase()
-	const fullName = `${item.first_name} ${item.last_name}`.toLowerCase()
+	const fullName = `${item.raw.first_name} ${item.raw.last_name}`.toLowerCase()
 	return fullName.includes(searchLower)
 }
 
@@ -288,6 +296,7 @@ const statuses = [
 
 // Computed filtered players
 const filteredPlayers = computed(() => {
+	loading.value = true
 	let result = players.value
 
 	// Apply team filters
@@ -317,6 +326,10 @@ const filteredPlayers = computed(() => {
 
 	// Apply status filters
 	if (filters.value.status.length > 0) {
+		if (filters.value.status.includes('in_nba') && filters.value.status.includes('out_of_nba')) {
+			filters.value.status = filters.value.status.filter(s => s !== 'out_of_nba')
+		}
+
 		result = result.filter(p => {
 			return filters.value.status.some(status => {
 				switch (status) {
@@ -331,6 +344,7 @@ const filteredPlayers = computed(() => {
 		})
 	}
 
+	loading.value = false
 	return result
 })
 
@@ -435,6 +449,15 @@ const saveColumnSettings = () => {
 	allHeaders.value = [...editableHeaders.value]
 	columnDialog.value = false
 	page.value = 1
+}
+
+const getPositionTooltip = (position) => {
+	const tooltips = {
+		C: 'Center',
+		G: 'Guard',
+		F: 'Forward',
+	}
+	return tooltips[position] || position
 }
 
 // Watchers

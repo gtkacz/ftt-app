@@ -3,7 +3,7 @@
     <div class="welcome-container">
       <div class="welcome-content">
         <div class="welcome-icon">
-          <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt" v-tooltip="'Test'">
+          <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt">
         </div>
 
         <h1 class="welcome-title">
