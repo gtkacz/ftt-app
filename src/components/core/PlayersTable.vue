@@ -143,15 +143,13 @@
 											<v-list-item>
 												<v-list-item-title>Show players' weight</v-list-item-title>
 												<template v-slot:append>
-													<v-checkbox v-model="showWeight" hide-details
-														density="compact" />
+													<v-checkbox v-model="showWeight" hide-details density="compact" />
 												</template>
 											</v-list-item>
 											<v-list-item>
 												<v-list-item-title>Show players' height</v-list-item-title>
 												<template v-slot:append>
-													<v-checkbox v-model="showHeight" hide-details
-														density="compact" />
+													<v-checkbox v-model="showHeight" hide-details density="compact" />
 												</template>
 											</v-list-item>
 											<v-list-item>
@@ -209,9 +207,12 @@
 								<nba-team-icon team="NBA" :size="12" />
 								<span>Unsigned ({{ getSeasonFromYear(item.metadata?.TO_YEAR) }})</span>
 							</div>
-							<div class="text-caption text-grey d-flex align-center gap-1" v-if="(showHeight || showWeight) &&(item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
-								<span v-if="showHeight && item.metadata?.HEIGHT">{{ parseHeight(item.metadata?.HEIGHT) }}</span>
-								<span v-if="showWeight && item.metadata?.WEIGHT">{{ parseWeight(item.metadata?.WEIGHT) }}</span>
+							<div class="text-caption text-grey d-flex align-center gap-1"
+								v-if="(showHeight || showWeight) && (item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
+								<span v-if="showHeight && item.metadata?.HEIGHT">{{ parseHeight(item.metadata?.HEIGHT)
+								}}</span>
+								<span v-if="showWeight && item.metadata?.WEIGHT">{{ parseWeight(item.metadata?.WEIGHT)
+								}}</span>
 							</div>
 						</div>
 					</div>
@@ -231,8 +232,8 @@
 				</template>
 
 				<!-- Team -->
-				<template v-slot:item.team="{ item }">
-					<span v-if="item.team">{{ item.team }}</span>
+				<template v-slot:item.team_name="{ item }">
+					<span v-if="item.team_name">{{ item.team_name }}</span>
 					<span v-else class="text-grey-darken-1">Free Agent</span>
 				</template>
 
@@ -244,19 +245,27 @@
 					<span v-else class="text-grey">—</span>
 				</template>
 
+				<!-- Contract -->
+				<template v-slot:item.contract_duration="{ item }">
+					<span v-if="item.contract_duration" class="font-weight-medium">
+						{{ item.contract_duration }} year{{ item.contract_duration > 1 ? 's' : '' }}
+					</span>
+					<span v-else class="text-grey">—</span>
+				</template>
+
 				<!-- Status badges -->
 				<template v-slot:item.status="{ item }">
-					<div class="d-flex gap-1">
-						<v-chip v-if="item.is_rfa" size="x-small" variant="tonal">
+					<v-chip-group column>
+						<v-chip v-if="item.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'">
 							RFA
 						</v-chip>
-						<v-chip v-if="item.is_to" size="x-small" variant="tonal">
+						<v-chip v-if="item.is_to" size="x-small" v-tooltip="'Team Option'">
 							TO
 						</v-chip>
-						<v-chip v-if="item.is_ir" size="x-small" variant="tonal">
+						<v-chip v-if="item.is_ir" size="x-small" v-tooltip="'Injured Reserve'">
 							IR
 						</v-chip>
-					</div>
+					</v-chip-group>
 				</template>
 
 				<!-- Pagination footer -->
@@ -293,7 +302,7 @@
 			</v-data-table>
 
 			<!-- Error state -->
-			<v-alert v-if="error" type="error" variant="tonal" class="mt-4">
+			<v-alert v-if="error" type="error" v-tooltip="" class="mt-4">
 				{{ error }}
 			</v-alert>
 		</v-card>
@@ -341,13 +350,12 @@ const allHeaders = ref([
 	{
 		title: 'Position',
 		key: 'primary_position',
-		// align: 'center',
 		width: '120px',
 		visible: true
 	},
 	{
 		title: 'Team',
-		key: 'team',
+		key: 'team_name',
 		width: '150px',
 		visible: true
 	},
@@ -358,6 +366,18 @@ const allHeaders = ref([
 		width: '120px',
 		visible: true
 	},
+	{
+		title: 'Contract',
+		key: 'contract_duration',
+		align: 'end',
+		width: '120px',
+		visible: true
+	},
+	{
+		title: 'Status',
+		key: 'status',
+		width: '120px'
+	}
 ])
 
 const editableHeaders = ref([])
@@ -377,7 +397,7 @@ const customSearch = (value: any, search: string, item: any) => {
 
 // Computed filter options
 const teams = computed(() => {
-	const uniqueTeams = [...new Set(players.value.map(p => p.team).filter(Boolean))]
+	const uniqueTeams = [...new Set(players.value.map(p => p.team_name).filter(Boolean))]
 	const sortedTeams = uniqueTeams.sort()
 	const specialOptions = [{ title: 'Free Agent', value: 'FREE_AGENT' }]
 
@@ -432,9 +452,9 @@ const filteredPlayers = computed(() => {
 	if (filters.value.team.length > 0) {
 		result = result.filter(p => {
 			if (filters.value.team.includes('FREE_AGENT')) {
-				return !p.team || filters.value.team.includes(p.team)
+				return !p.team_name || filters.value.team.includes(p.team_name)
 			}
-			return filters.value.team.includes(p.team)
+			return filters.value.team.includes(p.team_name)
 		})
 	}
 
@@ -541,7 +561,7 @@ const formatCurrency = (amount) => {
 		currency: 'USD',
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 0
-	}).format(amount)
+	}).format(amount * 1000000)
 }
 
 const clearFilters = () => {
@@ -632,7 +652,7 @@ const removeNBAFilter = (value) => {
 
 const getSeasonFromYear = (year) => {
 	if (!year) return 'Unknown'
-	return `${year}-${ String(Number(year) + 1).slice(-2)}`
+	return `${year}-${String(Number(year) + 1).slice(-2)}`
 }
 
 // Watchers
