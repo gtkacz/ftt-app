@@ -1,5 +1,5 @@
 <template>
-  <div class="big-board-view">
+  <div class="page-view">
     <div class="page-header">
       <h1 class="page-title">Big Board</h1>
       <p class="page-subtitle">Player rankings and analytics</p>
@@ -18,7 +18,7 @@
 </script>
 
 <style lang="scss" scoped>
-.big-board-view {
+.page-view {
   padding: 24px;
 }
 

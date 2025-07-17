@@ -7,14 +7,19 @@
 
     <div class="nav-items">
       <div v-for="(group, index) in navigationGroups" :key="index" class="nav-group">
-        <div class="nav-group-header" :class="{ 'expanded': isHovered }">
-          <div v-if="isHovered" class="nav-group-title" :class="{ 'hovered': isHovered }">{{ group.title }}</div>
-          <div class="nav-divider" :class="{ 'expanded': isHovered }"></div>
-        </div>
+        <div>
+          <div class="nav-group-header" :class="{ 'expanded': isHovered }">
+            <div v-if="isHovered" class="nav-group-title" :class="{ 'hovered': isHovered }">{{ group.title }}</div>
+            <div class="nav-divider" :class="{ 'expanded': isHovered }"></div>
+          </div>
 
-        <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-          :to="{ name: item.name }" :expanded="isHovered" />
+          <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
+            :to="{ name: item.name }" :expanded="isHovered" :admin_only="item.admin_only ?? false" :disabled="item.disabled ?? false" />
+        </div>
       </div>
+    </div>
+    <div v-if="isHovered" class="nav-footer">
+      <a href="https://github.com/gtkacz/ftt-app" target="_blank">v{{ version }}</a>
     </div>
   </nav>
 </template>
@@ -23,6 +28,8 @@
 import { ref } from 'vue'
 import NavItem from '../navigation/NavItem.vue'
 import LogoNav from '../navigation/LogoNav.vue'
+
+const version = __APP_VERSION__
 
 const isHovered = ref(false)
 
@@ -39,12 +46,13 @@ const navigationGroups = [
       {
         icon: 'dashboard',
         label: 'Dashboard',
-        name: 'dashboard'
+        name: 'dashboard',
       },
       {
         icon: 'sports_basketball',
         label: 'My Team',
-        name: 'team'
+        name: 'team',
+        disabled: true
       },
     ]
   },
@@ -52,19 +60,26 @@ const navigationGroups = [
     title: 'Rosters',
     items: [
       {
+        icon: 'av_timer',
+        label: 'League Draft',
+        name: 'league-draft'
+      },
+      {
         icon: 'contacts',
         label: 'League',
-        name: 'league'
+        name: 'league',
       },
       {
         icon: 'people_alt',
         label: 'Free Agency',
-        name: 'free-agency'
+        name: 'free-agency',
+        disabled: true
       },
       {
         icon: 'swap_horiz',
         label: 'Trades',
-        name: 'trades'
+        name: 'trades',
+        disabled: true
       },
     ]
   },
@@ -74,17 +89,20 @@ const navigationGroups = [
       {
         icon: 'workspaces',
         label: 'Draft',
-        name: 'draft'
+        name: 'draft',
+        disabled: true
       },
       {
         icon: 'interests',
         label: 'Big Board',
-        name: 'big-board'
+        name: 'big-board',
+        disabled: true
       },
       {
         icon: 'format_list_numbered',
         label: 'Lottery',
-        name: 'lottery'
+        name: 'lottery',
+        disabled: true
       },
     ]
   },
@@ -181,7 +199,7 @@ const handleMouseLeave = () => {
   position: relative;
   justify-content: center;
   gap: 16px;
-  
+
   .nav-title-wrapper {
     width: calc(100% - 64px);
     display: flex;
@@ -242,7 +260,7 @@ const handleMouseLeave = () => {
   opacity: 0;
   transition: opacity 0.1s ease;
   background-color: var(--primary-color);
-  overflow: hidden; 
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -264,6 +282,20 @@ const handleMouseLeave = () => {
   &.expanded {
     right: 0;
     margin-right: 3px;
+  }
+}
+
+.nav-footer{
+  width: 100%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 1ch;
+  padding: 10px 15px;
+  display: inline-flex;
+
+  & a {
+    text-decoration: none;
+    color: inherit;
   }
 }
 </style>

@@ -1,34 +1,6 @@
 <template>
   <div class="home-view">
-    <div class="welcome-container">
-      <div class="welcome-content">
-        <div class="welcome-icon">
-          <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt" v-tooltip="'Test'">
-        </div>
-
-        <h1 class="welcome-title">
-          Bem-vindo ao <span class="highlight">Fantasy Trash Talk</span>
-        </h1>
-
-        <p class="welcome-subtitle">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit
-        </p>
-
-        <!-- <div class="welcome-actions">
-          <v-btn size="large" color="secondary" variant="elevated" @click="navigateToDraft" class="action-btn">
-            <v-icon left icon="start" />
-            Começar Draft
-          </v-btn>
-
-          <v-btn size="large" color="on-surface" variant="outlined" @click="navigateToBigBoard" class="action-btn">
-            <v-icon left icon="dashboard" />
-            Ver Big Board
-          </v-btn>
-        </div> -->
-      </div>
-    </div>
-
-    <!-- <div class="features-grid">
+    <div class="features-grid">
       <FeatureCard
         icon="account-group"
         title="Dynasty Management"
@@ -52,23 +24,12 @@
         title="Championship Ready"
         description="Tools and insights to help you win your dynasty league"
       />
-    </div> -->
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import FeatureCard from '../components/common/FeatureCard.vue'
-
-const router = useRouter()
-
-const navigateToDraft = () => {
-  router.push({ name: 'Draft' })
-}
-
-const navigateToBigBoard = () => {
-  router.push({ name: 'BigBoard' })
-}
 </script>
 
 <style lang="scss" scoped>

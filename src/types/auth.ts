@@ -12,6 +12,11 @@ export interface RegisterData {
   password_confirm: string;
 }
 
+export interface RegisterTeamData {
+  name: string;
+  icon?: File | null;
+}
+
 export interface AuthResponse {
   access: string;
   refresh?: string;
@@ -20,6 +25,12 @@ export interface AuthResponse {
     username: string;
     email: string;
   };
+}
+
+export interface Team {
+  id: number;
+  name: string;
+  avatar: string | null;
 }
 
 export interface User {
@@ -31,6 +42,8 @@ export interface User {
   is_staff: boolean;
   is_approved: boolean;
   is_active: boolean;
+  is_superuser: boolean;
+  team: Team;
 }
 
 export interface RefreshTokenResponse {

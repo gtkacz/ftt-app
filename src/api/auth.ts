@@ -1,6 +1,6 @@
 import { AuthResponse } from "../types/auth";
 import api from "./axios";
-import { LoginData, RegisterData } from "../types/auth";
+import { LoginData, RegisterData, RegisterTeamData } from "../types/auth";
 
 export const AuthService = {
   async login(data: LoginData) {
@@ -9,6 +9,14 @@ export const AuthService = {
   },
   async register(data: RegisterData) {
     const response = await api.post("/auth/register/", data);
+    return response.data;
+  },
+  async createTeam(data: RegisterTeamData) {
+    const response = await api.post("/teams/", data);
+    return response.data;
+  },
+  async fetchUser(id: Number) {
+    const response = await api.get(`/users/${id}/`);
     return response.data;
   },
   async refreshToken(data: { refresh: string }): Promise<AuthResponse> {

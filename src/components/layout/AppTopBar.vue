@@ -1,7 +1,6 @@
 <template>
   <header class="app-top-bar">
     <div class="top-bar-content">
-    {{ user }}
       <!-- Mobile Menu Button -->
       <v-btn icon variant="text" class="mobile-menu-btn d-sm-none" @click="toggleMobileNav">
         <v-icon icon="menu" />
@@ -29,7 +28,7 @@
           <template v-slot:activator="{ props }">
             <v-btn icon variant="text" v-bind="props" class="action-btn">
               <v-avatar size="32" color="secondary">
-                <v-icon icon="person" />
+                <span class="text-h7">{{ initials }}</span>
               </v-avatar>
             </v-btn>
           </template>
@@ -68,10 +67,22 @@ const theme = useTheme()
 const themeStore = useThemeStore()
 const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
-const user = authStore.user
+const user = computed(() => authStore.user)
 
 const isDark = computed(() => theme.global.current.value.dark)
 const notificationCount = computed(() => 3) // Mock notification count
+
+const initials = computed(() => {
+  const name = user.value ? user.value.first_name + user.value.last_name : '';
+  if (!user || name.length < 2) {
+    return '?'
+  }
+  let splitted = name.split(' ')
+  if (splitted.length == 1) {
+    return splitted[0][0].toUpperCase() + splitted[0][1].toLowerCase()
+  }
+  return (splitted[0][0] + splitted[splitted.length - 1][0]).toUpperCase()
+})
 
 const toggleTheme = () => {
   theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'

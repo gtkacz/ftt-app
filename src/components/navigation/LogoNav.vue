@@ -1,8 +1,7 @@
 <template>
   <div class="nav-item">
     <div class="nav-item-content">
-      <img src="https://a.espncdn.com/combiner/i?img=/i/fantasy/fba.png&w=288&h=288&transparent=true" alt="ftt"
-        class="logo">
+      <app-logo />
       <transition name="fade">
         <span v-if="expanded" class="nav-item-label">{{ label }}</span>
       </transition>
@@ -20,17 +19,6 @@ const props = defineProps<Props>()
 </script>
 
 <style lang="scss" scoped>
-.logo {
-  width: 32px;
-  height: 32px;
-  transition: transform 0.3s ease;
-  z-index: 2;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-}
-
 .nav-item {
   text-decoration: none;
   color: inherit;

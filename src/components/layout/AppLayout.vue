@@ -1,7 +1,7 @@
 <template>
   <div class="app-layout">
     <!-- Main Navigation (apenas quando autenticado) -->
-    <AppNavigation v-if="isAuthenticated" />
+    <AppNavigation v-if="isAuthenticated && isApproved && hasTeam" />
 
     <!-- Top Bar -->
     <AppTopBar v-if="isAuthenticated" />
@@ -30,6 +30,8 @@ import { useThemeStore } from '../../stores/theme'
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isApproved = computed(() => authStore.isApproved);
+const hasTeam = computed(() => !!authStore.user.team);
 const theme = useTheme()
 const themeStore = useThemeStore()
 

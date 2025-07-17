@@ -54,7 +54,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () => import("../views/501View.vue"),
+    component: () => import("../views/DashboardView.vue"),
   },
   {
     path: "/trade",
@@ -74,7 +74,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/league",
     name: "league",
-    component: () => import("../views/501View.vue"),
+    component: () => import("../views/LeagueView.vue"),
   },
   {
     path: "/trades",
@@ -85,6 +85,21 @@ const routes: RouteRecordRaw[] = [
     path: "/admin",
     name: "admin",
     component: () => import("../views/501View.vue"),
+  },
+  {
+    path: "/league-draft",
+    name: "league-draft",
+    component: () => import("../views/501View.vue"),
+  },
+  {
+    path: "/approval",
+    name: "approval",
+    component: () => import("../views/WaitForApprovalView.vue"),
+  },
+  {
+    path: "/create-team",
+    name: "create-team",
+    component: () => import("../views/TeamCreateView.vue"),
   },
   {
     path: "/unauthorized",
@@ -131,6 +146,18 @@ router.beforeEach(async (to, from, next) => {
       try {
         if (to.name === "login") {
           next(from.fullPath ? from.fullPath : "/");
+          return;
+        }
+        if (!authStore.user?.is_approved && to.name !== "approval") {
+          next("/approval");
+          return;
+        }
+        if (authStore.user?.is_approved && !authStore.user?.team && to.name !== "create-team") {
+          next("/create-team");
+          return;
+        }
+        if (authStore.user?.is_approved && !!authStore.user?.team && to.name === "create-team") {
+          next("/");
           return;
         }
         if (to.meta.requiresStaff && !authStore.isStaff) {

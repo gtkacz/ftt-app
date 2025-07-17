@@ -3,7 +3,7 @@ import { AuthService } from "../api/auth";
 import type {
   LoginData,
   RegisterData,
-  AuthResponse,
+  RegisterTeamData,
   User,
 } from "../types/auth";
 import { decodeJwt } from "../utils/jwt";
@@ -60,6 +60,21 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    async createTeam(data: RegisterTeamData): Promise<boolean> {
+      try {
+        this.isLoading = true;
+        await AuthService.createTeam(data);
+        await AuthService.fetchUser(this.user?.id!);
+        this.setUser(this.user!);
+        return true;
+      } catch (error) {
+        showError("Registration failed:", error);
+        return false;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
     setTokens(access: string, refresh?: string): void {
       this.accessToken = access;
       localStorage.setItem("access_token", access);
@@ -79,7 +94,9 @@ export const useAuthStore = defineStore("auth", {
         email: userData.email,
         is_staff: userData.is_staff,
         is_approved: userData.is_approved,
-        is_active: userData.is_active
+        is_active: userData.is_active,
+        is_superuser: userData.is_superuser,
+        team: userData.team,
       };
       localStorage.setItem("user", JSON.stringify(this.user));
     },
@@ -121,6 +138,9 @@ export const useAuthStore = defineStore("auth", {
     },
     isStaff(): boolean {
       return this.user?.is_staff || false;
+    },
+    isApproved(): boolean {
+      return this.user?.is_approved || false;
     },
   },
 });

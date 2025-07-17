@@ -1,16 +1,11 @@
 <template>
-  <router-link
-    :to="to"
-    class="nav-item"
-    :class="{ active: isActive }"
-    custom
-    v-slot="{ navigate, isActive: linkIsActive }"
-  >
-    <div
-      class="nav-item-content"
-      @click="navigate"
-      :class="{ active: linkIsActive && to.name !== '404', expanded }"
-    >
+  <span class="nav-item-content disabled" v-if="disabled && !(user && user.is_superuser)">
+    <v-icon class="nav-icon" :icon="icon" theme="outlined" />
+    <span v-if="expanded" class="nav-item-label">{{ label }}</span>
+  </span>
+  <router-link :to="to" class="nav-item" :class="{ active: isActive }" custom
+    v-slot="{ navigate, isActive: linkIsActive }" v-else-if="!admin_only || (user && user.is_staff)">
+    <div class="nav-item-content" @click="navigate" :class="{ active: linkIsActive && to.name !== '404', expanded }">
       <v-icon class="nav-icon" :icon="icon" theme="outlined" />
       <transition name="fade">
         <span v-if="expanded" class="nav-item-label">{{ label }}</span>
@@ -28,11 +23,15 @@ interface Props {
   icon: string
   label: string
   to: RouteLocationRaw
-  expanded: boolean
+  expanded: boolean,
+  admin_only?: boolean
+  disabled?: boolean
 }
 
 const props = defineProps<Props>()
 const route = useRoute()
+
+const user = computed(() => localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null)
 
 const isActive = computed(() => {
   if (typeof props.to === 'string') {
@@ -68,17 +67,22 @@ const isActive = computed(() => {
   transition: all 0.2s ease;
   color: rgba(255, 255, 255, 0.7);
   position: relative;
-  
-  &:hover {
+
+  &.disabled {
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:hover:not(.disabled) {
     background-color: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255);
   }
-  
-  &.active {
+
+  &.active:not(.disabled) {
     background-color: rgba(var(--v-theme-secondary), 0.2);
     color: rgb(var(--v-theme-secondary));
-    
-    &:hover {
+
+    &:hover:not(.disabled) {
       background-color: rgba(var(--v-theme-secondary), 0.3);
     }
   }

@@ -105,6 +105,10 @@ a {
       box-shadow: $shadow-lg;
     }
   }
+
+  &.v-btn--disabled, .v-btn--disabled * {
+    cursor: not-allowed !important;
+  }
 }
 
 // Custom card styles
@@ -146,3 +150,9 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
 }
+
+// Border radius
+.has-border-radius-sm {border-radius: $border-radius-sm}
+.has-border-radius-md {border-radius: $border-radius-md}
+.has-border-radius-lg {border-radius: $border-radius-lg}
+.has-border-radius-xl {border-radius: $border-radius-xl}

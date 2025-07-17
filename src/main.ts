@@ -15,6 +15,9 @@ import './styles/main.scss'
 // Custom plugins
 import errorSnackbarPlugin from '@/plugins/errorSnackbar'
 
+// Custom components
+import AppLogo from '@/components/common/AppLogo.vue'
+
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
@@ -25,6 +28,7 @@ const vuetify = createVuetify({
   theme: {
     defaultTheme: prefersDark ? 'dark' : 'light',
     themes: {
+      options: { customProperties: true },
       light: {
         colors: {
           primary: '#0F183E',
@@ -69,5 +73,6 @@ const app = createApp(App)
   .use(router)
   .use(vuetify)
   .use(errorSnackbarPlugin)
+  .component('AppLogo', AppLogo)
 
 app.mount('#app')
