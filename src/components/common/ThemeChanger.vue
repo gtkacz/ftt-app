@@ -1,6 +1,9 @@
 <template>
-	<v-btn icon variant="text" @click="toggleTheme" class="action-btn" :loading="loading" v-tooltip="isDark ? 'Toggle Light Mode' : 'Toggle Dark Mode'">
-		<v-icon :icon="isDark ? 'flash_on' : 'flash_off'" />
+	<v-btn icon variant="text" @click="toggleTheme" class="action-btn" :loading="loading"
+		v-tooltip="isDark ? 'Toggle Light Mode' : 'Toggle Dark Mode'">
+		<!-- <v-icon :icon="isDark ? 'flash_on' : 'flash_off'" /> -->
+		<!-- <v-icon :icon="isDark ? 'flashlight_on' : 'flashlight_off'" /> -->
+		<v-icon :icon="isDark ? 'light_mode' : 'dark_mode'" />
 	</v-btn>
 </template>
 

@@ -1,3 +1,5 @@
+import "@mdi/font/css/materialdesignicons.css";
+import "material-symbols";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import { createApp } from "vue";
@@ -7,6 +9,7 @@ import * as directives from "vuetify/directives";
 import { md } from "vuetify/iconsets/md";
 import { mdi } from "vuetify/iconsets/mdi";
 import * as labsComponents from "vuetify/labs/components";
+import "vuetify/styles";
 import App from "./App.vue";
 import { aliases, mds } from "./iconsets/mds";
 import router from "./router";
@@ -23,10 +26,7 @@ import errorSnackbarPlugin from "@/plugins/errorSnackbar";
 // Custom components
 import AppLogo from "@/components/common/AppLogo.vue";
 import ThemeChanger from "@/components/common/ThemeChanger.vue";
-
-import "@mdi/font/css/materialdesignicons.css";
-import "material-symbols";
-import "vuetify/styles";
+import Word from "@/components/common/Word.vue";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -98,6 +98,7 @@ const app = createApp(App)
   .use(vuetify)
   .use(errorSnackbarPlugin)
   .component("AppLogo", AppLogo)
+  .component("Word", Word)
   .component("ThemeChanger", ThemeChanger);
 
 app.mount("#app");

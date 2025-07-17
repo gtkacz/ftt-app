@@ -67,14 +67,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../views/501View.vue"),
   },
   {
-    path: "/free-agency",
-    name: "free-agency",
-    component: () => import("../views/501View.vue"),
+    path: "/players",
+    name: "players",
+    component: () => import("../views/PlayersView.vue"),
   },
   {
     path: "/league",
     name: "league",
-    component: () => import("../views/LeagueView.vue"),
+    component: () => import("../views/501View.vue"),
   },
   {
     path: "/trades",
@@ -188,6 +188,10 @@ router.beforeEach(async (to, from, next) => {
         if (to.name === "login") {
           next(from.fullPath ? from.fullPath : "/");
           return;
+        }
+        if (!authStore.user?.is_approved || authStore.user?.team) {
+          await authStore.refreshAccessToken();
+          await authStore.fetchUser();
         }
         if (!authStore.user?.is_approved && to.name !== "approval") {
           next("/approval");

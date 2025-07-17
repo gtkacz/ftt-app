@@ -58,7 +58,10 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     try {
-      await authStore.refreshAccessToken();
+      await Promise.all([
+        authStore.refreshAccessToken(),
+        authStore.fetchUser(),
+      ]);
     } catch (error) {
       authStore.logout();
       router.push({

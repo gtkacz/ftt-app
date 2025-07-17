@@ -130,7 +130,7 @@ const getIcon = (type: string) => {
     case 'success': return 'check_circle'
     case 'warning': return 'alert'
     case 'error': return 'alert_circle'
-    default: return 'information'
+    default: return 'info'
   }
 }
 

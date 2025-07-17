@@ -4,49 +4,6 @@
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
 
-			<!-- Bulk Actions Bar -->
-			<v-expand-transition>
-				<v-card v-if="selected.length > 0 && showCheckboxes" class="mb-4 pa-3 bg-primary" elevation="2">
-					<v-row align="center">
-						<v-col cols="6">
-							<span class="text-white">{{ selected.length }} users selected</span>
-						</v-col>
-						<v-col cols="6" class="d-flex justify-end gap-2">
-							<v-menu v-model="bulkActionMenu" :close-on-content-click="false">
-								<template v-slot:activator="{ props }">
-									<v-btn v-bind="props" variant="tonal" color="white" icon>
-										<v-icon icon="sweep" />
-									</v-btn>
-								</template>
-								<v-card>
-									<v-list>
-										<v-list-item @click="prepareBulkAction('activate')">
-											<v-list-item-title>Activate</v-list-item-title>
-										</v-list-item>
-										<v-list-item @click="prepareBulkAction('deactivate')">
-											<v-list-item-title>Deactivate</v-list-item-title>
-										</v-list-item>
-										<v-list-item @click="prepareBulkAction('approve')">
-											<v-list-item-title>Approve</v-list-item-title>
-										</v-list-item>
-										<v-list-item @click="prepareBulkAction('unapprove')">
-											<v-list-item-title>Unapprove</v-list-item-title>
-										</v-list-item>
-										<v-list-item @click="prepareBulkAction('make_staff')">
-											<v-list-item-title>Make Staff</v-list-item-title>
-										</v-list-item>
-										<v-list-item @click="prepareBulkAction('remove_staff')">
-											<v-list-item-title>Remove Staff</v-list-item-title>
-										</v-list-item>
-									</v-list>
-								</v-card>
-							</v-menu>
-							<v-btn variant="text" color="white" @click="selected = []">Clear Selection</v-btn>
-						</v-col>
-					</v-row>
-				</v-card>
-			</v-expand-transition>
-
 			<!-- Filters and Column Settings -->
 			<v-expand-transition>
 				<v-card-text v-if="!loading" class="pa-0">
@@ -247,19 +204,46 @@
 
 				<!-- User photo and name -->
 				<template v-slot:item.user="{ item }">
-					<div class="d-flex align-center py-2">
+					<div class="d-flex align-center py-2" v-if="item.is_active">
 						<v-avatar size="40" class="mr-3">
-							<v-icon size="40">account_circle</v-icon>
+							<v-icon size="40" variant="outlined" :filled="false" icon="account_circle" />
 						</v-avatar>
 						<div>
-							<div class="font-weight-medium">
+							<div class="font-weight-medium d-flex align-center gap-1">
 								{{ item.last_name }}, {{ item.first_name }}
+								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
+									v-tooltip="'Administrator'" />
+								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
+									v-tooltip="'Commissioner'" />
 							</div>
 							<div class="text-caption text-grey">
 								@{{ item.username }}
 							</div>
 							<div v-if="item.team" class="text-caption text-grey d-flex align-center gap-1">
-								<v-icon size="12">groups</v-icon>
+								<v-icon size="20">groups</v-icon>
+								{{ item.team.name }}
+							</div>
+						</div>
+					</div>
+					<div class="d-flex align-center py-2" v-else>
+						<v-avatar size="40" class="mr-3">
+							<v-icon size="40" icon="account_circle_off" variant="outlined" :filled="false" />
+						</v-avatar>
+						<div>
+							<div
+								class="font-weight-medium text-grey-darken-1 text-decoration-line-through d-flex align-center gap-1">
+								{{ item.last_name }}, {{ item.first_name }}
+								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
+									v-tooltip="'Administrator'" />
+								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
+									v-tooltip="'Commissioner'" />
+							</div>
+							<div class="text-caption text-grey-darken-1 text-decoration-line-through">
+								@{{ item.username }}
+							</div>
+							<div v-if="item.team"
+								class="text-caption text-grey-darken-1 text-decoration-line-through d-flex align-center gap-1">
+								<v-icon size="20">groups</v-icon>
 								{{ item.team.name }}
 							</div>
 						</div>
@@ -268,9 +252,10 @@
 
 				<!-- Email -->
 				<template v-slot:item.email="{ item }">
-					<a :href="`mailto:${item.email}`" @click.stop class="text-decoration-none">
+					<a v-if="item.is_active" :href="`mailto:${item.email}`" @click.stop class="text-decoration-none">
 						{{ item.email }}
 					</a>
+					<span v-else class="text-grey-darken-1 text-decoration-line-through">{{ item.email }}</span>
 				</template>
 
 				<!-- Team -->
@@ -296,9 +281,6 @@
 						</v-chip>
 						<v-chip v-if="item.is_staff" color="warning" size="x-small" v-tooltip="'Commissioner'">
 							Commissioner
-						</v-chip>
-						<v-chip v-if="item.is_superuser" color="error" size="x-small" v-tooltip="'Superuser'">
-							Admin
 						</v-chip>
 					</v-chip-group>
 				</template>
@@ -357,17 +339,133 @@
 			</v-alert>
 		</v-card>
 
+		<!-- Bulk Actions Snackbar -->
+		<v-snackbar v-model="showBulkActions" :timeout="-1" location="bottom" multi-line color="primary" elevation="24"
+			class="bulk-action-snackbar">
+			<v-container>
+				<v-row align="center">
+					<v-col cols="auto">
+						<span class="text-h6 mr-2">{{ selected.length }} users selected</span>
+					</v-col>
+					<v-col>
+						<div class="d-flex flex-wrap gap-2">
+							<v-chip v-if="pendingChanges.toggleActive !== null" closable
+								@click:close="pendingChanges.toggleActive = null"
+								:color="pendingChanges.toggleActive ? 'success' : 'error'">
+								{{ pendingChanges.toggleActive ? 'Activate' : 'Deactivate' }}
+							</v-chip>
+							<v-chip v-if="pendingChanges.toggleApproved !== null" closable
+								@click:close="pendingChanges.toggleApproved = null"
+								:color="pendingChanges.toggleApproved ? 'primary' : 'warning'">
+								{{ pendingChanges.toggleApproved ? 'Approve' : 'Unapprove' }}
+							</v-chip>
+							<v-chip v-if="pendingChanges.toggleStaff !== null" closable
+								@click:close="pendingChanges.toggleStaff = null" color="warning">
+								{{ pendingChanges.toggleStaff ? 'Make Commissioner' : 'Remove Commissioner' }}
+							</v-chip>
+							<v-chip v-if="pendingChanges.delete" closable @click:close="pendingChanges.delete = false"
+								color="error">
+								Delete
+							</v-chip>
+						</div>
+					</v-col>
+					<v-col cols="auto">
+						<v-menu v-model="bulkActionMenu" :close-on-content-click="false" location="top">
+							<template v-slot:activator="{ props }">
+								<v-btn v-bind="props" icon variant="tonal" color="white" class="mr-2">
+									<v-icon icon="sweep" />
+								</v-btn>
+							</template>
+							<v-card>
+								<v-list>
+									<v-list-item @click="toggleBulkAction('toggleActive')">
+										<template v-slot:prepend>
+											<v-icon :icon="getToggleIcon('active')" />
+										</template>
+										<v-list-item-title>{{ getToggleText('active') }}</v-list-item-title>
+									</v-list-item>
+									<v-list-item @click="toggleBulkAction('toggleApproved')">
+										<template v-slot:prepend>
+											<v-icon :icon="getToggleIcon('approved')" />
+										</template>
+										<v-list-item-title>{{ getToggleText('approved') }}</v-list-item-title>
+									</v-list-item>
+									<v-list-item @click="toggleBulkAction('toggleStaff')">
+										<template v-slot:prepend>
+											<v-icon :icon="getToggleIcon('staff')" />
+										</template>
+										<v-list-item-title>{{ getToggleText('staff') }}</v-list-item-title>
+									</v-list-item>
+									<v-divider v-if="isAdmin" />
+									<v-list-item v-if="isAdmin" @click="toggleBulkAction('delete')">
+										<template v-slot:prepend>
+											<v-icon icon="delete" color="error" />
+										</template>
+										<v-list-item-title class="text-error">Delete Users</v-list-item-title>
+									</v-list-item>
+								</v-list>
+							</v-card>
+						</v-menu>
+						<v-btn icon variant="tonal" color="white" :disabled="!hasPendingChanges"
+							@click="confirmDialog = true" class="mr-2">
+							<v-icon icon="check" />
+						</v-btn>
+						<v-btn icon variant="text" color="white" @click="cancelBulkActions">
+							<v-icon icon="close" />
+						</v-btn>
+					</v-col>
+				</v-row>
+			</v-container>
+		</v-snackbar>
+
 		<!-- Confirmation Dialog -->
-		<v-dialog v-model="confirmDialog" max-width="500">
-			<v-card>
-				<v-card-title>Confirm Bulk Action</v-card-title>
+		<v-dialog v-model="confirmDialog" max-width="500" persistent transition="fade-transition" class="pa-4">
+			<v-card class="pa-4" elevation="2">
+				<v-card-title>Confirm Bulk Actions</v-card-title>
 				<v-card-text>
-					Are you sure you want to {{ bulkActionText }} for {{ selected.length }} selected user(s)?
+					<p class="mb-3">You are about to apply the following changes to {{ selected.length }} users:</p>
+					<v-list density="compact">
+						<v-list-item v-if="pendingChanges.toggleActive !== null">
+							<template v-slot:prepend>
+								<v-icon :icon="pendingChanges.toggleActive ? 'toggle_on' : 'toggle_off'"
+									:color="pendingChanges.toggleActive ? 'success' : 'error'" />
+							</template>
+							<v-list-item-title>
+								{{ pendingChanges.toggleActive ? 'Activate' : 'Deactivate' }} users
+							</v-list-item-title>
+						</v-list-item>
+						<v-list-item v-if="pendingChanges.toggleApproved !== null">
+							<template v-slot:prepend>
+								<v-icon :icon="pendingChanges.toggleApproved ? 'check_circle' : 'cancel'"
+									:color="pendingChanges.toggleApproved ? 'primary' : 'warning'" />
+							</template>
+							<v-list-item-title>
+								{{ pendingChanges.toggleApproved ? 'Approve' : 'Unapprove' }} users
+							</v-list-item-title>
+						</v-list-item>
+						<v-list-item v-if="pendingChanges.toggleStaff !== null">
+							<template v-slot:prepend>
+								<v-icon icon="badge" color="warning" />
+							</template>
+							<v-list-item-title>
+								{{ pendingChanges.toggleStaff ? 'Make' : 'Remove' }} commissioners
+							</v-list-item-title>
+						</v-list-item>
+						<v-list-item v-if="pendingChanges.delete">
+							<template v-slot:prepend>
+								<v-icon icon="delete_forever" color="error" />
+							</template>
+							<v-list-item-title class="text-error">
+								Delete users permanently
+							</v-list-item-title>
+						</v-list-item>
+					</v-list>
+					<p class="mt-3 text-body-2">Are you sure you want to proceed?</p>
 				</v-card-text>
 				<v-card-actions>
 					<v-spacer></v-spacer>
-					<v-btn @click="confirmDialog = false">Cancel</v-btn>
-					<v-btn color="primary" @click="executeBulkAction">Confirm</v-btn>
+					<v-btn @click="confirmDialog = false" variant="text">Cancel</v-btn>
+					<v-btn @click="executeBulkActions" color="primary" variant="flat">Confirm</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
@@ -375,9 +473,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import moment from 'moment'
 import api from '@/api/axios'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+const isAdmin = computed(() => {
+	return authStore.user?.is_superuser && authStore.user?.is_staff
+})
 
 // State
 const users = ref([])
@@ -395,7 +499,13 @@ const confirmDialog = ref(false)
 const useRelativeDates = ref(true)
 const showCheckboxes = ref(true)
 const draggedIndex = ref(null)
-const currentBulkAction = ref('')
+const showBulkActions = ref(false)
+const pendingChanges = ref({
+	toggleActive: null,
+	toggleApproved: null,
+	toggleStaff: null,
+	delete: false
+})
 const filters = ref({
 	team: [],
 	status: [],
@@ -495,17 +605,17 @@ const lastLoginRangeText = computed(() => {
 	return `Between ${start} and ${end} days ago`
 })
 
-// Bulk action text
-const bulkActionText = computed(() => {
-	const actions = {
-		'activate': 'activate',
-		'deactivate': 'deactivate',
-		'approve': 'approve',
-		'unapprove': 'unapprove',
-		'make_staff': 'make staff',
-		'remove_staff': 'remove staff'
-	}
-	return actions[currentBulkAction.value] || ''
+// Check if there are pending changes
+const hasPendingChanges = computed(() => {
+	return pendingChanges.value.toggleActive !== null ||
+		pendingChanges.value.toggleApproved !== null ||
+		pendingChanges.value.toggleStaff !== null ||
+		pendingChanges.value.delete
+})
+
+// Get selected users
+const selectedUsers = computed(() => {
+	return users.value.filter(user => selected.value.includes(user.id))
 })
 
 // Computed filtered users
@@ -641,6 +751,11 @@ const paginationText = computed(() => {
 	return `${start}-${end} of ${total} entries`
 })
 
+// Watch for selection changes
+watch(selected, (newSelection) => {
+	showBulkActions.value = newSelection.length > 0
+})
+
 // Methods
 const fetchAllUsers = async () => {
 	loading.value = true
@@ -715,44 +830,137 @@ const saveColumnSettings = () => {
 	// Optionally save to localStorage or API
 }
 
-// Bulk actions
-const prepareBulkAction = (action) => {
-	currentBulkAction.value = action
-	confirmDialog.value = true
+// Toggle actions
+const getToggleIcon = (type) => {
+	const counts = {
+		active: selectedUsers.value.filter(u => u.is_active).length,
+		approved: selectedUsers.value.filter(u => u.is_approved).length,
+		staff: selectedUsers.value.filter(u => u.is_staff).length
+	}
+
+	const total = selectedUsers.value.length
+
+	// If all selected users have the property, show toggle_off icon
+	// If none have it, show toggle_on icon
+	// If mixed, show indeterminate icon
+	if (type === 'active') {
+		if (counts.active === total) return 'toggle_off'
+		if (counts.active === 0) return 'toggle_on'
+		return 'indeterminate_check_box'
+	} else if (type === 'approved') {
+		if (counts.approved === total) return 'cancel'
+		if (counts.approved === 0) return 'check_circle'
+		return 'indeterminate_check_box'
+	} else if (type === 'staff') {
+		if (counts.staff === total) return 'badge'
+		if (counts.staff === 0) return 'badge'
+		return 'indeterminate_check_box'
+	}
+}
+
+const getToggleText = (type) => {
+	const counts = {
+		active: selectedUsers.value.filter(u => u.is_active).length,
+		approved: selectedUsers.value.filter(u => u.is_approved).length,
+		staff: selectedUsers.value.filter(u => u.is_staff).length
+	}
+
+	const total = selectedUsers.value.length
+
+	if (type === 'active') {
+		if (counts.active === total) return 'Deactivate All'
+		if (counts.active === 0) return 'Activate All'
+		return `Toggle Active (${counts.active}/${total} active)`
+	} else if (type === 'approved') {
+		if (counts.approved === total) return 'Unapprove All'
+		if (counts.approved === 0) return 'Approve All'
+		return `Toggle Approved (${counts.approved}/${total} approved)`
+	} else if (type === 'staff') {
+		if (counts.staff === total) return 'Remove Commissioner Status'
+		if (counts.staff === 0) return 'Make Commissioners'
+		return `Toggle Commissioner (${counts.staff}/${total} staff)`
+	}
+}
+
+const toggleBulkAction = (action) => {
+	if (action === 'delete') {
+		pendingChanges.value.delete = !pendingChanges.value.delete
+		return
+	}
+
+	const counts = {
+		active: selectedUsers.value.filter(u => u.is_active).length,
+		approved: selectedUsers.value.filter(u => u.is_approved).length,
+		staff: selectedUsers.value.filter(u => u.is_staff).length
+	}
+
+	const total = selectedUsers.value.length
+
+	if (action === 'toggleActive') {
+		// If all are active, deactivate. If none are active, activate. If mixed, activate.
+		pendingChanges.value.toggleActive = counts.active < total
+	} else if (action === 'toggleApproved') {
+		pendingChanges.value.toggleApproved = counts.approved < total
+	} else if (action === 'toggleStaff') {
+		pendingChanges.value.toggleStaff = counts.staff < total
+	}
+
 	bulkActionMenu.value = false
 }
 
-const executeBulkAction = async () => {
+const cancelBulkActions = () => {
+	selected.value = []
+	pendingChanges.value = {
+		toggleActive: null,
+		toggleApproved: null,
+		toggleStaff: null,
+		delete: false
+	}
+}
+
+const executeBulkActions = async () => {
 	confirmDialog.value = false
 
-	// Here you would implement the actual API calls to update users
-	console.log(`Executing bulk action: ${currentBulkAction.value} for users:`, selected.value)
-
-	// Example implementation:
 	try {
-		const updates = {
-			activate: { is_active: true },
-			deactivate: { is_active: false },
-			approve: { is_approved: true },
-			unapprove: { is_approved: false },
-			make_staff: { is_staff: true },
-			remove_staff: { is_staff: false }
+		if (pendingChanges.value.delete) {
+			// Execute deletes
+			const deletePromises = selected.value.map(userId =>
+				api.delete(`users/${userId}/`)
+			)
+			await Promise.all(deletePromises)
+		} else {
+			// Build update object for each user
+			const updatePromises = selected.value.map(userId => {
+				const user = users.value.find(u => u.id === userId)
+				const updates = {}
+
+				if (pendingChanges.value.toggleActive !== null) {
+					updates.is_active = pendingChanges.value.toggleActive
+				}
+				if (pendingChanges.value.toggleApproved !== null) {
+					updates.is_approved = pendingChanges.value.toggleApproved
+				}
+				if (pendingChanges.value.toggleStaff !== null) {
+					updates.is_staff = pendingChanges.value.toggleStaff
+				}
+
+				// Only send request if there are updates
+				if (Object.keys(updates).length > 0) {
+					return api.patch(`users/${userId}/`, updates)
+				}
+				return Promise.resolve()
+			})
+
+			await Promise.all(updatePromises)
 		}
 
-		const updateData = updates[currentBulkAction.value]
-
-		// You would make API calls here to update each selected user
-		// for (const userId of selected.value) {
-		//   await api.patch(`users/${userId}/`, updateData)
-		// }
-
-		// Clear selection after successful update
-		selected.value = []
+		// Clear selection and pending changes
+		cancelBulkActions()
 
 		// Refresh user data
 		await fetchAllUsers()
 	} catch (err) {
-		console.error('Error executing bulk action:', err)
+		console.error('Error executing bulk actions:', err)
 		error.value = 'Failed to update users. Please try again.'
 	}
 }
@@ -799,6 +1007,18 @@ onMounted(() => {
 
 	.v-chip {
 		flex-shrink: 0;
+	}
+}
+
+/* Bulk action snackbar styling */
+:deep(.bulk-action-snackbar) {
+	.v-snackbar__wrapper {
+		max-width: 90vw;
+		width: auto;
+	}
+
+	.v-snackbar__content {
+		padding: 0;
 	}
 }
 </style>

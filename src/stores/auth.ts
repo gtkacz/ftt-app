@@ -74,6 +74,18 @@ export const useAuthStore = defineStore("auth", {
         this.isLoading = false;
       }
     },
+  
+    async fetchUser(): Promise<void> {
+      try {
+        this.isLoading = true;
+        const response = await AuthService.fetchUser(this.user?.id!);
+        this.setUser(response);
+      } catch (error) {
+        showError("Failed to fetch user data:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
     setTokens(access: string, refresh?: string): void {
       this.accessToken = access;

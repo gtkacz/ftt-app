@@ -14,7 +14,7 @@
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.name }" :expanded="isHovered" :commission_only="item.commission_only ?? false"
+            :to="{ name: item.routeName }" :expanded="isHovered" :commission_only="item.commission_only ?? false"
             :disabled="item.disabled ?? false" />
         </div>
       </div>
@@ -42,18 +42,18 @@ const navigationGroups = [
       {
         icon: 'home',
         label: 'Home',
-        name: 'home'
+        routeName: 'home'
       },
       {
         icon: 'dashboard',
         label: 'Dashboard',
-        name: 'dashboard',
+        routeName: 'dashboard',
         disabled: true
       },
       {
-        icon: 'sports_basketball',
+        icon: 'person_play',
         label: 'My Team',
-        name: 'team',
+        routeName: 'team',
         disabled: true
       },
     ]
@@ -62,25 +62,26 @@ const navigationGroups = [
     title: 'Rosters',
     items: [
       {
-        icon: 'av_timer',
+        icon: 'automation',
         label: 'League Draft',
-        name: 'league-draft'
+        routeName: 'league-draft'
       },
       {
-        icon: 'contacts',
+        icon: 'sports_basketball',
         label: 'League',
-        name: 'league',
-      },
-      {
-        icon: 'people_alt',
-        label: 'Free Agency',
-        name: 'free-agency',
+        routeName: 'league',
         disabled: true
       },
       {
+        icon: 'clinical_notes',
+        label: 'Players',
+        routeName: 'players',
+      },
+      {
         icon: 'swap_horiz',
+        // icon: 'handshake',
         label: 'Trades',
-        name: 'trades',
+        routeName: 'trades',
         disabled: true
       },
     ]
@@ -91,19 +92,19 @@ const navigationGroups = [
       {
         icon: 'workspaces',
         label: 'Draft',
-        name: 'draft',
+        routeName: 'draft',
         disabled: true
       },
       {
         icon: 'interests',
         label: 'Big Board',
-        name: 'big-board',
+        routeName: 'big-board',
         disabled: true
       },
       {
         icon: 'format_list_numbered',
         label: 'Lottery',
-        name: 'lottery',
+        routeName: 'lottery',
         disabled: true
       },
     ]
@@ -114,13 +115,13 @@ const navigationGroups = [
       {
         icon: 'manage_accounts',
         label: 'Commission',
-        name: 'commission',
+        routeName: 'commission',
         commission_only: true
       },
       {
         icon: 'settings',
         label: 'Settings',
-        name: 'settings'
+        routeName: 'settings'
       },
     ]
   }

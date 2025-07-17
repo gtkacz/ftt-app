@@ -1,8 +1,6 @@
 <template>
-  <img src="../../assets/logo.png" 
-       :width="logoSize" 
-       :height="logoSize"
-    alt="Fantasy Trash Talk" :class="{ 'app-logo': isReactive }" :style="{ width: logoSize, height: logoSize }" />
+  <img src="../../assets/logo.png" :width="logoSize" :height="logoSize" alt="Fantasy Trash Talk"
+    :class="{ 'app-logo': isReactive }" :style="{ width: logoSize, height: logoSize }" />
 </template>
 
 <script setup lang="ts">

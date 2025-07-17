@@ -17,6 +17,43 @@
 
 						<!-- Icon buttons - 25% width -->
 						<v-col cols="3" class="d-flex justify-end gap-2">
+							<!-- Sort menu -->
+							<v-menu v-model="sortMenu" :close-on-content-click="false" location="bottom">
+								<template v-slot:activator="{ props }" v-tooltip="'Sort table'">
+									<v-btn v-bind="props" icon variant="outlined" size="small">
+										<v-icon icon="sort" />
+									</v-btn>
+								</template>
+								<v-card min-width="300" density="comfortable" class="pa-4">
+									<template v-slot:title class="text-h6">Sort Options</template>
+									<template v-slot:append><v-btn variant="text" icon @click="sortMenu = false"
+											size="small"><v-icon icon="close" /></v-btn></template>
+									<v-divider />
+									<v-card-text>
+										<v-row>
+											<v-col cols="12" class="py-2">
+												<v-select rounded v-model="sortBy" :items="sortableHeaders"
+													item-title="title" item-value="key" label="Sort by"
+													density="compact" variant="outlined"
+													prepend-inner-icon="sort_by_alpha"></v-select>
+											</v-col>
+											<v-col cols="12" class="py-2">
+												<v-select rounded v-model="sortOrder" :items="sortOrderOptions"
+													label="Sort order" density="compact" variant="outlined"
+													prepend-inner-icon="sort"></v-select>
+											</v-col>
+										</v-row>
+									</v-card-text>
+									<v-card-actions>
+										<v-spacer></v-spacer>
+										<v-btn @click="resetSort" icon variant="outlined" size="small"
+											v-tooltip="'Reset to default sort'">
+											<v-icon icon="refresh" />
+										</v-btn>
+									</v-card-actions>
+								</v-card>
+							</v-menu>
+
 							<!-- Filter button with menu -->
 							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
 								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
@@ -24,7 +61,7 @@
 										:color="hasActiveFilters ? 'primary' : undefined">
 										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
 											color="error">
-											<v-icon icon="filter_list" />
+											<v-icon icon="filter_alt" />
 										</v-badge>
 									</v-btn>
 								</template>
@@ -38,12 +75,12 @@
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.team" :items="teams" label="Team"
 													clearable density="compact" variant="outlined"
-													prepend-inner-icon="recent_actors" multiple chips
+													prepend-inner-icon="diversity_3" multiple chips
 													closable-chips></v-select>
 											</v-col>
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.realTeam" :items="realTeams"
-													label="NBA Team" clearable density="compact" variant="outlined"
+													label="NBA Roster" clearable density="compact" variant="outlined"
 													prepend-inner-icon="sports_basketball" multiple chips closable-chips
 													single-line counter>
 													<template v-slot:item="{ item, props }">
@@ -69,13 +106,14 @@
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.position" :items="positions"
 													label="Position" clearable density="compact" variant="outlined"
-													prepend-inner-icon="sports_handball" multiple chips
+													prepend-inner-icon="conditions" multiple chips
 													closable-chips></v-select>
 											</v-col>
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.status" :items="statuses"
 													label="Status" clearable density="compact" variant="outlined"
-													prepend-inner-icon="info" multiple chips closable-chips></v-select>
+													prepend-inner-icon="diamond_shine" multiple chips
+													closable-chips></v-select>
 											</v-col>
 										</v-row>
 									</v-card-text>
@@ -92,9 +130,8 @@
 							<!-- Manage columns button -->
 							<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
-									<v-btn v-bind="props" icon variant="outlined" size="small"
-										:color="hasActiveFilters ? 'primary' : undefined">
+								<template v-slot:activator="{ props }" v-tooltip="'Manage columns'">
+									<v-btn v-bind="props" icon variant="outlined" size="small">
 										<v-icon icon="view_column" />
 									</v-btn>
 								</template>
@@ -104,7 +141,8 @@
 									<v-card-text>
 										<v-list>
 											<v-list-item v-for="(header, index) in editableHeaders" :key="header.key"
-												:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'">
+												:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'"
+												v-if="!header?.meta && !header?.hidden">
 												<template v-slot:prepend>
 													<v-icon v-if="header.key !== 'player'" @mousedown="startDrag(index)"
 														style="cursor: move;">drag_handle</v-icon>
@@ -130,7 +168,7 @@
 							<!-- Settings -->
 							<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+								<template v-slot:activator="{ props }" v-tooltip="'Display settings'">
 									<v-btn v-bind="props" icon variant="outlined" size="small">
 										<v-icon icon="settings" />
 									</v-btn>
@@ -176,10 +214,9 @@
 			</v-expand-transition>
 
 			<!-- Data table -->
-			<v-data-table v-if="!loading" :headers="activeHeaders" :items="filteredPlayers" :search="search"
-				:custom-filter="customSearch" :sort-by="[{ key: 'last_name', order: 'asc' }]" fixed-header fixed-footer
-				height="calc(100vh - 200px)" :loading="loading" :no-data-text="'No players found'"
-				:no-results-text="'No matching players'" density="comfortable"
+			<v-data-table v-if="!loading" :headers="activeHeaders" :items="sortedFilteredPlayers" :search="search"
+				:custom-filter="customSearch" fixed-header fixed-footer height="calc(100vh - 200px)" :loading="loading"
+				:no-data-text="'No players found'" :no-results-text="'No matching players'" density="comfortable"
 				class="elevation-1 pa-4 bg-surface-variant" hide-no-data hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
 				@click:row="(event, { item }) => viewPlayer(item)">
@@ -248,7 +285,7 @@
 				<!-- Contract -->
 				<template v-slot:item.contract_duration="{ item }">
 					<span v-if="item.contract_duration" class="font-weight-medium">
-						{{ item.contract_duration }} year{{ item.contract_duration > 1 ? 's' : '' }}
+						{{ item.contract_duration }} <word item="year" :count="item.contract_duration" />
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
@@ -324,17 +361,26 @@ const page = ref(1)
 const settingsMenu = ref(false)
 const columnMenu = ref(false)
 const filterMenu = ref(false)
+const sortMenu = ref(false)
 const showHeight = ref(false)
 const showWeight = ref(false)
 const convertWeight = ref(true)
 const convertHeight = ref(false)
 const draggedIndex = ref(null)
+const sortBy = ref('relevancy')
+const sortOrder = ref('desc')
 const filters = ref({
 	team: [],
 	realTeam: [],
 	position: [],
 	status: []
 })
+
+// Sort order options
+const sortOrderOptions = [
+	{ title: 'Descending', value: 'desc' },
+	{ title: 'Ascending', value: 'asc' }
+]
 
 // Column configuration
 const allHeaders = ref([
@@ -351,40 +397,59 @@ const allHeaders = ref([
 		title: 'Position',
 		key: 'primary_position',
 		width: '120px',
-		visible: true
+		visible: true,
+		sortable: true
 	},
 	{
 		title: 'Team',
 		key: 'team_name',
 		width: '150px',
-		visible: true
+		visible: true,
+		sortable: true
 	},
 	{
 		title: 'Salary',
 		key: 'salary',
 		align: 'end',
 		width: '120px',
-		visible: true
+		visible: true,
+		sortable: true
 	},
 	{
 		title: 'Contract',
 		key: 'contract_duration',
 		align: 'end',
 		width: '120px',
-		visible: true
+		visible: true,
+		sortable: true
+	},
+	{
+		title: 'Relevancy',
+		key: 'relevancy',
+		align: 'end',
+		width: '120px',
+		visible: false,
+		hidden: true,
+		sortable: true
 	},
 	{
 		title: 'Status',
 		key: 'status',
-		width: '120px'
+		width: '120px',
+		sortable: false
 	}
 ])
 
 const editableHeaders = ref([])
 
-// Computed headers based on visibility
+// Computed headers based on visibility (excludes hidden columns)
 const activeHeaders = computed(() => {
-	return allHeaders.value.filter(h => h.visible)
+	return allHeaders.value.filter(h => h.visible && !h.meta && !h.hidden)
+})
+
+// Computed sortable headers (includes hidden columns)
+const sortableHeaders = computed(() => {
+	return allHeaders.value.filter(h => h.sortable && !h.meta)
 })
 
 // Custom search function to include first name
@@ -445,7 +510,6 @@ const isSpecialNBAFilter = (value) => {
 
 // Computed filtered players
 const filteredPlayers = computed(() => {
-	loading.value = true
 	let result = players.value
 
 	// Apply team filters
@@ -491,7 +555,35 @@ const filteredPlayers = computed(() => {
 		})
 	}
 
-	loading.value = false
+	return result
+})
+
+// Computed sorted and filtered players
+const sortedFilteredPlayers = computed(() => {
+	const result = [...filteredPlayers.value]
+
+	if (sortBy.value) {
+		result.sort((a, b) => {
+			let aVal = a[sortBy.value]
+			let bVal = b[sortBy.value]
+
+			// Handle null/undefined values
+			if (aVal == null && bVal == null) return 0
+			if (aVal == null) return sortOrder.value === 'asc' ? 1 : -1
+			if (bVal == null) return sortOrder.value === 'asc' ? -1 : 1
+
+			// Handle string vs number comparison
+			if (typeof aVal === 'string' && typeof bVal === 'string') {
+				aVal = aVal.toLowerCase()
+				bVal = bVal.toLowerCase()
+			}
+
+			if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1
+			if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1
+			return 0
+		})
+	}
+
 	return result
 })
 
@@ -512,11 +604,11 @@ const activeFilterCount = computed(() => {
 // Pagination computed values
 const pageCount = computed(() => {
 	if (itemsPerPage.value === -1) return 1
-	return Math.ceil(filteredPlayers.value.length / itemsPerPage.value)
+	return Math.ceil(sortedFilteredPlayers.value.length / itemsPerPage.value)
 })
 
 const paginationText = computed(() => {
-	const total = filteredPlayers.value.length
+	const total = sortedFilteredPlayers.value.length
 	if (total === 0) return '0 of 0 entries'
 	if (itemsPerPage.value === -1) return `${total} of ${total} entries`
 
@@ -571,6 +663,11 @@ const clearFilters = () => {
 		position: [],
 		status: []
 	}
+}
+
+const resetSort = () => {
+	sortBy.value = 'relevancy'
+	sortOrder.value = 'desc'
 }
 
 const viewPlayer = (player) => {

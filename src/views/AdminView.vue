@@ -8,8 +8,8 @@
         <nav class="side-nav-container">
           <v-list density="comfortable" class="pa-0 side-submenu">
             <v-list-item v-for="item in menuItems" :key="item.routeName" :to="{ name: 'commission-' + item.routeName }"
-              :prepend-icon="item.icon" :title="item.title" :active="isActive(item.routeName)" class="submenu-item" :class="{ 'text-secondary': isActive(item.routeName) }"
-              color="primary" rounded="lg">
+              :prepend-icon="item.icon" :title="item.title" :active="isActive(item.routeName)" class="submenu-item"
+              :class="{ 'text-secondary': isActive(item.routeName) }" color="primary" rounded="lg">
             </v-list-item>
           </v-list>
         </nav>
@@ -40,22 +40,24 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    icon: 'settings',
+    icon: 'settings_applications',
     title: 'League Settings',
     routeName: 'settings',
   },
   {
-    icon: 'account_box',
+    // icon: 'person_play',
+    // icon: 'person_celebrate',
+    icon: 'manage_accounts',
     title: 'Users',
     routeName: 'users',
   },
   {
-    icon: 'contacts',
+    icon: 'diversity_3',
     title: 'Teams',
     routeName: 'teams',
   },
   {
-    icon: 'people_alt',
+    icon: 'sports_kabaddi',
     title: 'Players',
     routeName: 'players',
   },
@@ -79,6 +81,7 @@ const isActive = (routeName: string): boolean => {
   flex-direction: column;
   height: 100%;
 }
+
 .side-submenu-layout {
   display: flex;
   height: 100%;
