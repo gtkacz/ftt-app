@@ -14,24 +14,23 @@
 						<v-col cols="6" class="d-flex justify-end gap-2">
 							<v-menu v-model="bulkActionMenu" :close-on-content-click="false">
 								<template v-slot:activator="{ props }">
-									<v-btn v-bind="props" variant="flat" color="white">
-										Bulk Actions
-										<v-icon end>arrow_drop_down</v-icon>
+									<v-btn v-bind="props" variant="tonal" color="white" icon>
+										<v-icon icon="sweep" />
 									</v-btn>
 								</template>
 								<v-card>
 									<v-list>
 										<v-list-item @click="prepareBulkAction('activate')">
-											<v-list-item-title>Activate Users</v-list-item-title>
+											<v-list-item-title>Activate</v-list-item-title>
 										</v-list-item>
 										<v-list-item @click="prepareBulkAction('deactivate')">
-											<v-list-item-title>Deactivate Users</v-list-item-title>
+											<v-list-item-title>Deactivate</v-list-item-title>
 										</v-list-item>
 										<v-list-item @click="prepareBulkAction('approve')">
-											<v-list-item-title>Approve Users</v-list-item-title>
+											<v-list-item-title>Approve</v-list-item-title>
 										</v-list-item>
 										<v-list-item @click="prepareBulkAction('unapprove')">
-											<v-list-item-title>Unapprove Users</v-list-item-title>
+											<v-list-item-title>Unapprove</v-list-item-title>
 										</v-list-item>
 										<v-list-item @click="prepareBulkAction('make_staff')">
 											<v-list-item-title>Make Staff</v-list-item-title>

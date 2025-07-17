@@ -1,10 +1,15 @@
-import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { createVuetify } from "vuetify";
-import { aliases, md } from "vuetify/iconsets/md";
-import router from "./router";
-import App from "./App.vue";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import { createApp } from "vue";
+import { createVuetify } from "vuetify";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
+import { md } from "vuetify/iconsets/md";
+import { mdi } from "vuetify/iconsets/mdi";
+import * as labsComponents from "vuetify/labs/components";
+import App from "./App.vue";
+import { aliases, mds } from "./iconsets/mds";
+import router from "./router";
 
 // Vuetify
 import "vuetify/styles";
@@ -18,6 +23,10 @@ import errorSnackbarPlugin from "@/plugins/errorSnackbar";
 // Custom components
 import AppLogo from "@/components/common/AppLogo.vue";
 import ThemeChanger from "@/components/common/ThemeChanger.vue";
+
+import "@mdi/font/css/materialdesignicons.css";
+import "material-symbols";
+import "vuetify/styles";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -67,10 +76,17 @@ const vuetify = createVuetify({
       },
     },
   },
+  components: {
+    ...components,
+    ...labsComponents,
+  },
+  directives,
   icons: {
-    defaultSet: "md",
+    defaultSet: "mds",
     aliases,
     sets: {
+      mds,
+      mdi,
       md,
     },
   },

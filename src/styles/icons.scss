@@ -1,0 +1,115 @@
+/* icons.css */
+:root {
+  --md-icon-fill: 0;
+  --md-icon-weight: 300;
+  --md-icon-grad: 0;
+  --md-icon-opsz: 24;
+  --md-icon-transition-duration: 200ms;
+  --md-icon-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.material-symbols {
+  font-variation-settings: "FILL" var(--md-icon-fill),
+    "wght" var(--md-icon-weight), "GRAD" var(--md-icon-grad),
+    "opsz" var(--md-icon-opsz);
+  transition: font-variation-settings var(--md-icon-transition-duration)
+      var(--md-icon-transition-easing),
+    transform var(--md-icon-transition-duration)
+      var(--md-icon-transition-easing);
+}
+
+/* Fill */
+.material-symbols.material-symbols-filled {
+  --md-icon-fill: 1;
+}
+
+/* Emphasis */
+.material-symbols.material-symbols-high-emphasis {
+  --md-icon-grad: 200;
+}
+.material-symbols.material-symbols-medium-emphasis,
+.material-symbols.material-symbols-default-emphasis {
+  --md-icon-grad: 0;
+}
+.material-symbols.material-symbols-low-emphasis {
+  --md-icon-grad: -25;
+}
+
+/* Disable animation (or just remove this class, and the default animations) */
+.material-symbols.no-animation {
+  --md-icon-transition-duration: 0;
+}
+
+/* opsz */
+.material-symbols.v-icon--size-x-small,
+.material-symbols.v-icon--size-small {
+  --md-icon-opsz: 20;
+}
+.material-symbols.v-icon--size-default {
+  --md-icon-opsz: 24;
+}
+.material-symbols.v-icon--size-large {
+  --md-icon-opsz: 28;
+}
+.material-symbols.v-icon--size-x-large {
+  --md-icon-opsz: 32;
+}
+
+/* Automatically apply fill when items are selected in lists, tabs, and navigation */
+.v-list-item--active i.v-icon.material-symbols,
+.v-btn--active i.v-icon.material-symbols,
+.v-tab--selected i.v-icon.material-symbols {
+  --md-icon-fill: 1;
+  --md-icon-grad: 200;
+}
+
+/* Disable fill animation in checkboxes */
+.v-selection-control__input .v-icon.material-symbols {
+  --md-icon-transition-duration: 0ms;
+}
+/* Apply fill to checked checkboxes */
+.v-selection-control__input:has(input:checked:not([type="radio"]))
+  .v-icon.material-symbols {
+  --md-icon-fill: 1;
+}
+
+/* Try to fix fill issues with ratings */
+.v-rating__wrapper:has(~ .v-rating__wrapper input:checked)
+  .v-icon.material-symbols,
+.v-rating__wrapper:has(~ .v-rating__wrapper input:checked)
+  .v-icon.material-symbols-outlined,
+.v-rating__wrapper:has(~ .v-rating__wrapper input:checked)
+  .v-icon.material-symbols-rounded,
+.v-rating__wrapper:has(~ .v-rating__wrapper input:checked)
+  .v-icon.material-symbols-sharp,
+.v-rating__wrapper:has(input:checked) .v-icon.material-symbols,
+.v-rating__wrapper:has(input:checked) .v-icon.material-symbols-outlined,
+.v-rating__wrapper:has(input:checked) .v-icon.material-symbols-rounded,
+.v-rating__wrapper:has(input:checked) .v-icon.material-symbols-sharp {
+  --md-icon-fill: 1;
+}
+
+/* Fix fill issues with $delimiter alias in carousels */
+.v-carousel__controls__item .v-icon {
+  --md-icon-fill: 1;
+}
+
+.v-rating__wrapper:has(~ .v-rating__wrapper input:checked), /* Fill ratings prior to the checked one */
+.v-rating__wrapper:has(~ .v-rating__wrapper:hover), /* Fill ratings prior to the hovered one */
+.v-rating__item:not(:has(.v-rating__item--half)):has(input:checked), /* Fill regular rating if it's checked */
+.v-rating__item--half:has(~ input:checked), /* Fill half rating if it, or its full rating is checked */
+.v-rating__item--full:has(+ input:checked), /* Fill full rating if it's checked */
+.v-rating__item:not(:has(.v-rating__item--half)):hover, /* Regular, half & full ratings when hovered*/
+.v-rating__item--half:hover,
+.v-rating__item--full:hover {
+  .v-icon[class*="material-symbols"] {
+    --md-icon-fill: 1;
+  }
+}
+/* When a rating is hovered, disable fill on subsequent selected stars */
+.v-rating__wrapper:hover ~ .v-rating__wrapper,
+.v-rating__item--half:hover ~ .v-rating__item--full {
+  .v-icon[class*="material-symbols"] {
+    --md-icon-fill: 0 !important;
+  }
+}
