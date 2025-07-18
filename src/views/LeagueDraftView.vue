@@ -36,7 +36,7 @@
 							<v-divider class="my-4" v-if="!isLotteryHappened" />
 							<v-row>
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
-									<v-card variant="tonal" color="primary" class="pa-4" v-ripple>
+									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4" v-ripple>
 										<v-card-title>
 											<div class="d-flex align-center justify-start gap-2">
 												<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
@@ -112,11 +112,14 @@ import { useAuthStore } from '@/stores/auth';
 import moment from 'moment';
 import momentTz from 'moment-timezone';
 import { computed, onMounted, ref } from 'vue';
+import { useThemeStore } from '@/stores/theme';
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
 	return authStore.user?.is_superuser
 })
+const themeStore = useThemeStore()
+const isDark = computed(() => themeStore.isDark)
 
 const loading = ref(true)
 const startDialog = ref(false)
