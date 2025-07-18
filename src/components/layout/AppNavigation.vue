@@ -218,7 +218,7 @@ const handleMouseLeave = () => {
   width: 100vw;
   height: 100vh;
   background-color: transparent;
-  z-index: 2000;
+  z-index: 900;
 }
 
 @keyframes expandFromLeft {
