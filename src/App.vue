@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, onErrorCaptured, onMounted, watch } from "vue";
+import { onErrorCaptured, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppLayout from './components/layout/AppLayout.vue';
 import { useAuthStore } from "./stores/auth";
@@ -25,8 +25,11 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-const { proxy } = getCurrentInstance()!
-const errorSnackbar = proxy!.$errorSnackbar
+const errorSnackbar = ref({
+  show: false,
+  message: '',
+  timeout: 6000
+});
 
 const showError = (message: string) => {
   errorSnackbar.value = {

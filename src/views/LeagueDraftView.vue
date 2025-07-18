@@ -101,20 +101,8 @@
 import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 import moment from 'moment';
+import momentTz from 'moment-timezone';
 import { computed, onMounted, ref } from 'vue';
-
-type Pick = {
-	id: number;
-	pick_number: number;
-	overall_pick: number;
-	started_at: string | null;
-	is_pick_made: boolean;
-	pick_made_at: string | null;
-	draft: number;
-	pick: number;
-	selected_player: any;
-	contract: number;  // <-- team ID
-};
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
@@ -129,7 +117,7 @@ const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
 const currentDate = moment()
-const lotteryStartsAt = moment('2025-07-18 13:30:00').unix()
+const lotteryStartsAt = momentTz.tz('2025-07-18 13:30:00', 'America/Sao_Paulo').unix()
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
 })
@@ -187,9 +175,9 @@ const fetchLotteryData = async () => {
 	loading.value = true
 	try {
 		const response = await api.get(`/drafts/${draftData.value.id}/lottery/`)
-		const rawData: Pick[] = response.data.picks
+		const rawData = response.data.picks
 
-		const picksByTeam = rawData.reduce<Record<number, Pick[]>>((acc, pick) => {
+		const picksByTeam = rawData.reduce<Record<number, any[]>>((acc, pick) => {
 			const teamId = pick.pick__current_team;
 			if (!acc[teamId]) {
 				acc[teamId] = [];
@@ -212,16 +200,20 @@ const fetchLotteryData = async () => {
 }
 
 const startLottery = async () => {
-	if (!isStaff.value) return
 	try {
 		dialogAction.value = 'Lottery'
 		startDialog.value = true
-		await api.post(`/drafts/${draftData.value.id}/lottery/start/`)
-		await loadData()
+
+		if (isStaff.value) {
+			await api.post(`/drafts/${draftData.value.id}/lottery/start/`)
+		} else {
+			await new Promise(r => setTimeout(r, 5000));
+		}
 	} catch (error) {
 		console.error('Error starting lottery:', error)
 		throw error
 	} finally {
+		await loadData()
 		startDialog.value = false
 	}
 }

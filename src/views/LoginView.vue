@@ -2,7 +2,7 @@
   <v-container fluid class="fill-height ">
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="6" lg="4">
-        <v-card rounded="xl" class="pa-8 login-card">
+        <v-card rounded="xl" class="pa-8" color="primary" variant="tonal">
           <v-card-title class="text-h4 text-center pb-2">
             <v-row align="center" justify="center" no-gutters><app-logo size="3ch" /></v-row>
             <v-row align="center" justify="center">Welcome Back</v-row>
@@ -73,8 +73,4 @@ const handleLogin = async () => {
 </script>
 
 <style lang="scss" scoped>
-.login-card {
-  background-color: transparent;
-  border: 1px solid rgb(var(--v-theme-on-surface));
-}
 </style>

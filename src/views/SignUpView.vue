@@ -2,7 +2,7 @@
   <v-container fluid class="fill-height">
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="6" lg="4">
-        <v-card rounded="xl" class="pa-8 signup-card">
+        <v-card rounded="xl" class="pa-8" color="primary" variant="tonal">
           <v-card-title class="text-h4 text-center pb-2">
             <v-row align="center" justify="center" no-gutters>
               <app-logo size="3ch" />
@@ -13,7 +13,7 @@
             Sign up to get started
           </v-card-subtitle>
 
-          <v-form @submit.prevent="handleSignup" v-model="formValid">
+          <v-form @submit.prevent="handleSignup" v-model="formValid" disabled>
             <v-text-field rounded v-model="username" label="Username" variant="outlined" append-inner-icon="account_box"
               :rules="[rules.required]" class="mb-3" color="secondary" />
 
@@ -33,13 +33,15 @@
 
             <v-row>
               <v-col cols="12" sm="6">
-                <v-text-field rounded v-model="password" label="Password" type="password" variant="outlined"
-                  append-inner-icon="lock" :rules="[rules.required, rules.min(8)]" class="mb-3" color="secondary" />
+                <v-text-field rounded v-model="password" :type="showPassword ? 'text' : 'password'" label="Password"
+                  variant="outlined" :append-inner-icon="showPassword ? 'visibility' : 'visibility_off'"
+                  @click:append-inner="showPassword = !showPassword" :rules="[rules.required, rules.min(8)]"
+                  class="mb-3" color="secondary" />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field rounded v-model="passwordConfirm" label="Confirm Password" type="password"
-                  variant="outlined" append-inner-icon="lock" :rules="[rules.required, rules.passwordMatch]"
-                  class="mb-6" color="secondary" />
+                <v-text-field rounded v-model="passwordConfirm" :type="showPassword ? 'text' : 'password'"
+                  label="Confirm Password" variant="outlined" append-inner-icon="lock"
+                  :rules="[rules.required, rules.passwordMatch]" class="mb-6" color="secondary" />
               </v-col>
             </v-row>
 
@@ -51,7 +53,10 @@
             <v-divider class="mb-4" />
 
             <div class="text-center mt-4">
-              <span class="text-on-surface">Already have an account? <router-link to="login">Login</router-link></span>
+              <span class="text-on-surface">
+                Already have an account?
+                <router-link to="login">Login</router-link>
+              </span>
             </div>
           </v-form>
         </v-card>
@@ -75,6 +80,9 @@ const email = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
 const formValid = ref(false);
+
+// New: control visibility of password fields
+const showPassword = ref(false);
 
 const rules = {
   required: (value: string) => !!value || 'This field is required',
@@ -108,8 +116,4 @@ const handleSignup = async () => {
 </script>
 
 <style lang="scss" scoped>
-.signup-card {
-  background-color: transparent;
-  border: 1px solid rgb(var(--v-theme-on-surface));
-}
 </style>

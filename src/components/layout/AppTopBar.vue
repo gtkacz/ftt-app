@@ -55,21 +55,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useThemeStore } from '../../stores/theme'
 import { useNavigationStore } from '../../stores/navigation'
 import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
-const themeStore = useThemeStore()
 const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 
-const isDark = computed(() => themeStore.isDark)
 const notificationCount = computed(() => 3) // Mock notification count
 
 const initials = computed(() => {
-  const name = user.value ? user.value.first_name + user.value.last_name : '';
+  const name = user.value ? user.value.first_name + ' ' + user.value.last_name : '';
   if (!user || name.length < 2) {
     return '?'
   }
@@ -80,10 +77,6 @@ const initials = computed(() => {
   return (splitted[0][0] + splitted[splitted.length - 1][0]).toUpperCase()
 })
 
-const toggleTheme = () => {
-  themeStore.toggleTheme()
-}
-
 const toggleNotifications = () => {
   navigationStore.toggleNotifications()
 }
@@ -93,7 +86,7 @@ const toggleMobileNav = () => {
 }
 
 const navigateToProfile = () => {
-  router.push({ name: 'User' })
+  router.push({ name: 'profile' })
 }
 
 const handleLogout = () => {
