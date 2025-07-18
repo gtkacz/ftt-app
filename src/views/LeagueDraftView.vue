@@ -23,8 +23,8 @@
 									<p class="d-flex align-center justify-center flex-column gap-2">
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
-										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary" @click="startLottery" class="mt-4" :loading="loading"
-											icon>
+										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
+											@click="startLottery" class="mt-4" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 										<v-btn v-if="isStaff" color="primary" @click="startLottery" :loading="loading">
@@ -40,7 +40,7 @@
 										<v-card-title>
 											<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
 										</v-card-title>
-										<v-card-subtitle>{{ team.owner_username }}</v-card-subtitle>
+										<v-card-subtitle>@{{ team.owner_username }}</v-card-subtitle>
 										<v-card-text>
 											Draft Position:
 											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
@@ -51,7 +51,8 @@
 												<span>Next Picks:</span>
 												<v-chip-group column>
 													<v-chip v-for="pick in lotteryData[team.id].slice(1)" :key="pick.id"
-														size="small">
+														size="small"
+														v-tooltip="`Round ${pick.pick__round_number} - Pick #${pick.pick_number}`">
 														#{{ pick.overall_pick }}
 													</v-chip>
 												</v-chip-group>

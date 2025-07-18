@@ -27,7 +27,7 @@ const props = withDefaults(
 	defineProps<{
 		value: number            // Can be minutes or Unix timestamp
 		timestamp?: boolean      // If true, value is treated as Unix timestamp
-		startTime?: number       // initial total minutes for progress bar
+		startFrom?: number       // initial total minutes for progress bar
 		showProgress?: boolean
 		containerClass?: string
 		displayClass?: string
@@ -36,7 +36,7 @@ const props = withDefaults(
 	}>(),
 	{
 		timestamp: false,
-		startTime: 0,
+		startFrom: 0,
 		showProgress: true,
 		containerClass: '',
 		displayClass: '',
@@ -77,7 +77,7 @@ const computedMinutes = computed(() => {
 
 function initializeTimer() {
 	const mins = computedMinutes.value
-	totalProgressSeconds.value = (props.startTime || mins) * 60
+	totalProgressSeconds.value = (props.startFrom || mins) * 60
 	remainingSeconds.value = mins * 60
 	lastEmittedMinute = Math.ceil(remainingSeconds.value / 60)
 	emit('minutes-change', lastEmittedMinute)

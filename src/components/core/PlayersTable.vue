@@ -285,7 +285,8 @@
 				<!-- Contract -->
 				<template v-slot:item.contract_duration="{ item }">
 					<span v-if="item.contract_duration" class="font-weight-medium">
-						{{ item.contract_duration }} <word item="year" :count="item.contract_duration" />
+						{{ item.contract_duration }}
+						<word item="year" :count="item.contract_duration" />
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
@@ -454,10 +455,21 @@ const sortableHeaders = computed(() => {
 
 // Custom search function to include first name
 const customSearch = (value: any, search: string, item: any) => {
+	// if no search, show everything
 	if (!search) return true
-	const searchLower = search.toLowerCase()
-	const fullName = `${item.raw.first_name} ${item.raw.last_name}`.toLowerCase()
-	return fullName.includes(searchLower)
+
+	// helper: normalize + strip accents + lowercase
+	const normalize = (str: string) =>
+		str
+			.normalize('NFD')                  // decompose combined letters into letter + accent
+			.replace(/[\u0300-\u036f]/g, '')  // remove all accent marks
+			.toLowerCase()
+
+	const searchNorm = normalize(search)
+	const fullName = `${item.raw.first_name} ${item.raw.last_name}`
+	const fullNameNorm = normalize(fullName)
+
+	return fullNameNorm.includes(searchNorm)
 }
 
 // Computed filter options

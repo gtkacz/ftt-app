@@ -300,6 +300,14 @@
 					<span v-else class="text-grey-darken-1">Never</span>
 				</template>
 
+				<!-- Updated At -->
+				<template v-slot:item.updated_at="{ item }">
+					<span v-if="item?.updated_at">
+						{{ formatDate(item.updated_at) }}
+					</span>
+					<span v-else class="text-grey-darken-1">Never</span>
+				</template>
+
 				<!-- Pagination footer -->
 				<template v-slot:bottom>
 					<v-divider />
@@ -559,7 +567,13 @@ const allHeaders = ref([
 		key: 'last_login',
 		sortable: true,
 		visible: true
-	}
+	},
+	{
+		title: 'Updated At',
+		key: 'updated_at',
+		sortable: true,
+		visible: true
+	},
 ])
 
 const visibleHeaders = computed(() => {
@@ -698,6 +712,18 @@ const filteredUsers = computed(() => {
 				user.last_login && moment(user.last_login).isSameOrBefore(moment(filters.value.lastLoginEnd))
 			)
 		}
+
+		// Updated at filters
+		if (filters.value.lastLoginStart) {
+			result = result.filter(user =>
+				user.updated_at && moment(user.updated_at).isSameOrAfter(moment(filters.value.lastLoginStart))
+			)
+		}
+		if (filters.value.lastLoginEnd) {
+			result = result.filter(user =>
+				user.updated_at && moment(user.updated_at).isSameOrBefore(moment(filters.value.lastLoginEnd))
+			)
+		}
 	}
 
 	return result
@@ -801,7 +827,7 @@ const formatDate = (dateString) => {
 		return date.fromNow()
 	}
 
-	return date.format('MMM D, YYYY')
+	return date.format('YYYY-MM-DD HH:mm:ss')
 }
 
 const customSearch = (value, query, item) => {

@@ -20,11 +20,7 @@ export interface RegisterTeamData {
 export interface AuthResponse {
   access: string;
   refresh?: string;
-  user?: {
-    id: number;
-    username: string;
-    email: string;
-  };
+  user?: User;
 }
 
 export interface Team {
