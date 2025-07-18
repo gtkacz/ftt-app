@@ -129,7 +129,7 @@ const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
 const currentDate = moment()
-const lotteryStartsAt = moment('2025-07-18 13:00:00').unix()
+const lotteryStartsAt = moment('2025-07-18 13:30:00').unix()
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
 })
