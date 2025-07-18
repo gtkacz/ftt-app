@@ -20,11 +20,14 @@
 						<v-container>
 							<v-row align="center" justify="center" v-if="!isLotteryHappened">
 								<v-col cols="auto">
-									<p class="d-flex align-center justify-center flex-column">
+									<p class="d-flex align-center justify-center flex-column gap-2">
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
-										<v-btn v-if="isStaff" color="primary" @click="startLottery" class="mt-4"
-											:loading="loading">
+										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary" @click="startLottery" class="mt-4" :loading="loading"
+											icon>
+											<v-icon icon="refresh" />
+										</v-btn>
+										<v-btn v-if="isStaff" color="primary" @click="startLottery" :loading="loading">
 											Start Now
 										</v-btn>
 									</p>
@@ -106,7 +109,7 @@ import { computed, onMounted, ref } from 'vue';
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
-	return authStore.user?.is_staff
+	return authStore.user?.is_superuser
 })
 
 const loading = ref(true)
@@ -117,7 +120,7 @@ const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
 const currentDate = moment()
-const lotteryStartsAt = momentTz.tz('2025-07-18 13:30:00', 'America/Sao_Paulo').unix()
+const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').unix()
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
 })
