@@ -30,8 +30,9 @@
 									</p>
 								</v-col>
 							</v-row>
+							<v-divider class="my-4" />
 							<v-row>
-								<v-col v-for="team in teamsData" :key="team.id" cols="12" md="6" lg="4">
+								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
 									<v-card variant="tonal" color="primary" class="pa-4" v-ripple>
 										<v-card-title>
 											<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
@@ -39,9 +40,10 @@
 										<v-card-subtitle>{{ team.owner_username }}</v-card-subtitle>
 										<v-card-text>
 											Draft Position:
-											<h2>{{ lotteryData ? '#' + lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
+											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
+												lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
 										</v-card-text>
-										<v-card-actions>
+										<v-card-actions v-if="isLotteryHappened && lotteryData[team.id]">
 											<p>
 												<span>Next Picks:</span>
 												<v-chip-group column>
@@ -96,10 +98,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import moment from 'moment'
-import api from '@/api/axios'
-import { useAuthStore } from '@/stores/auth'
+import api from '@/api/axios';
+import { useAuthStore } from '@/stores/auth';
+import moment from 'moment';
+import { computed, onMounted, ref } from 'vue';
 
 type Pick = {
 	id: number;
@@ -130,6 +132,29 @@ const currentDate = moment()
 const lotteryStartsAt = moment('2025-07-18 13:00:00').unix()
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
+})
+
+const sortedTeams = computed(() => {
+	if (!teamsData.value) return []
+
+	return [...teamsData.value].sort((a, b) => {
+		const aHasPick = lotteryData.value && lotteryData.value[a.id] && lotteryData.value[a.id][0]
+		const bHasPick = lotteryData.value && lotteryData.value[b.id] && lotteryData.value[b.id][0]
+
+		// Both have picks - sort by overall_pick (ascending)
+		if (aHasPick && bHasPick) {
+			return lotteryData.value[a.id][0].overall_pick - lotteryData.value[b.id][0].overall_pick
+		}
+
+		// Only a has pick - a comes first
+		if (aHasPick && !bHasPick) return -1
+
+		// Only b has pick - b comes first
+		if (!aHasPick && bHasPick) return 1
+
+		// Neither has pick - sort alphabetically by team name
+		return a.name.localeCompare(b.name)
+	})
 })
 
 const fetchTeamsData = async () => {
@@ -192,7 +217,7 @@ const startLottery = async () => {
 		dialogAction.value = 'Lottery'
 		startDialog.value = true
 		await api.post(`/drafts/${draftData.value.id}/lottery/start/`)
-		fetchDraftData()
+		await loadData()
 	} catch (error) {
 		console.error('Error starting lottery:', error)
 		throw error
@@ -210,14 +235,23 @@ const startDraft = async () => {
 	return;
 }
 
-onMounted(async () => {
+const loadData = async () => {
 	loading.value = true
-	await Promise.all([
-		fetchTeamsData(),
-		fetchDraftData(),
-	])
-	await fetchLotteryData()
-	loading.value = false
+	try {
+		await Promise.all([
+			fetchTeamsData(),
+			fetchDraftData(),
+		])
+		fetchLotteryData()
+	} catch (error) {
+		console.error('Error loading data:', error)
+	} finally {
+		loading.value = false
+	}
+}
+
+onMounted(() => {
+	loadData()
 })
 </script>
 

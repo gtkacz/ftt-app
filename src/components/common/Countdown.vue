@@ -1,5 +1,5 @@
 <template>
-	<div :class="[containerClass, { 'text-danger': isExpired }]" :style="{ width: widthPx }">
+	<div :class="[containerClass, { 'text-danger': isExpired }]" :style="{ width: widthPx }" v-tooltip="actualDate">
 		<div ref="timerRef" :class="['countdown-display', displayClass, { [expiredClass]: isExpired }]">
 			{{ formattedTime }}
 		</div>
@@ -52,6 +52,13 @@ const emit = defineEmits<{
 
 const timerRef = ref<HTMLElement | null>(null)
 const widthPx = ref<string>('auto')
+
+const actualDate = computed(() => {
+	if (props.timestamp) {
+		return moment.unix(props.value).format('YYYY-MM-DD HH:mm')
+	}
+	return moment().add(props.value, 'minutes').format('YYYY-MM-DD HH:mm')
+})
 
 const remainingSeconds = ref(0)
 const totalProgressSeconds = ref(0)
@@ -196,7 +203,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .countdown-display {
-	font-family: 'Roboto Mono', monospace;
+	cursor: default;
 	font-size: 2.5rem;
 	font-weight: bold;
 	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
