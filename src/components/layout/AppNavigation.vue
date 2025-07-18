@@ -1,25 +1,44 @@
 <template>
-  <nav class="app-navigation" :class="{ 'expanded': isHovered }" @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave">
+  <!-- Hamburger menu button for mobile -->
+  <v-btn v-if="mobile && !navigationStore.isNavigationExpanded" icon variant="text" color="secondary"
+    class="hamburger-menu" @click="navigationStore.toggleNavigation">
+    <v-icon icon="menu" />
+  </v-btn>
+
+  <!-- Click-outside overlay for mobile -->
+  <div v-if="mobile && navigationStore.isNavigationExpanded" class="nav-overlay"
+    @click="navigationStore.toggleNavigation"></div>
+
+  <!-- Navigation sidebar -->
+  <nav v-if="!mobile || navigationStore.isNavigationExpanded" class="app-navigation" :class="{
+    'expanded': isHovered || (mobile && navigationStore.isNavigationExpanded),
+    'mobile': mobile,
+    'mobile-open': mobile && navigationStore.isNavigationExpanded
+  }" @mouseenter="!mobile && handleMouseEnter()" @mouseleave="!mobile && handleMouseLeave()">
     <div class="nav-logo">
-      <LogoNav label="Fantasy Trash Talk" :expanded="isHovered" />
+      <LogoNav label="Fantasy Trash Talk" :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)" />
     </div>
 
     <div class="nav-items">
       <div v-for="(group, index) in navigationGroups" :key="index" class="nav-group">
         <div>
-          <div class="nav-group-header" :class="{ 'expanded': isHovered }">
-            <div v-if="isHovered" class="nav-group-title" :class="{ 'hovered': isHovered }">{{ group.title }}</div>
-            <div class="nav-divider" :class="{ 'expanded': isHovered }"></div>
+          <div class="nav-group-header"
+            :class="{ 'expanded': isHovered || (mobile && navigationStore.isNavigationExpanded) }">
+            <div v-if="isHovered || (mobile && navigationStore.isNavigationExpanded)" class="nav-group-title"
+              :class="{ 'hovered': isHovered || (mobile && navigationStore.isNavigationExpanded) }">{{ group.title }}
+            </div>
+            <div class="nav-divider"
+              :class="{ 'expanded': isHovered || (mobile && navigationStore.isNavigationExpanded) }"></div>
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.routeName }" :expanded="isHovered" :commission_only="item.commission_only ?? false"
-            :disabled="item.disabled ?? false" />
+            :to="{ name: item.routeName }" :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
+            :commission_only="item.commission_only ?? false" :disabled="item.disabled ?? false"
+            @click="mobile && navigationStore.toggleNavigation()" />
         </div>
       </div>
     </div>
-    <div v-if="isHovered" class="nav-footer">
+    <div v-if="isHovered || (mobile && navigationStore.isNavigationExpanded)" class="nav-footer">
       <a href="https://github.com/gtkacz/ftt-app" target="_blank">v{{ version }}</a>
     </div>
   </nav>
@@ -27,10 +46,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useDisplay } from 'vuetify'
+import { useNavigationStore } from '../../stores/navigation'
 import NavItem from '../navigation/NavItem.vue'
 import LogoNav from '../navigation/LogoNav.vue'
 
 const version = __APP_VERSION__
+const { mobile } = useDisplay()
+const navigationStore = useNavigationStore()
 
 const isHovered = ref(false)
 
@@ -62,7 +85,7 @@ const navigationGroups = [
     title: 'Rosters',
     items: [
       {
-        icon: 'automation',
+        icon: 'model_training',
         label: 'League Draft',
         routeName: 'league-draft'
       },
@@ -137,6 +160,17 @@ const handleMouseLeave = () => {
 </script>
 
 <style lang="scss" scoped>
+.hamburger-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  width: auto;
+  aspect-ratio: 1;
+  z-index: 1010;
+}
+
 .app-navigation {
   position: fixed;
   top: 0;
@@ -156,22 +190,35 @@ const handleMouseLeave = () => {
     width: 100%;
   }
 
+  &.mobile {
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
 
-  &.expanded {
+  &.mobile-open {
+    transition: transform 0.3s ease;
+    transform: translateY(0);
+    transform: translateX(0);
+  }
+
+  &.expanded:not(.mobile) {
     animation: expandFromLeft 0.3s ease forwards;
   }
 
-  &:not(.expanded) {
+  &:not(.expanded):not(.mobile) {
     animation: shrinkToLeft 0.3s ease forwards;
   }
+}
 
-  @media (max-width: 768px) {
-    transform: translateX(-100%);
-
-    &.expanded {
-      transform: translateX(0);
-    }
-  }
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  z-index: 2000;
 }
 
 @keyframes expandFromLeft {
@@ -262,7 +309,7 @@ const handleMouseLeave = () => {
   padding: 0 16px;
   opacity: 0;
   transition: opacity 0.1s ease;
-  background-color: var(--primary-color);
+  background-color: rgb(var(--v-theme-primary));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

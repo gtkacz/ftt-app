@@ -1,11 +1,6 @@
 <template>
   <header class="app-top-bar">
     <div class="top-bar-content">
-      <!-- Mobile Menu Button -->
-      <v-btn icon variant="text" class="mobile-menu-btn d-sm-none" @click="toggleMobileNav">
-        <v-icon icon="menu" />
-      </v-btn>
-
       <!-- Spacer -->
       <div class="spacer"></div>
 
@@ -79,10 +74,6 @@ const initials = computed(() => {
 
 const toggleNotifications = () => {
   navigationStore.toggleNotifications()
-}
-
-const toggleMobileNav = () => {
-  navigationStore.toggleNavigation()
 }
 
 const navigateToProfile = () => {

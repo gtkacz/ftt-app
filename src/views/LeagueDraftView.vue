@@ -14,8 +14,8 @@
 			</v-tabs>
 			<v-progress-linear v-if="loading" indeterminate class="mb-4" color="secondary" />
 
-			<v-card-text>
-				<v-tabs-window v-model="tab" v-if="!loading">
+			<v-card-text v-else>
+				<v-tabs-window v-model="tab">
 					<v-tabs-window-item value="lottery">
 						<v-container>
 							<v-row align="center" justify="center" v-if="!isLotteryHappened">
@@ -33,14 +33,19 @@
 									</p>
 								</v-col>
 							</v-row>
-							<v-divider class="my-4" />
+							<v-divider class="my-4" v-if="!isLotteryHappened" />
 							<v-row>
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
 									<v-card variant="tonal" color="primary" class="pa-4" v-ripple>
 										<v-card-title>
-											<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
+											<div class="d-flex align-center justify-start gap-2">
+												<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
+												<v-icon icon="attribution" color="info" size="small" variant="tonal" v-if="team.owner_username === authStore.user?.username" />
+											</div>
 										</v-card-title>
-										<v-card-subtitle>@{{ team.owner_username }}</v-card-subtitle>
+										<v-card-subtitle>
+												@{{ team.owner_username }}
+										</v-card-subtitle>
 										<v-card-text>
 											Draft Position:
 											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
@@ -150,33 +155,26 @@ const sortedTeams = computed(() => {
 })
 
 const fetchTeamsData = async () => {
-	loading.value = true
 	try {
 		const response = await api.get("/teams/")
 		teamsData.value = response.data.results
 	} catch (error) {
 		console.error('Error fetching draft data:', error)
 		throw error
-	} finally {
-		loading.value = false
 	}
 }
 
 const fetchDraftData = async () => {
-	loading.value = true
 	try {
 		const response = await api.get(`/drafts/?year=${currentDate.year()}`)
 		draftData.value = response.data.results[0]
 	} catch (error) {
 		console.error('Error fetching draft data:', error)
 		throw error
-	} finally {
-		loading.value = false
 	}
 }
 
 const fetchLotteryData = async () => {
-	loading.value = true
 	try {
 		const response = await api.get(`/drafts/${draftData.value.id}/lottery/`)
 		const rawData = response.data.picks
@@ -233,17 +231,12 @@ const startDraft = async () => {
 
 const loadData = async () => {
 	loading.value = true
-	try {
-		await Promise.all([
-			fetchTeamsData(),
-			fetchDraftData(),
-		])
+	await Promise.all([
+		fetchTeamsData(),
+		fetchDraftData(),
+	]).then(() => {
 		fetchLotteryData()
-	} catch (error) {
-		console.error('Error loading data:', error)
-	} finally {
-		loading.value = false
-	}
+	})
 }
 
 onMounted(() => {

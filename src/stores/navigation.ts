@@ -6,6 +6,7 @@ export const useNavigationStore = defineStore("navigation", () => {
   const showNotifications = ref(false);
 
   const toggleNavigation = () => {
+    console.log("Toggling navigation");
     isNavigationExpanded.value = !isNavigationExpanded.value;
   };
 
