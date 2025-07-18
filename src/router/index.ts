@@ -134,7 +134,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/league-draft",
     name: "league-draft",
-    component: () => import("../views/501View.vue"),
+    component: () => import("../views/LeagueDraftView.vue"),
   },
   {
     path: "/approval",

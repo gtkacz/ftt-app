@@ -1,0 +1,224 @@
+<template>
+	<div class="page-view">
+		<div class="page-header">
+			<h1 class="page-title">League Draft</h1>
+			<!-- <p class="page-subtitle">Lorem ipsum dolor sit amet</p> -->
+		</div>
+
+		<v-card>
+			<!-- If loading show loader -->
+			<v-tabs v-model="tab" bg-color="primary" density="comfortable" color="secondary" :disabled="loading"
+				mandatory>
+				<v-tab value="lottery">Lottery</v-tab>
+				<v-tab value="draft">Draft</v-tab>
+			</v-tabs>
+			<v-progress-linear v-if="loading" indeterminate class="mb-4" color="secondary" />
+
+			<v-card-text>
+				<v-tabs-window v-model="tab" v-if="!loading">
+					<v-tabs-window-item value="lottery">
+						<v-container>
+							<v-row align="center" justify="center" v-if="!isLotteryHappened">
+								<v-col cols="auto">
+									<p class="d-flex align-center justify-center flex-column">
+										<span>The lottery will start in</span>
+										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
+										<v-btn v-if="isStaff" color="primary" @click="startLottery" class="mt-4"
+											:loading="loading">
+											Start Now
+										</v-btn>
+									</p>
+								</v-col>
+							</v-row>
+							<v-row>
+								<v-col v-for="team in teamsData" :key="team.id" cols="12" md="6" lg="4">
+									<v-card variant="tonal" color="primary" class="pa-4" v-ripple>
+										<v-card-title>
+											<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
+										</v-card-title>
+										<v-card-subtitle>{{ team.owner_username }}</v-card-subtitle>
+										<v-card-text>
+											Draft Position:
+											<h2>{{ lotteryData ? '#' + lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
+										</v-card-text>
+										<v-card-actions>
+											<p>
+												<span>Next Picks:</span>
+												<v-chip-group column>
+													<v-chip v-for="pick in lotteryData[team.id].slice(1)" :key="pick.id"
+														size="small">
+														#{{ pick.overall_pick }}
+													</v-chip>
+												</v-chip-group>
+											</p>
+										</v-card-actions>
+									</v-card>
+								</v-col>
+							</v-row>
+						</v-container>
+					</v-tabs-window-item>
+					<v-tabs-window-item value="draft">
+						<v-container>
+							<v-row align="center" justify="center"
+								v-if="moment(draftData.starts_at).isAfter(currentDate)">
+								<v-col cols="auto">
+									<p class="d-flex align-center justify-center flex-column">
+										<span>The draft will start in</span>
+										<countdown :value="moment(draftData.starts_at).unix()" timestamp
+											@expired="startDraft" />
+										<v-btn v-if="isStaff" color="primary" @click="startDraft" class="mt-4"
+											:loading="loading">
+											Start Now
+										</v-btn>
+									</p>
+								</v-col>
+							</v-row>
+						</v-container>
+					</v-tabs-window-item>
+					<v-dialog v-model="startDialog" max-width="320" persistent>
+						<v-list class="py-2" color="primary" elevation="12" rounded="lg">
+							<v-list-item :title="`Starting ${dialogAction}...`">
+								<template v-slot:prepend>
+									<app-logo class="mr-4" />
+								</template>
+
+								<template v-slot:append>
+									<v-progress-circular color="primary" indeterminate="disable-shrink" size="16"
+										width="2"></v-progress-circular>
+								</template>
+							</v-list-item>
+						</v-list>
+					</v-dialog>
+				</v-tabs-window>
+			</v-card-text>
+		</v-card>
+	</div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import moment from 'moment'
+import api from '@/api/axios'
+import { useAuthStore } from '@/stores/auth'
+
+type Pick = {
+	id: number;
+	pick_number: number;
+	overall_pick: number;
+	started_at: string | null;
+	is_pick_made: boolean;
+	pick_made_at: string | null;
+	draft: number;
+	pick: number;
+	selected_player: any;
+	contract: number;  // <-- team ID
+};
+
+const authStore = useAuthStore()
+const isStaff = computed(() => {
+	return authStore.user?.is_staff
+})
+
+const loading = ref(true)
+const startDialog = ref(false)
+const dialogAction = ref('Draft')
+const tab = ref('lottery')
+const draftData = ref(null)
+const teamsData = ref(null)
+const lotteryData = ref(null)
+const currentDate = moment()
+const lotteryStartsAt = moment('2025-07-18 13:00:00').unix()
+const isLotteryHappened = computed(() => {
+	return lotteryData.value && Object.keys(lotteryData.value).length > 0
+})
+
+const fetchTeamsData = async () => {
+	loading.value = true
+	try {
+		const response = await api.get("/teams/")
+		teamsData.value = response.data.results
+	} catch (error) {
+		console.error('Error fetching draft data:', error)
+		throw error
+	} finally {
+		loading.value = false
+	}
+}
+
+const fetchDraftData = async () => {
+	loading.value = true
+	try {
+		const response = await api.get(`/drafts/?year=${currentDate.year()}`)
+		draftData.value = response.data.results[0]
+	} catch (error) {
+		console.error('Error fetching draft data:', error)
+		throw error
+	} finally {
+		loading.value = false
+	}
+}
+
+const fetchLotteryData = async () => {
+	loading.value = true
+	try {
+		const response = await api.get(`/drafts/${draftData.value.id}/lottery/`)
+		const rawData: Pick[] = response.data.picks
+
+		const picksByTeam = rawData.reduce<Record<number, Pick[]>>((acc, pick) => {
+			const teamId = pick.pick__current_team;
+			if (!acc[teamId]) {
+				acc[teamId] = [];
+			}
+			acc[teamId].push(pick);
+			return acc;
+		}, {});
+
+		for (const teamId in picksByTeam) {
+			picksByTeam[teamId].sort((a, b) => a.pick__round_number - b.pick__round_number);
+		}
+
+		lotteryData.value = picksByTeam
+	} catch (error) {
+		console.error('Error fetching draft data:', error)
+		throw error
+	} finally {
+		loading.value = false
+	}
+}
+
+const startLottery = async () => {
+	if (!isStaff.value) return
+	try {
+		dialogAction.value = 'Lottery'
+		startDialog.value = true
+		await api.post(`/drafts/${draftData.value.id}/lottery/start/`)
+		fetchDraftData()
+	} catch (error) {
+		console.error('Error starting lottery:', error)
+		throw error
+	} finally {
+		startDialog.value = false
+	}
+}
+
+const startDraft = async () => {
+	if (!isStaff.value) return
+	dialogAction.value = 'Draft'
+	startDialog.value = true
+	await new Promise(r => setTimeout(r, 2000));
+	startDialog.value = false
+	return;
+}
+
+onMounted(async () => {
+	loading.value = true
+	await Promise.all([
+		fetchTeamsData(),
+		fetchDraftData(),
+	])
+	await fetchLotteryData()
+	loading.value = false
+})
+</script>
+
+<style lang="scss" scoped></style>

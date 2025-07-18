@@ -2,7 +2,7 @@
 	<v-container fluid class="pa-0">
 		<v-card class="pa-4 bg-surface-variant" elevation="10">
 			<!-- Loading state -->
-			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
+			<v-progress-linear v-if="loading" indeterminate class="mb-4" />
 
 			<!-- Filters and Column Settings -->
 			<v-expand-transition>
