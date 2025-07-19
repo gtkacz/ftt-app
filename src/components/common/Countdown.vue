@@ -1,11 +1,19 @@
 <template>
 	<div :class="[containerClass, { 'text-danger': isExpired }]" :style="{ width: widthPx }" v-tooltip="actualDate">
-		<div ref="timerRef" :class="['countdown-display', displayClass, { [expiredClass]: isExpired }]">
-			{{ formattedTime }}
-		</div>
+		<!-- LABEL SLOT -->
+		<slot name="label" :formatted-time="formattedTime" :is-expired="isExpired">
+			<!-- default label -->
+			<div ref="timerRef" :class="['countdown-display', displayClass, { [expiredClass]: isExpired }]">
+				{{ formattedTime }}
+			</div>
+		</slot>
 
-		<v-progress-linear v-if="showProgress" :model-value="progressPercentage"
-			:color="isExpired ? 'danger' : 'primary'" height="8" rounded class="mt-4" />
+		<!-- PROGRESS SLOT -->
+		<slot name="progress" :progress-percentage="progressPercentage" :is-expired="isExpired">
+			<!-- default progress bar -->
+			<v-progress-linear v-if="showProgress" :model-value="progressPercentage"
+				:color="isExpired ? 'danger' : 'primary'" height="8" rounded class="mt-4" />
+		</slot>
 	</div>
 </template>
 
@@ -25,14 +33,14 @@ import moment from 'moment'
 
 const props = withDefaults(
 	defineProps<{
-		value: number            // Can be minutes or Unix timestamp
-		timestamp?: boolean      // If true, value is treated as Unix timestamp
-		startFrom?: number       // initial total minutes for progress bar
+		value: number            // now always in seconds if timestamp=false
+		timestamp?: boolean      // if true, `value` is treated as Unix timestamp
+		startFrom?: number       // initial total seconds for progress bar (falls back to `value`)
 		showProgress?: boolean
 		containerClass?: string
 		displayClass?: string
 		expiredClass?: string
-		showExtended?: boolean   // enable years/months/days display
+		showExtended?: boolean
 	}>(),
 	{
 		timestamp: false,
@@ -54,10 +62,18 @@ const timerRef = ref<HTMLElement | null>(null)
 const widthPx = ref<string>('auto')
 
 const actualDate = computed(() => {
+	return props.timestamp
+		? moment.unix(props.value).format('YYYY-MM-DD HH:mm')
+		: moment().add(props.value, 'seconds').format('YYYY-MM-DD HH:mm')
+})
+
+// compute remaining seconds (for both timestamp and plain‑seconds modes)
+const computedSeconds = computed(() => {
 	if (props.timestamp) {
-		return moment.unix(props.value).format('YYYY-MM-DD HH:mm')
+		const diff = moment.unix(props.value).diff(moment(), 'seconds', true)
+		return Math.max(0, Math.ceil(diff))
 	}
-	return moment().add(props.value, 'minutes').format('YYYY-MM-DD HH:mm')
+	return props.value
 })
 
 const remainingSeconds = ref(0)
@@ -65,26 +81,16 @@ const totalProgressSeconds = ref(0)
 let intervalId: number | null = null
 let lastEmittedMinute = -1
 
-const computedMinutes = computed(() => {
-	if (props.timestamp) {
-		const now = moment()
-		const target = moment.unix(props.value)
-		const diff = target.diff(now, 'minutes', true)
-		return Math.max(0, Math.ceil(diff))
-	}
-	return props.value
-})
-
 function initializeTimer() {
-	const mins = computedMinutes.value
-	totalProgressSeconds.value = (props.startFrom || mins) * 60
-	remainingSeconds.value = mins * 60
+	const secs = computedSeconds.value
+	totalProgressSeconds.value = (props.startFrom || secs)
+	remainingSeconds.value = secs
 	lastEmittedMinute = Math.ceil(remainingSeconds.value / 60)
 	emit('minutes-change', lastEmittedMinute)
 }
 
 const formattedTime = computed(() => {
-	const secsTotal = remainingSeconds.value
+	let secsTotal = remainingSeconds.value
 	const seconds = secsTotal % 60
 	const minsTotal = Math.floor(secsTotal / 60)
 	const minutes = minsTotal % 60
@@ -101,52 +107,24 @@ const formattedTime = computed(() => {
 
 	if (props.showExtended) {
 		if (years > 0) {
-			parts = [
-				two(years),
-				two(months),
-				two(days),
-				two(hours),
-				two(minutes),
-				two(seconds),
-			]
+			parts = [two(years), two(months), two(days), two(hours), two(minutes), two(seconds)]
 		} else if (months > 0) {
-			parts = [
-				two(months),
-				two(days),
-				two(hours),
-				two(minutes),
-				two(seconds),
-			]
+			parts = [two(months), two(days), two(hours), two(minutes), two(seconds)]
 		} else if (days > 0) {
-			parts = [
-				two(days),
-				two(hours),
-				two(minutes),
-				two(seconds),
-			]
+			parts = [two(days), two(hours), two(minutes), two(seconds)]
 		} else {
-			parts = [
-				two(hours),
-				two(minutes),
-				two(seconds),
-			]
+			parts = [two(hours), two(minutes), two(seconds)]
 		}
 	} else {
-		parts = [
-			two(hoursTotal),
-			two(minutes),
-			two(seconds),
-		]
+		parts = [two(hoursTotal), two(minutes), two(seconds)]
 	}
-
 	return parts.join(':')
 })
 
 const progressPercentage = computed(() =>
 	totalProgressSeconds.value === 0
 		? 0
-		: ((totalProgressSeconds.value - remainingSeconds.value) /
-			totalProgressSeconds.value) * 100
+		: ((totalProgressSeconds.value - remainingSeconds.value) / totalProgressSeconds.value) * 100
 )
 
 const isExpired = computed(() => remainingSeconds.value === 0)
@@ -208,7 +186,6 @@ onUnmounted(() => {
 	font-weight: bold;
 	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	letter-spacing: 0.1em;
-
 	display: inline-block;
 	white-space: nowrap;
 	text-align: center;

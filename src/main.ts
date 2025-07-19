@@ -28,6 +28,7 @@ import AppLogo from "@/components/common/AppLogo.vue";
 import ThemeChanger from "@/components/common/ThemeChanger.vue";
 import Word from "@/components/common/Word.vue";
 import Countdown from "@/components/common/Countdown.vue";
+import LabeledDivider from "@/components/common/LabeledDivider.vue";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -101,6 +102,7 @@ const app = createApp(App)
   .component("AppLogo", AppLogo)
   .component("Word", Word)
   .component("Countdown", Countdown)
+  .component("LabeledDivider", LabeledDivider)
   .component("ThemeChanger", ThemeChanger);
 
 app.mount("#app");

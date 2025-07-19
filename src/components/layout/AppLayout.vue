@@ -1,5 +1,6 @@
 <template>
   <div class="app-layout">
+  {{ isDev }}
     <!-- Main Navigation (apenas quando autenticado) -->
     <AppNavigation v-if="isAuthenticated && isApproved && hasTeam" />
 
@@ -28,6 +29,8 @@ const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isApproved = computed(() => authStore.isApproved);
 const hasTeam = computed(() => !!authStore.user.team);
+// Log wheter app is running in development mode
+const isDev = import.meta.env.DEV;
 </script>
 
 <style lang="scss" scoped>
