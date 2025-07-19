@@ -1,18 +1,21 @@
 <template>
-	<div :class="[containerClass, { 'text-danger': isExpired }]" :style="{ width: widthPx }" v-tooltip="actualDate">
+	<div :class="[containerClass, { 'text-danger': isExpired, 'frozen': frozen }]" :style="{ width: widthPx }"
+		v-tooltip="actualDate">
 		<!-- LABEL SLOT -->
-		<slot name="label" :formatted-time="formattedTime" :is-expired="isExpired">
+		<slot name="label" :formatted-time="formattedTime" :is-expired="isExpired" :is-frozen="frozen">
 			<!-- default label -->
-			<div ref="timerRef" :class="['countdown-display', displayClass, { [expiredClass]: isExpired }]">
+			<div ref="timerRef"
+				:class="['countdown-display', displayClass, { [expiredClass]: isExpired, 'disabled': frozen }]">
 				{{ formattedTime }}
 			</div>
 		</slot>
 
 		<!-- PROGRESS SLOT -->
-		<slot name="progress" :progress-percentage="progressPercentage" :is-expired="isExpired">
+		<slot name="progress" :progress-percentage="progressPercentage" :is-expired="isExpired" :is-frozen="frozen">
 			<!-- default progress bar -->
 			<v-progress-linear v-if="showProgress" :model-value="progressPercentage"
-				:color="isExpired ? 'danger' : 'primary'" height="8" rounded class="mt-4" />
+				:color="isExpired ? 'danger' : 'primary'" height="8" rounded class="mt-4"
+				:class="{ 'disabled': frozen }" />
 		</slot>
 	</div>
 </template>
@@ -41,6 +44,7 @@ const props = withDefaults(
 		displayClass?: string
 		expiredClass?: string
 		showExtended?: boolean
+		frozen?: boolean         // if true, timer pauses and shows disabled state
 	}>(),
 	{
 		timestamp: false,
@@ -50,6 +54,7 @@ const props = withDefaults(
 		displayClass: '',
 		expiredClass: 'text-danger',
 		showExtended: true,
+		frozen: false,
 	}
 )
 
@@ -131,6 +136,7 @@ const isExpired = computed(() => remainingSeconds.value === 0)
 
 function startTimer() {
 	stopTimer()
+	if (props.frozen) return
 	intervalId = window.setInterval(() => {
 		if (remainingSeconds.value > 0) {
 			remainingSeconds.value--
@@ -163,6 +169,15 @@ watch(
 		startTimer()
 	},
 	{ immediate: true }
+)
+
+// watch frozen to pause/resume
+watch(
+	() => props.frozen,
+	(val) => {
+		if (val) stopTimer()
+		else startTimer()
+	}
 )
 
 onMounted(async () => {

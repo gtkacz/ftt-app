@@ -50,8 +50,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useNavigationStore } from '../../stores/navigation'
-import { useAuthStore } from '../../stores/auth'
+import { useNavigationStore } from '@/stores/navigation'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const navigationStore = useNavigationStore()

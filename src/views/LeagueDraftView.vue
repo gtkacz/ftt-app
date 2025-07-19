@@ -36,43 +36,32 @@
 							<v-divider class="my-4" v-if="!isLotteryHappened" />
 							<v-row>
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
-									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4" v-ripple>
+									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
+										v-ripple>
 										<v-card-title>
 											<div class="d-flex align-center justify-start gap-2">
-												<span class="text-high-emphasis font-weight-black">{{ team.name }}</span>
-												<v-icon icon="attribution" color="info" size="small" variant="tonal" v-if="team.owner_username === authStore.user?.username" />
+												<span class="text-high-emphasis font-weight-black">{{ team.name
+												}}</span>
+												<v-icon icon="attribution" color="info" size="small" variant="tonal"
+													v-if="team.owner_username === authStore.user?.username" />
 											</div>
 										</v-card-title>
 										<v-card-subtitle>
-												@{{ team.owner_username }}
+											@{{ team.owner_username }}
 										</v-card-subtitle>
 										<v-card-text>
-											Draft Position:
+											Draft Seed:
 											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
 												lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
 										</v-card-text>
-										<v-card-actions v-if="isLotteryHappened && lotteryData[team.id]">
-											<p>
-												<span>Next Picks:</span>
-												<v-chip-group column>
-													<v-chip v-for="pick in lotteryData[team.id].slice(1)" :key="pick.id"
-														size="small"
-														v-tooltip="`Round ${pick.pick__round_number} - Pick #${pick.pick_number}`"
-														@click="navigateToPick(pick.overall_pick)">
-														#{{ pick.overall_pick }}
-													</v-chip>
-												</v-chip-group>
-											</p>
-										</v-card-actions>
 									</v-card>
 								</v-col>
 							</v-row>
 						</v-container>
 					</v-tabs-window-item>
 					<v-tabs-window-item value="draft">
-						<v-container>
-							<v-row align="center" justify="center"
-								v-if="!isLotteryHappened || !isDraftStarted">
+						<v-container v-if="isLotteryHappened">
+							<v-row align="center" justify="center" v-if="!isDraftStarted">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column">
 										<span>The draft will start in</span>
@@ -85,56 +74,58 @@
 									</p>
 								</v-col>
 							</v-row>
-							<div v-if="isLotteryHappened">
+							<v-row>
 								<!-- Navigation buttons for draft -->
-								<v-container v-if="isDraftStarted" class="my-4">
+								<v-container class="my-4" v-if="isDraftStarted">
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center flex-column align-center">
-											<h5 class="text-h5">{{ nextUnmadePick.team.name }} is on the clock (#{{ nextUnmadePick.pick.overall_pick }})</h5>
-											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false" #label="{ formattedTime }">
+											<h5 class="text-h5">{{ nextUnmadePick.team.name }} is on the clock (#{{
+												nextUnmadePick.pick.overall_pick }})</h5>
+											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
+												#label="{ formattedTime }">
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
 										</v-col>
 									</v-row>
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center gap-2">
-											<v-btn
-												color="primary"
-												variant="tonal"
-												prepend-icon="skip_next"
-												@click="goToNextPick"
-												:disabled="!nextUnmadePick"
-											>
+											<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
+												@click="goToNextPick" :disabled="!nextUnmadePick">
 												Go to Next Pick
 											</v-btn>
-											<v-btn
-												color="secondary"
-												variant="tonal"
-												prepend-icon="resume"
-												@click="goToMyNextPick"
-												:disabled="!myNextUnmadePick"
-											>
+											<v-btn color="secondary" variant="tonal" prepend-icon="resume"
+												@click="goToMyNextPick" :disabled="!myNextUnmadePick">
 												Go to My Next Pick
 											</v-btn>
 										</v-col>
+									</v-row>
+									<v-row justify="center" align="center">
+										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
+											@click="loadData" :loading="loading" icon>
+											<v-icon icon="refresh" />
+										</v-btn>
 									</v-row>
 								</v-container>
 								<div v-for="(round, index) in draftRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4">
 										<v-col>
-											<labeled-divider v-if="index < draftRounds.length - 1" :label="`Round ${round.roundNumber}`">
-												<h2 class="text-h5 text-center text-secondary">Round {{ round.roundNumber }}</h2>
+											<labeled-divider v-if="index < draftRounds.length - 1"
+												:label="`Round ${round.roundNumber}`">
+												<h2 class="text-h5 text-center text-secondary">Round {{
+													round.roundNumber }}</h2>
 											</labeled-divider>
 										</v-col>
 									</v-row>
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
-											<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4" v-ripple
-												:id="`pick-${pick.pick.overall_pick}`">
+											<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary"
+												class="pa-4" v-ripple :id="`pick-${pick.pick.overall_pick}`">
 												<v-card-title>
 													<div class="d-flex align-center justify-start gap-2">
-														<span class="text-high-emphasis font-weight-black">{{ pick.team.name }}</span>
-														<v-icon icon="attribution" color="info" size="small" variant="tonal" 
+														<span class="text-high-emphasis font-weight-black">{{
+															pick.team.name }}</span>
+														<v-icon icon="attribution" color="info" size="small"
+															variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
 													</div>
 												</v-card-title>
@@ -144,14 +135,25 @@
 												<v-card-text>
 													Pick
 													<h2>#{{ pick.pick.overall_pick }}</h2>
+													<countdown :value="pick.pick.time_to_pick" :show-progress="false"
+														v-if="!pick.pick.is_pick_made" #label="{ formattedTime }"
+														:frozen="!isDraftStarted || !pick.pick.is_current">
+														<span>{{ formattedTime }}</span>
+													</countdown>
+													<player-draft-dialog :player="pick.pick.contract.player"
+														:team="pick.team"
+														:contract="pick.pick.contract"
+														:draftable-players="draftData?.draftable_players"
+														:disabled="!isDraftStarted || !pick.pick.is_current" />
 												</v-card-text>
-												<v-card-actions v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
+												<v-card-actions
+													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
 													<p>
 														<span>Next Picks:</span>
 														<v-chip-group column>
-															<v-chip v-for="futurePick in getTeamFuturePicks(pick.team.id, round.roundNumber)" 
-																:key="futurePick.id"
-																size="small"
+															<v-chip
+																v-for="futurePick in getTeamFuturePicks(pick.team.id, round.roundNumber)"
+																:key="futurePick.id" size="small"
 																v-tooltip="`Round ${futurePick.pick__round_number} - Pick #${futurePick.pick_number}`"
 																@click="navigateToPick(futurePick.overall_pick)">
 																#{{ futurePick.overall_pick }}
@@ -163,7 +165,7 @@
 										</v-col>
 									</v-row>
 								</div>
-							</div>
+							</v-row>
 						</v-container>
 					</v-tabs-window-item>
 					<v-dialog v-model="startDialog" max-width="320" persistent>
@@ -188,11 +190,12 @@
 
 <script setup lang="ts">
 import api from '@/api/axios';
+import PlayerDraftDialog from '@/components/core/PlayerDraftDialog.vue';
 import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
 import moment from 'moment';
 import momentTz from 'moment-timezone';
-import { computed, onMounted, ref, nextTick } from 'vue';
-import { useThemeStore } from '@/stores/theme';
+import { computed, nextTick, onMounted, ref } from 'vue';
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
@@ -286,20 +289,20 @@ const allPicksSorted = computed(() => {
 })
 
 const nextUnmadePick = computed(() => {
-	return allPicksSorted.value.find(pickData => !pickData.pick.contract?.player)
+	return allPicksSorted.value.find(pickData => !pickData.is_current)
 })
 
 const myNextUnmadePick = computed(() => {
 	if (!authStore.user) return null
-	return allPicksSorted.value.find(pickData => 
-		!pickData.pick.contract?.player && 
+	return allPicksSorted.value.find(pickData =>
+		!pickData.is_pick_made &&
 		pickData.team.owner_username === authStore.user.username
 	)
 })
 
 const getTeamFuturePicks = (teamId: number, currentRound: number) => {
 	if (!lotteryData.value || !lotteryData.value[teamId]) return []
-	
+
 	return lotteryData.value[teamId].filter(pick => pick.pick__round_number > currentRound)
 }
 
@@ -325,7 +328,7 @@ const fetchDraftData = async () => {
 
 const fetchLotteryData = async () => {
 	try {
-		const response = await api.get(`/drafts/${draftData.value.id}/lottery/`)
+		const response = await api.get(`/drafts/${draftData.value.id}/picks/`)
 		const rawData = response.data.picks
 
 		const picksByTeam = rawData.reduce<Record<number, any[]>>((acc, pick) => {
@@ -381,15 +384,15 @@ const startDraft = async () => {
 const navigateToPick = async (overallPick: number) => {
 	// Switch to draft tab
 	tab.value = 'draft'
-	
+
 	// Wait for DOM to update
 	await nextTick()
-	
+
 	// Find and scroll to the pick card
 	const pickElement = document.getElementById(`pick-${overallPick}`)
 	if (pickElement) {
 		pickElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-		
+
 		// Add a highlight effect
 		pickElement.classList.add('highlight-pick')
 		setTimeout(() => {
@@ -434,9 +437,11 @@ onMounted(() => {
 	0% {
 		box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.8);
 	}
+
 	50% {
 		box-shadow: 0 0 20px 10px rgba(var(--v-theme-primary), 0.4);
 	}
+
 	100% {
 		box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
 	}

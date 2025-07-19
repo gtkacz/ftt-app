@@ -29,6 +29,8 @@ import ThemeChanger from "@/components/common/ThemeChanger.vue";
 import Word from "@/components/common/Word.vue";
 import Countdown from "@/components/common/Countdown.vue";
 import LabeledDivider from "@/components/common/LabeledDivider.vue";
+import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
+import { vConfirm } from "@/directives/v-confirm";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -103,6 +105,7 @@ const app = createApp(App)
   .component("Word", Word)
   .component("Countdown", Countdown)
   .component("LabeledDivider", LabeledDivider)
-  .component("ThemeChanger", ThemeChanger);
+  .component("ThemeChanger", ThemeChanger)
+  .directive("confirm", vConfirm);
 
 app.mount("#app");
