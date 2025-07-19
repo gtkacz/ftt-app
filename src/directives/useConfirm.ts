@@ -17,8 +17,8 @@ export function showConfirm(
 
     // Create component props
     const props = {
-      title: opts.title || "Confirm",
-      text: opts.text || "Are you sure?",
+      title: opts.title || "Are you sure?",
+      text: opts.text || "This action cannot be undone. Please confirm if you want to proceed.",
       onConfirm() {
         cleanup();
         resolve(true);

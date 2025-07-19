@@ -27,7 +27,7 @@
 											@click="startLottery" class="mt-4" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
-										<v-btn v-if="isStaff" color="primary" @click="startLottery" :loading="loading">
+										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm :loading="loading">
 											Start Now
 										</v-btn>
 									</p>
@@ -67,7 +67,7 @@
 										<span>The draft will start in</span>
 										<countdown :value="moment(draftData.starts_at).unix()" timestamp
 											@expired="startDraft" />
-										<v-btn v-if="isStaff" color="primary" @click="startDraft" class="mt-4"
+										<v-btn v-if="isStaff" color="primary" @click="startDraft" v-confirm class="mt-4"
 											:loading="loading">
 											Start Now
 										</v-btn>
@@ -218,7 +218,7 @@ const isLotteryHappened = computed(() => {
 })
 
 const isDraftStarted = computed(() => {
-	return true;
+	return false;
 	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
 })
 
