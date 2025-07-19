@@ -52,7 +52,7 @@
                   </v-col>
                 </v-row>
 
-                <v-btn type="submit" block size="large" :loading="loading"
+                <v-btn v-confirm type="submit" block size="large" :loading="loading"
                   :disabled="!formValid || authStore.isLoading" color="secondary" rounded="xl" class="mb-4">
                   Update
                 </v-btn>

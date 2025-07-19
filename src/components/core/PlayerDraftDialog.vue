@@ -51,7 +51,7 @@
 				</v-card-title>
 
 				<v-card-text>
-					<v-list density="compact">
+					<v-list density="comfortable">
 						<v-list-item v-if="playerData.team_name">
 							<template v-slot:prepend>
 								<v-icon>groups</v-icon>
@@ -102,6 +102,7 @@
 
 		<!-- Draft players dialog -->
 		<v-dialog v-model="showDraftDialog" max-width="1600" scrollable persistent transition="fade-transition">
+		{{ pick }}
 			<v-card class="pa-4" density="comfortable">
 				<v-card-title>
 					Draft a Player
@@ -110,48 +111,11 @@
 					</v-btn>
 				</v-card-title>
 
-				<v-card-subtitle v-if="contract">
-					{{ formatCurrency(contract.salary) }} ({{ contract.duration }} <word item="year" :count="contract.duration" />)
-				</v-card-subtitle>
-
 				<v-card-text>
-					<v-text-field v-model="draftSearch" prepend-inner-icon="search" label="Search by player name..."
-						single-line hide-details clearable density="compact" variant="outlined" class="mb-4" />
-
-					<v-data-table :headers="draftHeaders" :items="filteredDraftPlayers" :loading="loadingPlayers"
-						:search="draftSearch" :custom-filter="customNameSearch" density="compact" height="400"
-						fixed-header hover :items-per-page="10">
-						<template v-slot:item.player="{ item }">
-							<div class="d-flex align-center py-2">
-								<v-avatar size="32" class="mr-2">
-									<v-img :src="item.photo || '/placeholder-player.png'"
-										:alt="`${item.first_name} ${item.last_name}`" cover>
-										<template v-slot:error>
-											<v-icon size="32">account_circle</v-icon>
-										</template>
-									</v-img>
-								</v-avatar>
-								<div>
-									<div class="font-weight-medium">{{ item.last_name }}, {{ item.first_name }}</div>
-									<div v-if="item.real_team" class="text-caption text-grey">
-										{{ item.real_team.abbreviation }}
-									</div>
-								</div>
-							</div>
-						</template>
-
-						<template v-slot:item.position="{ item }">
-							<span>{{ item.primary_position }}</span>
-							<span v-if="item.secondary_position" class="text-grey"> / {{ item.secondary_position
-								}}</span>
-						</template>
-
-						<template v-slot:item.actions="{ item }">
-							<v-btn color="primary" size="small" variant="tonal" @click="draftPlayer(item)" v-confirm>
-								Draft
-							</v-btn>
-						</template>
-					</v-data-table>
+					<players-table :headers="draftHeaders" :players="draftablePlayers" @player-selected="onPlayerSelected" />
+					<v-dialog max-width="500" v-model="showPickDialog">
+						<player-card :player="pickData" :pick="pick" can-draft />
+					</v-dialog>
 				</v-card-text>
 			</v-card>
 		</v-dialog>
@@ -159,9 +123,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import api from '@/api/axios'
-import { useAuthStore } from '@/stores/auth'
+import api from '@/api/axios';
+import { useAuthStore } from '@/stores/auth';
+import { computed, ref, watch } from 'vue';
+import PlayersTable from './PlayersTable.vue';
+import PlayerCard from './PlayerCard.vue';
 
 // Props
 const props = defineProps<{
@@ -171,51 +137,22 @@ const props = defineProps<{
 	}
 	draftablePlayers: any[]
 	player?: number
-	contract?: any
-}>()
-
-// Emits
-const emit = defineEmits<{
-	draft: [playerId: number]
+	pick?: any
 }>()
 
 // State
 const authStore = useAuthStore()
-const userTeamId = computed(() => authStore.user.team.id)
+const userTeamId = computed(() => authStore.user?.team?.id)
 const showPlayerDialog = ref(false)
 const showDraftDialog = ref(false)
+const showPickDialog = ref(false)
 const playerData = ref(null)
-const loadingPlayers = ref(false)
-const draftSearch = ref('')
+const pickData = ref(null)
 
 // Draft table headers
 const draftHeaders = [
-	{
-		title: 'Player',
-		key: 'player',
-		value: 'last_name',
-		sortable: true,
-		width: '250px'
-	},
-	{
-		title: 'Position',
-		key: 'position',
-		sortable: true,
-		width: '120px'
-	},
-	{
-		title: 'NBA Team',
-		key: 'real_team.abbreviation',
-		sortable: true,
-		width: '100px'
-	},
-	{
-		title: 'Actions',
-		key: 'actions',
-		sortable: false,
-		width: '100px',
-		align: 'center'
-	}
+	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
+	{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
 ]
 
 // Computed
@@ -224,26 +161,10 @@ const playerFullName = computed(() => {
 	return `${playerData.value.first_name} ${playerData.value.last_name}`
 })
 
-const filteredDraftPlayers = computed(() => {
-	// Only show free agents for drafting
-	return props.draftablePlayers.filter(p => !p.team_name)
-})
-
 // Methods
-const customNameSearch = (value: any, search: string, item: any) => {
-	if (!search) return true
-
-	const normalize = (str: string) =>
-		str
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLowerCase()
-
-	const searchNorm = normalize(search)
-	const fullName = `${item.raw.first_name} ${item.raw.last_name}`
-	const fullNameNorm = normalize(fullName)
-
-	return fullNameNorm.includes(searchNorm)
+const onPlayerSelected = (player: any) => {
+	pickData.value = player
+	showPickDialog.value = true
 }
 
 const fetchPlayerData = async () => {
@@ -264,12 +185,6 @@ const formatCurrency = (amount: number) => {
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 0
 	}).format(amount * 1000000)
-}
-
-const draftPlayer = (player: any) => {
-	console.log('Drafting player:', player)
-	emit('draft', player.id)
-	showDraftDialog.value = false
 }
 
 // Watchers

@@ -473,7 +473,7 @@
 				<v-card-actions>
 					<v-spacer></v-spacer>
 					<v-btn @click="confirmDialog = false" variant="text">Cancel</v-btn>
-					<v-btn @click="executeBulkActions" color="primary" variant="flat">Confirm</v-btn>
+					<v-btn @click="executeBulkActions" color="primary" variant="flat" v-confirm>Confirm</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>

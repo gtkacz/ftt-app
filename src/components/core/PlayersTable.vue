@@ -7,209 +7,221 @@
 			<!-- Filters and Column Settings -->
 			<v-expand-transition>
 				<v-card-text v-if="!loading" class="pa-0">
-					<v-row class="mb-4" align="center">
-						<!-- Search bar - 75% width -->
-						<v-col cols="9">
-							<v-text-field rounded v-model="search" prepend-inner-icon="search" label="Search players..."
-								single-line hide-details clearable density="compact" variant="outlined"
-								class="search-field"></v-text-field>
-						</v-col>
+					<slot name="action-row">
+						<v-row class="mb-4" align="center">
+							<!-- Search bar - 75% width -->
+							<slot name="search">
+								<v-col cols="9">
+									<v-text-field rounded v-model="search" prepend-inner-icon="search"
+										label="Search players..." single-line hide-details clearable density="compact"
+										variant="outlined" class="search-field"></v-text-field>
+								</v-col>
+							</slot>
 
-						<!-- Icon buttons - 25% width -->
-						<v-col cols="3" class="d-flex justify-end gap-2">
-							<!-- Sort menu -->
-							<v-menu v-model="sortMenu" :close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Sort table'">
-									<v-btn v-bind="props" icon variant="outlined" size="small">
-										<v-icon icon="sort" />
-									</v-btn>
-								</template>
-								<v-card min-width="300" density="comfortable" class="pa-4">
-									<template v-slot:title class="text-h6">Sort Options</template>
-									<template v-slot:append><v-btn variant="text" icon @click="sortMenu = false"
-											size="small"><v-icon icon="close" /></v-btn></template>
-									<v-divider />
-									<v-card-text>
-										<v-row>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="sortBy" :items="sortableHeaders"
-													item-title="title" item-value="key" label="Sort by"
-													density="compact" variant="outlined"
-													prepend-inner-icon="sort_by_alpha"></v-select>
-											</v-col>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="sortOrder" :items="sortOrderOptions"
-													label="Sort order" density="compact" variant="outlined"
-													prepend-inner-icon="sort"></v-select>
-											</v-col>
-										</v-row>
-									</v-card-text>
-									<v-card-actions>
-										<v-spacer></v-spacer>
-										<v-btn @click="resetSort" icon variant="outlined" size="small"
-											v-tooltip="'Reset to default sort'">
-											<v-icon icon="refresh" />
-										</v-btn>
-									</v-card-actions>
-								</v-card>
-							</v-menu>
+							<!-- Icon buttons - 25% width -->
+							<slot name="extra-actions">
+								<v-col cols="3" class="d-flex justify-end gap-2">
+									<!-- Sort menu -->
+									<v-menu v-model="sortMenu" :close-on-content-click="false" location="bottom">
+										<template v-slot:activator="{ props }" v-tooltip="'Sort table'">
+											<v-btn v-bind="props" icon variant="outlined" size="small">
+												<v-icon icon="sort" />
+											</v-btn>
+										</template>
+										<v-card min-width="300" density="comfortable" class="pa-4">
+											<template v-slot:title class="text-h6">Sort Options</template>
+											<template v-slot:append><v-btn variant="text" icon @click="sortMenu = false"
+													size="small"><v-icon icon="close" /></v-btn></template>
+											<v-divider />
+											<v-card-text>
+												<v-row>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="sortBy" :items="sortableHeaders"
+															item-title="title" item-value="key" label="Sort by"
+															density="compact" variant="outlined"
+															prepend-inner-icon="sort_by_alpha"></v-select>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="sortOrder" :items="sortOrderOptions"
+															label="Sort order" density="compact" variant="outlined"
+															prepend-inner-icon="sort"></v-select>
+													</v-col>
+												</v-row>
+											</v-card-text>
+											<v-card-actions>
+												<v-spacer></v-spacer>
+												<v-btn @click="resetSort" icon variant="outlined" size="small"
+													v-tooltip="'Reset to default sort'">
+													<v-icon icon="refresh" />
+												</v-btn>
+											</v-card-actions>
+										</v-card>
+									</v-menu>
 
-							<!-- Filter button with menu -->
-							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
-									<v-btn v-bind="props" icon variant="outlined" size="small"
-										:color="hasActiveFilters ? 'primary' : undefined">
-										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
-											color="error">
-											<v-icon icon="filter_alt" />
-										</v-badge>
-									</v-btn>
-								</template>
-								<v-card min-width="500" density="comfortable" class="pa-4">
-									<template v-slot:title class="text-h6">Filters</template>
-									<template v-slot:append><v-btn variant="text" icon @click="filterMenu = false"
-											size="small"><v-icon icon="close" /></v-btn></template>
-									<v-divider />
-									<v-card-text>
-										<v-row>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.team" :items="teams" label="Team"
-													clearable density="compact" variant="outlined"
-													prepend-inner-icon="diversity_3" multiple chips
-													closable-chips></v-select>
-											</v-col>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.realTeam" :items="realTeams"
-													label="NBA Roster" clearable density="compact" variant="outlined"
-													prepend-inner-icon="sports_basketball" multiple chips closable-chips
-													single-line counter>
-													<template v-slot:item="{ item, props }">
-														<v-list-item v-bind="props">
-															<template v-slot:prepend
-																v-if="!isSpecialNBAFilter(item.value)">
-																<nba-team-icon :team="item.value" :size="20"
-																	class="mr-2" />
+									<!-- Filter button with menu -->
+									<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
+										<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+											<v-btn v-bind="props" icon variant="outlined" size="small"
+												:color="hasActiveFilters ? 'primary' : undefined">
+												<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
+													color="error">
+													<v-icon icon="filter_alt" />
+												</v-badge>
+											</v-btn>
+										</template>
+										<v-card min-width="500" density="comfortable" class="pa-4">
+											<template v-slot:title class="text-h6">Filters</template>
+											<template v-slot:append><v-btn variant="text" icon
+													@click="filterMenu = false" size="small"><v-icon
+														icon="close" /></v-btn></template>
+											<v-divider />
+											<v-card-text>
+												<v-row>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="filters.team" :items="teams"
+															label="Team" clearable density="compact" variant="outlined"
+															prepend-inner-icon="diversity_3" multiple chips
+															closable-chips></v-select>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="filters.realTeam" :items="realTeams"
+															label="NBA Roster" clearable density="compact"
+															variant="outlined" prepend-inner-icon="sports_basketball"
+															multiple chips closable-chips single-line counter>
+															<template v-slot:item="{ item, props }">
+																<v-list-item v-bind="props">
+																	<template v-slot:prepend
+																		v-if="!isSpecialNBAFilter(item.value)">
+																		<nba-team-icon :team="item.value" :size="20"
+																			class="mr-2" />
+																	</template>
+																</v-list-item>
 															</template>
-														</v-list-item>
-													</template>
-													<template v-slot:chip="{ item }">
-														<v-chip closable @click:close="removeNBAFilter(item.value)">
-															<template v-slot:prepend
-																v-if="!isSpecialNBAFilter(item.value)">
-																<nba-team-icon :team="item.value" :size="16"
-																	class="mr-1" />
+															<template v-slot:chip="{ item }">
+																<v-chip closable
+																	@click:close="removeNBAFilter(item.value)">
+																	<template v-slot:prepend
+																		v-if="!isSpecialNBAFilter(item.value)">
+																		<nba-team-icon :team="item.value" :size="16"
+																			class="mr-1" />
+																	</template>
+																</v-chip>
 															</template>
-														</v-chip>
-													</template>
-												</v-select>
-											</v-col>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.position" :items="positions"
-													label="Position" clearable density="compact" variant="outlined"
-													prepend-inner-icon="conditions" multiple chips
-													closable-chips></v-select>
-											</v-col>
-											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.status" :items="statuses"
-													label="Status" clearable density="compact" variant="outlined"
-													prepend-inner-icon="diamond_shine" multiple chips
-													closable-chips></v-select>
-											</v-col>
-										</v-row>
-									</v-card-text>
-									<v-card-actions>
-										<v-spacer></v-spacer>
-										<v-btn @click="clearFilters" icon variant="outlined" size="small"
-											:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
-											<v-icon icon="filter_alt_off" />
-										</v-btn>
-									</v-card-actions>
-								</v-card>
-							</v-menu>
+														</v-select>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="filters.position" :items="positions"
+															label="Position" clearable density="compact"
+															variant="outlined" prepend-inner-icon="conditions" multiple
+															chips closable-chips></v-select>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="filters.status" :items="statuses"
+															label="Status" clearable density="compact"
+															variant="outlined" prepend-inner-icon="diamond_shine"
+															multiple chips closable-chips></v-select>
+													</v-col>
+												</v-row>
+											</v-card-text>
+											<v-card-actions>
+												<v-spacer></v-spacer>
+												<v-btn @click="clearFilters" icon variant="outlined" size="small"
+													:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
+													<v-icon icon="filter_alt_off" />
+												</v-btn>
+											</v-card-actions>
+										</v-card>
+									</v-menu>
 
-							<!-- Manage columns button -->
-							<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
-								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Manage columns'">
-									<v-btn v-bind="props" icon variant="outlined" size="small">
-										<v-icon icon="view_column" />
-									</v-btn>
-								</template>
-								<v-card min-width="500" density="comfortable" class="pa-4">
-									<v-card-title>Manage Columns</v-card-title>
-									<v-divider />
-									<v-card-text>
-										<v-list>
-											<v-list-item v-for="(header, index) in editableHeaders" :key="header.key"
-												:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'"
-												v-if="!header?.meta && !header?.hidden">
-												<template v-slot:prepend>
-													<v-icon v-if="header.key !== 'player'" @mousedown="startDrag(index)"
-														style="cursor: move;">drag_handle</v-icon>
-													<v-icon v-else>lock</v-icon>
-												</template>
-												<v-list-item-title>{{ header.title }}</v-list-item-title>
-												<template v-slot:append>
-													<v-checkbox v-model="header.visible"
-														:disabled="header.key === 'player'" hide-details
-														density="compact"></v-checkbox>
-												</template>
-											</v-list-item>
-										</v-list>
-									</v-card-text>
-									<v-card-actions>
-										<v-spacer></v-spacer>
-										<v-btn icon variant="outlined" @click="saveColumnSettings" color="success"
-											size="small"><v-icon icon="check" /></v-btn>
-									</v-card-actions>
-								</v-card>
-							</v-menu>
+									<!-- Manage columns button -->
+									<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
+										:close-on-content-click="false" location="bottom">
+										<template v-slot:activator="{ props }" v-tooltip="'Manage columns'">
+											<v-btn v-bind="props" icon variant="outlined" size="small">
+												<v-icon icon="view_column" />
+											</v-btn>
+										</template>
+										<v-card min-width="500" density="comfortable" class="pa-4">
+											<v-card-title>Manage Columns</v-card-title>
+											<v-divider />
+											<v-card-text>
+												<v-list>
+													<v-list-item v-for="(header, index) in editableHeaders"
+														:key="header.key"
+														:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'"
+														v-if="!header?.meta && !header?.hidden">
+														<template v-slot:prepend>
+															<v-icon v-if="header.key !== 'player'"
+																@mousedown="startDrag(index)"
+																style="cursor: move;">drag_handle</v-icon>
+															<v-icon v-else>lock</v-icon>
+														</template>
+														<v-list-item-title>{{ header.title }}</v-list-item-title>
+														<template v-slot:append>
+															<v-checkbox v-model="header.visible"
+																:disabled="header.key === 'player'" hide-details
+																density="compact"></v-checkbox>
+														</template>
+													</v-list-item>
+												</v-list>
+											</v-card-text>
+											<v-card-actions>
+												<v-spacer></v-spacer>
+												<v-btn icon variant="outlined" @click="saveColumnSettings"
+													color="success" size="small"><v-icon icon="check" /></v-btn>
+											</v-card-actions>
+										</v-card>
+									</v-menu>
 
-							<!-- Settings -->
-							<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
-								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Display settings'">
-									<v-btn v-bind="props" icon variant="outlined" size="small">
-										<v-icon icon="settings" />
-									</v-btn>
-								</template>
-								<v-card min-width="500" density="comfortable" class="pa-4">
-									<v-card-title>Display Settings</v-card-title>
-									<v-divider />
-									<v-card-text>
-										<v-list>
-											<v-list-item>
-												<v-list-item-title>Show players' weight</v-list-item-title>
-												<template v-slot:append>
-													<v-checkbox v-model="showWeight" hide-details density="compact" />
-												</template>
-											</v-list-item>
-											<v-list-item>
-												<v-list-item-title>Show players' height</v-list-item-title>
-												<template v-slot:append>
-													<v-checkbox v-model="showHeight" hide-details density="compact" />
-												</template>
-											</v-list-item>
-											<v-list-item>
-												<v-list-item-title>Use metric weight units</v-list-item-title>
-												<template v-slot:append>
-													<v-checkbox v-model="convertWeight" hide-details
-														density="compact" />
-												</template>
-											</v-list-item>
-											<v-list-item>
-												<v-list-item-title>Use metric height units</v-list-item-title>
-												<template v-slot:append>
-													<v-checkbox v-model="convertHeight" hide-details
-														density="compact" />
-												</template>
-											</v-list-item>
-										</v-list>
-									</v-card-text>
-								</v-card>
-							</v-menu>
-						</v-col>
-					</v-row>
+									<!-- Settings -->
+									<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
+										:close-on-content-click="false" location="bottom">
+										<template v-slot:activator="{ props }" v-tooltip="'Display settings'">
+											<v-btn v-bind="props" icon variant="outlined" size="small">
+												<v-icon icon="settings" />
+											</v-btn>
+										</template>
+										<v-card min-width="500" density="comfortable" class="pa-4">
+											<v-card-title>Display Settings</v-card-title>
+											<v-divider />
+											<v-card-text>
+												<v-list>
+													<v-list-item>
+														<v-list-item-title>Show players' weight</v-list-item-title>
+														<template v-slot:append>
+															<v-checkbox v-model="showWeight" hide-details
+																density="compact" />
+														</template>
+													</v-list-item>
+													<v-list-item>
+														<v-list-item-title>Show players' height</v-list-item-title>
+														<template v-slot:append>
+															<v-checkbox v-model="showHeight" hide-details
+																density="compact" />
+														</template>
+													</v-list-item>
+													<v-list-item>
+														<v-list-item-title>Use metric weight units</v-list-item-title>
+														<template v-slot:append>
+															<v-checkbox v-model="convertWeight" hide-details
+																density="compact" />
+														</template>
+													</v-list-item>
+													<v-list-item>
+														<v-list-item-title>Use metric height units</v-list-item-title>
+														<template v-slot:append>
+															<v-checkbox v-model="convertHeight" hide-details
+																density="compact" />
+														</template>
+													</v-list-item>
+												</v-list>
+											</v-card-text>
+										</v-card>
+									</v-menu>
+								</v-col>
+							</slot>
+						</v-row>
+					</slot>
 				</v-card-text>
 			</v-expand-transition>
 
@@ -219,7 +231,7 @@
 				:no-data-text="'No players found'" :no-results-text="'No matching players'" density="comfortable"
 				class="elevation-1 pa-4 bg-surface-variant" hide-no-data hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
-				@click:row="(event, { item }) => viewPlayer(item)">
+				@click:row="(event, { item }) => selectPlayer(item)">
 
 				<!-- Player photo and name -->
 				<template v-slot:item.player="{ item }">
@@ -308,140 +320,92 @@
 
 				<!-- Pagination footer -->
 				<template v-slot:bottom>
-					<v-divider />
-					<v-container class="pa-2 mt-4">
-						<v-row justify="space-between" align="center">
-							<v-col cols="3">
-								<span class="text-caption">
-									Showing {{ paginationText }}
-								</span>
-							</v-col>
-							<v-col cols="6" class="d-flex gap-2">
-								<v-row class="gap-2" align="center" justify="end">
-									<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
-										:item-title="item => item === -1 ? 'All' : item" label="Items per page"
-										density="compact" variant="outlined" hide-details
-										class="items-per-page-select" />
-									<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
-										density="compact">
-										<v-icon icon="first_page" />
-									</v-btn>
-									<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
-										:total-visible="5" density="compact" rounded />
-									<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount"
-										:icon="true" density="compact">
-										<v-icon icon="last_page" />
-									</v-btn>
-								</v-row>
-							</v-col>
-						</v-row>
-					</v-container>
+					<slot name="pagination-footer">
+						<v-divider />
+						<v-container class="pa-2 mt-4">
+							<v-row justify="space-between" align="center">
+								<v-col cols="3">
+									<span class="text-caption">
+										Showing {{ paginationText }}
+									</span>
+								</v-col>
+								<v-col cols="6" class="d-flex gap-2">
+									<v-row class="gap-2" align="center" justify="end">
+										<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
+											:item-title="item => item === -1 ? 'All' : item" label="Items per page"
+											density="compact" variant="outlined" hide-details
+											class="items-per-page-select" />
+										<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
+											density="compact">
+											<v-icon icon="first_page" />
+										</v-btn>
+										<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
+											:total-visible="5" density="compact" rounded />
+										<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount"
+											:icon="true" density="compact">
+											<v-icon icon="last_page" />
+										</v-btn>
+									</v-row>
+								</v-col>
+							</v-row>
+						</v-container>
+					</slot>
 				</template>
 			</v-data-table>
-
-			<!-- Error state -->
-			<v-alert v-if="error" type="error" v-tooltip="" class="mt-4">
-				{{ error }}
-			</v-alert>
 		</v-card>
 	</v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/api/axios'
 import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
 
+// Props
+const props = defineProps<{
+	headers?: Array<any>
+	players?: Array<any>
+}>()
+
+// Emits
+const emit = defineEmits<{
+	(e: 'player-selected', player: any): void
+}>()
+
 // State
-const players = ref([])
-const loading = ref(true)
-const error = ref(null)
-const search = ref('')
-const itemsPerPage = ref(25)
-const page = ref(1)
-const settingsMenu = ref(false)
-const columnMenu = ref(false)
-const filterMenu = ref(false)
-const sortMenu = ref(false)
-const showHeight = ref(false)
-const showWeight = ref(false)
-const convertWeight = ref(true)
-const convertHeight = ref(false)
-const draggedIndex = ref(null)
-const sortBy = ref('relevancy')
-const sortOrder = ref('desc')
-const filters = ref({
-	team: [],
-	realTeam: [],
-	position: [],
-	status: []
-})
+const players = ref<any[]>(props.players ?? [])
+const loading = ref<boolean>(!props.players)
+const error = ref<string | null>(null)
+const search = ref<string>('')
+const itemsPerPage = ref<number>(25)
+const page = ref<number>(1)
+const settingsMenu = ref<boolean>(false)
+const columnMenu = ref<boolean>(false)
+const filterMenu = ref<boolean>(false)
+const sortMenu = ref<boolean>(false)
+const showHeight = ref<boolean>(false)
+const showWeight = ref<boolean>(false)
+const convertWeight = ref<boolean>(true)
+const convertHeight = ref<boolean>(false)
+const draggedIndex = ref<number | null>(null)
+const sortBy = ref<string>('relevancy')
+const sortOrder = ref<'asc' | 'desc'>('desc')
+const filters = ref<{ team: any[]; realTeam: any[]; position: any[]; status: any[] }>({ team: [], realTeam: [], position: [], status: [] })
 
-// Sort order options
-const sortOrderOptions = [
-	{ title: 'Descending', value: 'desc' },
-	{ title: 'Ascending', value: 'asc' }
-]
-
-// Column configuration
-const allHeaders = ref([
-	{
-		title: 'Player',
-		key: 'player',
-		value: 'last_name',
-		sortable: true,
-		width: '300px',
-		visible: true,
-		locked: true
-	},
-	{
-		title: 'Position',
-		key: 'primary_position',
-		width: '120px',
-		visible: true,
-		sortable: true
-	},
-	{
-		title: 'Team',
-		key: 'team_name',
-		width: '150px',
-		visible: true,
-		sortable: true
-	},
-	{
-		title: 'Salary',
-		key: 'salary',
-		align: 'end',
-		width: '120px',
-		visible: true,
-		sortable: true
-	},
-	{
-		title: 'Contract',
-		key: 'contract_duration',
-		align: 'end',
-		width: '120px',
-		visible: true,
-		sortable: true
-	},
-	{
-		title: 'Relevancy',
-		key: 'relevancy',
-		align: 'end',
-		width: '120px',
-		visible: false,
-		hidden: true,
-		sortable: true
-	},
-	{
-		title: 'Status',
-		key: 'status',
-		width: '120px',
-		sortable: false
-	}
-])
-
-const editableHeaders = ref([])
+// Default header configuration
+const defaultHeaders = ref(props.headers && props.headers.length
+	? props.headers
+	: [
+		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
+		{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
+		{ title: 'Team', key: 'team_name', width: '150px', visible: true, sortable: true },
+		{ title: 'Salary', key: 'salary', align: 'end', width: '120px', visible: true, sortable: true },
+		{ title: 'Contract', key: 'contract_duration', align: 'end', width: '120px', visible: true, sortable: true },
+		{ title: 'Relevancy', key: 'relevancy', align: 'end', width: '120px', visible: false, hidden: true, sortable: true },
+		{ title: 'Status', key: 'status', width: '120px', sortable: false },
+	])
+const allHeaders = ref(defaultHeaders.value)
+const editableHeaders = ref([...allHeaders.value])
 
 // Computed headers based on visibility (excludes hidden columns)
 const activeHeaders = computed(() => {
@@ -630,6 +594,10 @@ const paginationText = computed(() => {
 })
 
 // Methods
+const selectPlayer = (player: any) => {
+	emit('player-selected', player)
+}
+
 const fetchAllPlayers = async () => {
 	loading.value = true
 	error.value = null
@@ -680,12 +648,6 @@ const clearFilters = () => {
 const resetSort = () => {
 	sortBy.value = 'relevancy'
 	sortOrder.value = 'desc'
-}
-
-const viewPlayer = (player) => {
-	// Implement navigation to player detail page
-	console.log('View player:', player)
-	// Example: router.push(`/players/${player.id}`)
 }
 
 // Column management
@@ -765,8 +727,15 @@ const getSeasonFromYear = (year) => {
 }
 
 // Watchers
+watch(() => props.players, newList => {
+	if (newList) {
+		players.value = newList
+		loading.value = false
+	}
+})
+
 onMounted(() => {
-	fetchAllPlayers()
+	if (!props.players) fetchAllPlayers()
 	editableHeaders.value = JSON.parse(JSON.stringify(allHeaders.value))
 })
 </script>

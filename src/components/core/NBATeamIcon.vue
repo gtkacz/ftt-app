@@ -6,8 +6,8 @@
 export default {
 	name: 'NBATeamLogo',
 	props: {
-		team: { type: String, required: true },
-		size: { type: Number, default: 50 },
+		team: { type: String, default: 'nba' },
+		size: { type: [Number, String], default: 50 },
 		className: { type: String, default: '' }
 	},
 	computed: {

@@ -24,7 +24,7 @@
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
-											@click="startLottery" class="mt-4" :loading="loading" icon>
+											@click="loadData" class="mt-4" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm :loading="loading">
@@ -142,8 +142,8 @@
 													</countdown>
 													<player-draft-dialog :player="pick.pick.contract.player"
 														:team="pick.team"
-														:contract="pick.pick.contract"
 														:draftable-players="draftData?.draftable_players"
+														:pick="pick.pick"
 														:disabled="!isDraftStarted || !pick.pick.is_current" />
 												</v-card-text>
 												<v-card-actions
