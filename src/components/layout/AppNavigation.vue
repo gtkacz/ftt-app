@@ -195,6 +195,7 @@ const handleMouseLeave = () => {
     width: 240px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
+    overflow: auto;
   }
 
   &.mobile-open {
