@@ -110,13 +110,13 @@
 								<div v-for="round in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4">
 										<v-col>
-											<labeled-divider :label="`Round ${round.roundNumber}`">
+											<labeled-divider>
 												<h2 class="text-h5 text-center text-on-background">Round {{
 													round.roundNumber }}</h2>
 											</labeled-divider>
 										</v-col>
 									</v-row>
-									
+
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
 											<v-card :variant="isDark ? 'elevated' : 'tonal'"
@@ -175,49 +175,35 @@
 										</v-col>
 									</v-row>
 								</div>
-								
+
 								<!-- Load more rounds section - shows divider for next round with load buttons -->
-								<div v-if="hasMoreRoundsToLoad">
-									<v-row align="center" class="my-4">
+								<div v-if="hasMoreRoundsToLoad" class="my-6 w-100">
+									<v-row align="center">
 										<v-col>
-											<labeled-divider :label="`Round ${nextRoundNumber}`">
-												<div class="d-flex align-center justify-center gap-4">
-													<h2 class="text-h5 text-center text-on-background">Round {{
-														nextRoundNumber }}</h2>
-													
-													<div class="d-flex gap-2">
-														<v-btn 
-															size="small" 
-															variant="tonal" 
-															color="primary"
-															@click="loadNextRound"
-															:loading="loadingMoreRounds"
-															:disabled="loadingMoreRounds">
-															Load Next
-														</v-btn>
-														<v-btn 
-															size="small" 
-															variant="tonal" 
-															color="secondary"
-															@click="loadAllRounds"
-															:loading="loadingMoreRounds"
-															:disabled="loadingMoreRounds">
-															Load All
-														</v-btn>
-													</div>
+											<labeled-divider>
+												<!-- <h2 class="text-h5 text-center text-on-background">Round {{
+													nextRoundNumber }}</h2> -->
+												<div class="d-flex gap-2">
+													<v-btn size="small" variant="tonal" color="primary"
+														@click="loadNextRound" :loading="loadingMoreRounds"
+														:disabled="loadingMoreRounds"
+														v-tooltip="`Load Round ${nextRoundNumber}`">
+														Load Next
+													</v-btn>
+													<v-btn size="small" variant="tonal" color="secondary"
+														@click="loadAllRounds" :loading="loadingMoreRounds"
+														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`">
+														Load All
+													</v-btn>
 												</div>
 											</labeled-divider>
 										</v-col>
 									</v-row>
-									
+
 									<!-- Show loading indicator when loading more rounds -->
 									<v-row v-if="loadingMoreRounds" justify="center" class="my-4">
 										<v-col cols="auto">
-											<v-progress-circular 
-												indeterminate 
-												color="primary" 
-												size="32"
-											/>
+											<v-progress-circular indeterminate color="primary" size="32" />
 										</v-col>
 									</v-row>
 								</div>
@@ -279,6 +265,7 @@ const isLotteryHappened = computed(() => {
 const tab = ref(isLotteryHappened.value ? 'draft' : 'lottery')
 
 const isDraftStarted = computed(() => {
+	return true // TODO: REMOVE
 	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
 })
 
@@ -390,10 +377,10 @@ watch(nextUnmadePick, (newPick) => {
 const loadNextRound = async () => {
 	if (hasMoreRoundsToLoad.value) {
 		loadingMoreRounds.value = true
-		
+
 		// Simulate loading delay for better UX
 		await new Promise(resolve => setTimeout(resolve, 500))
-		
+
 		showRoundsUpTo.value += 1
 		loadingMoreRounds.value = false
 	}
@@ -402,10 +389,10 @@ const loadNextRound = async () => {
 const loadAllRounds = async () => {
 	if (hasMoreRoundsToLoad.value) {
 		loadingMoreRounds.value = true
-		
+
 		// Simulate loading delay for better UX
 		await new Promise(resolve => setTimeout(resolve, 800))
-		
+
 		showRoundsUpTo.value = draftRounds.value.length
 		loadingMoreRounds.value = false
 	}
@@ -494,6 +481,28 @@ const startDraft = async () => {
 }
 
 const navigateToPick = async (overallPick: number) => {
+	// Find the pick to determine its round
+	const targetPick = allPicksSorted.value.find(pickData =>
+		pickData.pick.overall_pick === overallPick
+	)
+
+	if (!targetPick) return
+
+	const targetRound = targetPick.pick.pick__round_number
+
+	// Check if we need to load more rounds to show this pick
+	if (targetRound > showRoundsUpTo.value) {
+		loadingMoreRounds.value = true
+		showRoundsUpTo.value = targetRound
+
+		// Wait for DOM to update with new rounds
+		await new Promise(resolve => setTimeout(resolve, 100))
+		loadingMoreRounds.value = false
+
+		// Additional wait to ensure rendering is complete
+		await new Promise(resolve => setTimeout(resolve, 200))
+	}
+
 	const pickElement = document.getElementById(`pick-${overallPick}`)
 
 	if (pickElement) {
@@ -566,5 +575,4 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
