@@ -29,7 +29,6 @@ import ThemeChanger from "@/components/common/ThemeChanger.vue";
 import Word from "@/components/common/Word.vue";
 import Countdown from "@/components/common/Countdown.vue";
 import LabeledDivider from "@/components/common/LabeledDivider.vue";
-import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import { vConfirm } from "@/directives/v-confirm";
 
 const pinia = createPinia();
@@ -50,8 +49,8 @@ const vuetify = createVuetify({
           accent: "#FF9000",
           background: "#FFFFFF",
           surface: "#FFFFFF",
-          "surface-variant": "#FFFFFF",
-          // 'surface-variant': '#F5F5F5',
+          // "surface-variant": "#FFFFFF",
+          'surface-variant': '#F5F5F5',
           "on-surface": "#0F183E",
           "on-surface-variant": "#0F183E",
           "on-primary": "#FFFFFF",
@@ -68,7 +67,7 @@ const vuetify = createVuetify({
           secondary: "#FF9000",
           accent: "#FF9000",
           background: "#000012",
-          surface: "#00001f",
+          surface: "#000012",
           "surface-variant": "#000017",
           "on-surface": "#FFFFFF",
           "on-surface-variant": "#FFFFFF",

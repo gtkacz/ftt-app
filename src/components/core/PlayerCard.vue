@@ -3,15 +3,15 @@
 		<!-- Header with team info -->
 		<div class="card-header">
 			<div class="team-info">
-				<span class="team-city">{{ player.real_team?.city }}</span>
-				<span class="team-name">{{ player.real_team?.name || 'NBA' }}</span>
+				<span class="team-city">{{ player?.real_team?.city }}</span>
+				<span class="team-name">{{ player?.real_team?.name || 'NBA' }}</span>
 			</div>
-			<nba-team-icon :team="player.real_team?.abbreviation" size="40" />
+			<nba-team-icon :team="player?.real_team?.abbreviation" size="40" />
 		</div>
 
 		<!-- Player photo section -->
 		<div class="photo-section">
-			<v-img :src="player.photo" :alt="`${player.first_name} ${player.last_name}`" class="player-photo"
+			<v-img :src="player?.photo" :alt="`${player?.first_name} ${player?.last_name}`" class="player-photo"
 				height="220" cover>
 				<template v-slot:error>
 					<div class="photo-placeholder">
@@ -22,14 +22,14 @@
 
 			<!-- Position badge -->
 			<v-chip class="position-chip" size="small" color="primary" variant="elevated">
-				{{ formatPosition(player.primary_position, player.secondary_position) }}
+				{{ formatPosition(player?.primary_position, player?.secondary_position) }}
 			</v-chip>
 		</div>
 
 		<!-- Player info -->
 		<v-card-text class="player-info">
 			<h2 class="player-name">
-				{{ player.first_name }} {{ player.last_name }}
+				{{ player?.first_name }} {{ player?.last_name }}
 			</h2>
 
 			<!-- Physical stats -->
@@ -65,7 +65,8 @@
 					{{ formatCurrency(pick.contract?.salary) }}
 				</v-chip>
 				<v-chip size="small" variant="tonal" class="salary-chip">
-					{{ pick.contract?.duration }} <word item="yr" :count="pick.contract?.duration" />
+					{{ pick.contract?.duration }}
+					<word item="yr" :count="pick.contract?.duration" />
 				</v-chip>
 			</div>
 
@@ -80,7 +81,7 @@
 
 		<v-card-actions v-if="props.canDraft" class="d-flex justify-center align-center flex-column mb-6 mx-3">
 			<v-spacer />
-			<v-btn variant="tonal" class="w-100" color="surface" rounded @click="$emit('draft', player.id)" v-confirm>
+			<v-btn variant="tonal" class="w-100" color="surface" rounded @click="onDraftConfirm" v-confirm>
 				Draft Player
 			</v-btn>
 		</v-card-actions>
@@ -88,8 +89,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineEmits } from 'vue'
 import NbaTeamIcon from './NBATeamIcon.vue'
+
+const emit = defineEmits(['draft'])
 
 interface TeamData {
 	id: number
@@ -151,16 +154,16 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const playerMetadata = computed<PlayerMetadata | null>(() => {
-	if (!props.player.metadata) return null
+	if (!props.player?.metadata) return null
 	try {
-		return JSON.parse(props.player.metadata)
+		return JSON.parse(props.player?.metadata)
 	} catch {
 		return null
 	}
 })
 
 const teamColorClass = computed(() => {
-	const teamAbbr = props.player.real_team?.abbreviation
+	const teamAbbr = props.player?.real_team?.abbreviation
 	return teamAbbr ? `team-${teamAbbr.toLowerCase()}` : 'team-default'
 })
 
@@ -176,6 +179,10 @@ const formatCurrency = (amount) => {
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 0
 	}).format(amount * 1000000)
+}
+
+const onDraftConfirm = () => {
+	emit('draft', props.player.id)
 }
 </script>
 
@@ -325,7 +332,6 @@ const formatCurrency = (amount) => {
 		.team-info {
 			display: flex;
 			flex-direction: column;
-			gap: 0px;
 
 			.team-name {
 				font-size: 1.1rem;
@@ -432,7 +438,7 @@ const formatCurrency = (amount) => {
 					opacity: 0.8;
 					text-transform: uppercase;
 					letter-spacing: 0.5px;
-					margin-top: 2px;
+					margin-top: 1px;
 				}
 			}
 		}

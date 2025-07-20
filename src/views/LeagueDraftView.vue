@@ -27,7 +27,8 @@
 											@click="loadData" class="mt-4" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
-										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm :loading="loading">
+										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm
+											:loading="loading">
 											Start Now
 										</v-btn>
 									</p>
@@ -40,7 +41,7 @@
 										v-ripple>
 										<v-card-title>
 											<div class="d-flex align-center justify-start gap-2">
-												<span class="text-high-emphasis font-weight-black">{{ team.name
+												<span class="font-weight-black">{{ team.name
 												}}</span>
 												<v-icon icon="attribution" color="info" size="small" variant="tonal"
 													v-if="team.owner_username === authStore.user?.username" />
@@ -79,7 +80,7 @@
 								<v-container class="my-4" v-if="isDraftStarted">
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center flex-column align-center">
-											<h5 class="text-h5">{{ nextUnmadePick.team.name }} is on the clock (#{{
+											<h5 class="text-h5">{{ nextUnmadePick?.team?.name }} is on the clock (#{{
 												nextUnmadePick.pick.overall_pick }})</h5>
 											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
 												#label="{ formattedTime }">
@@ -111,26 +112,38 @@
 										<v-col>
 											<labeled-divider v-if="index < draftRounds.length - 1"
 												:label="`Round ${round.roundNumber}`">
-												<h2 class="text-h5 text-center text-secondary">Round {{
+												<h2 class="text-h5 text-center text-on-background">Round {{
 													round.roundNumber }}</h2>
 											</labeled-divider>
 										</v-col>
 									</v-row>
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
-											<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary"
+											<v-card :variant="isDark ? 'elevated' : 'tonal'"
+												:color="getPickCardColor(pick.pick)"
 												class="pa-4" v-ripple :id="`pick-${pick.pick.overall_pick}`">
 												<v-card-title>
-													<div class="d-flex align-center justify-start gap-2">
-														<span class="text-high-emphasis font-weight-black">{{
-															pick.team.name }}</span>
-														<v-icon icon="attribution" color="info" size="small"
-															variant="tonal"
-															v-if="pick.team.owner_username === authStore.user?.username" />
-													</div>
+													<v-row>
+														<v-col>
+															<div class="d-flex align-center justify-start gap-2">
+																<span class="font-weight-black">{{
+																	pick?.team?.name }}</span>
+																<v-icon icon="attribution" size="small"
+																	variant="tonal"
+																	v-if="pick.team.owner_username === authStore.user?.username" />
+															</div>
+														</v-col>
+														<v-col class="d-flex justify-end">
+															<player-draft-dialog :player="pick.pick?.player"
+																:team="pick.team"
+																:draftable-players="draftData?.draftable_players"
+																:pick="pick.pick"
+																:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)" @player-selected="loadData" />
+														</v-col>
+													</v-row>
 												</v-card-title>
 												<v-card-subtitle>
-													@{{ pick.team.owner_username }}
+													@{{ pick?.team?.owner_username }}
 												</v-card-subtitle>
 												<v-card-text>
 													Pick
@@ -140,11 +153,8 @@
 														:frozen="!isDraftStarted || !pick.pick.is_current">
 														<span>{{ formattedTime }}</span>
 													</countdown>
-													<player-draft-dialog :player="pick.pick.contract.player"
-														:team="pick.team"
-														:draftable-players="draftData?.draftable_players"
-														:pick="pick.pick"
-														:disabled="!isDraftStarted || !pick.pick.is_current" />
+													<span v-else>{{ pick.pick.player.first_name[0] }}. {{
+														pick.pick.player.last_name }}</span>
 												</v-card-text>
 												<v-card-actions
 													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
@@ -218,7 +228,6 @@ const isLotteryHappened = computed(() => {
 })
 
 const isDraftStarted = computed(() => {
-	return false;
 	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
 })
 
@@ -289,13 +298,13 @@ const allPicksSorted = computed(() => {
 })
 
 const nextUnmadePick = computed(() => {
-	return allPicksSorted.value.find(pickData => !pickData.is_current)
+	return allPicksSorted.value.find(pickData => pickData.pick.is_current)
 })
 
 const myNextUnmadePick = computed(() => {
 	if (!authStore.user) return null
 	return allPicksSorted.value.find(pickData =>
-		!pickData.is_pick_made &&
+		!pickData.pick.is_pick_made &&
 		pickData.team.owner_username === authStore.user.username
 	)
 })
@@ -411,6 +420,14 @@ const goToMyNextPick = () => {
 	if (myNextUnmadePick.value) {
 		navigateToPick(myNextUnmadePick.value.pick.overall_pick)
 	}
+}
+
+const getPickCardColor = (pick: any) => {
+	if (pick.is_pick_made) return 'success'
+	if (pick.is_auto_pick) return 'error'
+	if (pick.is_current && myNextUnmadePick.value === nextUnmadePick.value) return 'warning'
+	if (pick.is_current) return 'info'
+	return 'primary'
 }
 
 const loadData = async () => {
