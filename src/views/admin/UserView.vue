@@ -311,7 +311,7 @@
 				<!-- Pagination footer -->
 				<template v-slot:bottom>
 					<v-divider />
-					<v-container class="pa-2 mt-4">
+					<v-container fluid class="pa-2 mt-4">
 						<v-row justify="space-between" align="center">
 							<v-col cols="3">
 								<span class="text-caption">

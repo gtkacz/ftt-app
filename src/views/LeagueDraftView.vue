@@ -61,7 +61,7 @@
 						</v-container>
 					</v-tabs-window-item>
 					<v-tabs-window-item value="draft">
-						<v-container v-if="isLotteryHappened">
+						<v-container v-if="isLotteryHappened" fluid>
 							<v-row align="center" justify="center" v-if="!isDraftStarted">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column">
@@ -77,7 +77,7 @@
 							</v-row>
 							<v-row>
 								<!-- Navigation buttons for draft -->
-								<v-container class="my-4" v-if="isDraftStarted">
+								<v-container fluid class="my-4" v-if="isDraftStarted">
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center flex-column align-center">
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name }} is on the clock (#{{
