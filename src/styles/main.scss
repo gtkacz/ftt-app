@@ -126,18 +126,18 @@ a {
   }
 }
 
-// Responsive utilities
-@media (max-width: $breakpoint-sm) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
+// // Responsive utilities
+// @media (max-width: $breakpoint-sm) {
+//   .hide-on-mobile {
+//     display: none !important;
+//   }
+// }
 
-@media (min-width: $breakpoint-sm + 1px) {
-  .hide-on-desktop {
-    display: none !important;
-  }
-}
+// @media (min-width: $breakpoint-sm + 1px) {
+//   .hide-on-desktop {
+//     display: none !important;
+//   }
+// }
 
 // Print styles
 @media print {

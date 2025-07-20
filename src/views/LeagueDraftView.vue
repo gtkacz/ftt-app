@@ -17,7 +17,7 @@
 			<v-card-text v-else>
 				<v-tabs-window v-model="tab">
 					<v-tabs-window-item value="lottery">
-						<v-container>
+						<v-container fluid>
 							<v-row align="center" justify="center" v-if="!isLotteryHappened">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column gap-2">
@@ -107,7 +107,7 @@
 										</v-btn>
 									</v-row>
 								</v-container>
-								<div v-for="round in draftRounds" :key="round.roundNumber">
+								<div v-for="round in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4">
 										<v-col>
 											<labeled-divider :label="`Round ${round.roundNumber}`">
@@ -116,6 +116,7 @@
 											</labeled-divider>
 										</v-col>
 									</v-row>
+									
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
 											<v-card :variant="isDark ? 'elevated' : 'tonal'"
@@ -174,6 +175,52 @@
 										</v-col>
 									</v-row>
 								</div>
+								
+								<!-- Load more rounds section - shows divider for next round with load buttons -->
+								<div v-if="hasMoreRoundsToLoad">
+									<v-row align="center" class="my-4">
+										<v-col>
+											<labeled-divider :label="`Round ${nextRoundNumber}`">
+												<div class="d-flex align-center justify-center gap-4">
+													<h2 class="text-h5 text-center text-on-background">Round {{
+														nextRoundNumber }}</h2>
+													
+													<div class="d-flex gap-2">
+														<v-btn 
+															size="small" 
+															variant="tonal" 
+															color="primary"
+															@click="loadNextRound"
+															:loading="loadingMoreRounds"
+															:disabled="loadingMoreRounds">
+															Load Next
+														</v-btn>
+														<v-btn 
+															size="small" 
+															variant="tonal" 
+															color="secondary"
+															@click="loadAllRounds"
+															:loading="loadingMoreRounds"
+															:disabled="loadingMoreRounds">
+															Load All
+														</v-btn>
+													</div>
+												</div>
+											</labeled-divider>
+										</v-col>
+									</v-row>
+									
+									<!-- Show loading indicator when loading more rounds -->
+									<v-row v-if="loadingMoreRounds" justify="center" class="my-4">
+										<v-col cols="auto">
+											<v-progress-circular 
+												indeterminate 
+												color="primary" 
+												size="32"
+											/>
+										</v-col>
+									</v-row>
+								</div>
 							</v-row>
 						</v-container>
 					</v-tabs-window-item>
@@ -204,7 +251,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
 import moment from 'moment';
 import momentTz from 'moment-timezone';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
@@ -221,6 +268,11 @@ const teamsData = ref(null)
 const lotteryData = ref(null)
 const currentDate = moment()
 const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').unix()
+
+// New reactive refs for round loading functionality
+const showRoundsUpTo = ref(1)
+const loadingMoreRounds = ref(false)
+
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
 })
@@ -286,6 +338,21 @@ const draftRounds = computed(() => {
 		.sort((a, b) => a.roundNumber - b.roundNumber)
 })
 
+// New computed property to show only visible rounds
+const visibleRounds = computed(() => {
+	return draftRounds.value.slice(0, showRoundsUpTo.value)
+})
+
+// Computed property to check if there are more rounds to load
+const hasMoreRoundsToLoad = computed(() => {
+	return showRoundsUpTo.value < draftRounds.value.length
+})
+
+// Computed property for the next round number to display in the load divider
+const nextRoundNumber = computed(() => {
+	return showRoundsUpTo.value + 1
+})
+
 const allPicksSorted = computed(() => {
 	const picks = []
 	draftRounds.value.forEach(round => {
@@ -307,6 +374,42 @@ const myNextUnmadePick = computed(() => {
 		pickData.team.owner_username === authStore.user.username
 	)
 })
+
+// Watch for changes in nextUnmadePick to auto-adjust visible rounds
+watch(nextUnmadePick, (newPick) => {
+	if (newPick && draftRounds.value.length > 0) {
+		const currentRound = newPick.pick.pick__round_number
+		// Ensure we show at least up to the current round
+		if (currentRound > showRoundsUpTo.value) {
+			showRoundsUpTo.value = currentRound
+		}
+	}
+}, { immediate: true })
+
+// Methods for loading more rounds
+const loadNextRound = async () => {
+	if (hasMoreRoundsToLoad.value) {
+		loadingMoreRounds.value = true
+		
+		// Simulate loading delay for better UX
+		await new Promise(resolve => setTimeout(resolve, 500))
+		
+		showRoundsUpTo.value += 1
+		loadingMoreRounds.value = false
+	}
+}
+
+const loadAllRounds = async () => {
+	if (hasMoreRoundsToLoad.value) {
+		loadingMoreRounds.value = true
+		
+		// Simulate loading delay for better UX
+		await new Promise(resolve => setTimeout(resolve, 800))
+		
+		showRoundsUpTo.value = draftRounds.value.length
+		loadingMoreRounds.value = false
+	}
+}
 
 const getTeamFuturePicks = (teamId: number, currentRound: number) => {
 	if (!lotteryData.value || !lotteryData.value[teamId]) return []
@@ -464,21 +567,4 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.highlight-pick {
-	animation: highlightPulse 2s ease-out;
-}
-
-@keyframes highlightPulse {
-	0% {
-		box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.8);
-	}
-
-	50% {
-		box-shadow: 0 0 20px 10px rgba(var(--v-theme-primary), 0.4);
-	}
-
-	100% {
-		box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
-	}
-}
 </style>

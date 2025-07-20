@@ -192,14 +192,42 @@ const onDraftConfirm = () => {
 <style lang="scss" scoped>
 .nba-player-card {
 	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
 	background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 	border-radius: 16px !important;
 	overflow: hidden;
 	transition: all 0.3s ease;
 
+	// Sheen effect
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg,
+				transparent,
+				rgba(255, 255, 255, 0.2),
+				transparent);
+		transition: left 0.6s ease;
+		z-index: 1;
+		pointer-events: none;
+	}
+
 	&:hover {
-		transform: translateY(-4px);
 		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+		&::before {
+			left: 100%;
+		}
+	}
+
+	// Ensure content is above sheen
+	>* {
+		position: relative;
+		z-index: 2;
 	}
 
 	// Team-specific color schemes
