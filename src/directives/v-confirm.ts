@@ -1,6 +1,6 @@
 // src/directives/v-confirm.ts
 import { Directive, VNode, DirectiveBinding } from "vue";
-import { showConfirm, ConfirmOptions } from "./useConfirm";
+import { showConfirm, ConfirmOptions } from "./useConfirm.ts";
 
 interface ElWithHandler extends HTMLElement {
   __vConfirmHandler?: EventListener;

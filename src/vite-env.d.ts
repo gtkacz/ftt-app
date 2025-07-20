@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { User } from "./types/auth";
+import { User } from "./types/auth.ts";
 
 declare const __APP_VERSION__: string;
 declare const user: User | null;

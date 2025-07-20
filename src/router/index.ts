@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from "@/stores/auth.ts";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "home",
-    component: () => import("../views/HomeView.vue"),
+    component: () => import("@/views/HomeView.vue"),
   },
   {
     path: "/login",
     name: "login",
-    component: () => import("../views/LoginView.vue"),
+    component: () => import("@/views/LoginView.vue"),
     meta: {
       title: "Login - Fantasy Trash Talk",
       requiresAuth: false,
@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/signup",
     name: "signup",
-    component: () => import("../views/SignUpView.vue"),
+    component: () => import("@/views/SignUpView.vue"),
     meta: {
       title: "Signup - Fantasy Trash Talk",
       requiresAuth: false,
@@ -29,61 +29,61 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/draft",
     name: "draft",
-    component: () => import("../views/DraftView.vue"),
+    component: () => import("@/views/DraftView.vue"),
   },
   {
     path: "/big-board",
     name: "big-board",
-    component: () => import("../views/BigBoardView.vue"),
+    component: () => import("@/views/BigBoardView.vue"),
   },
   {
     path: "/settings",
     name: "settings",
-    component: () => import("../views/SettingsView.vue"),
+    component: () => import("@/views/SettingsView.vue"),
   },
   {
     path: "/profile",
     name: "profile",
-    component: () => import("../views/UserView.vue"),
+    component: () => import("@/views/UserView.vue"),
   },
   {
     path: "/lottery",
     name: "lottery",
-    component: () => import("../views/501View.vue"),
+    component: () => import("@/views/501View.vue"),
   },
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () => import("../views/DashboardView.vue"),
+    component: () => import("@/views/DashboardView.vue"),
   },
   {
     path: "/trade",
     name: "trade",
-    component: () => import("../views/501View.vue"),
+    component: () => import("@/views/501View.vue"),
   },
   {
     path: "/team",
     name: "team",
-    component: () => import("../views/501View.vue"),
+    component: () => import("@/views/501View.vue"),
   },
   {
     path: "/players",
     name: "players",
-    component: () => import("../views/PlayersView.vue"),
+    component: () => import("@/views/PlayersView.vue"),
   },
   {
     path: "/league",
     name: "league",
-    component: () => import("../views/501View.vue"),
+    component: () => import("@/views/501View.vue"),
   },
   {
     path: "/trades",
     name: "trades",
-    component: () => import("../views/501View.vue"),
+    component: () => import("@/views/501View.vue"),
   },
   {
     path: "/commission",
-    component: () => import("../views/AdminView.vue"),
+    component: () => import("@/views/AdminView.vue"),
     meta: {
       requiresStaff: true,
     },
@@ -96,7 +96,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "settings",
         name: "commission-settings",
-        component: () => import("../views/501View.vue"),
+        component: () => import("@/views/501View.vue"),
         meta: {
           title: "Commission Settings - Fantasy Trash Talk",
           requiresStaff: true,
@@ -105,7 +105,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "users",
         name: "commission-users",
-        component: () => import("../views/admin/UserView.vue"),
+        component: () => import("@/views/admin/UserView.vue"),
         meta: {
           title: "Comission Users - Fantasy Trash Talk",
           requiresStaff: true,
@@ -114,7 +114,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "teams",
         name: "commission-teams",
-        component: () => import("../views/501View.vue"),
+        component: () => import("@/views/501View.vue"),
         meta: {
           title: "Admin Teams - Fantasy Trash Talk",
           requiresStaff: true,
@@ -123,7 +123,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "players",
         name: "commission-players",
-        component: () => import("../views/501View.vue"),
+        component: () => import("@/views/501View.vue"),
         meta: {
           title: "Admin Players - Fantasy Trash Talk",
           requiresStaff: true,
@@ -134,27 +134,27 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/league-draft",
     name: "league-draft",
-    component: () => import("../views/LeagueDraftView.vue"),
+    component: () => import("@/views/LeagueDraftView.vue"),
   },
   {
     path: "/approval",
     name: "approval",
-    component: () => import("../views/WaitForApprovalView.vue"),
+    component: () => import("@/views/WaitForApprovalView.vue"),
   },
   {
     path: "/create-team",
     name: "create-team",
-    component: () => import("../views/TeamCreateView.vue"),
+    component: () => import("@/views/TeamCreateView.vue"),
   },
   {
     path: "/unauthorized",
     name: "unauthorized",
-    component: () => import("../views/401View.vue"),
+    component: () => import("@/views/401View.vue"),
   },
   {
     path: "/not-found",
     name: "not-found",
-    component: () => import("../views/404View.vue"),
+    component: () => import("@/views/404View.vue"),
   },
   {
     path: "/:pathMatch(.*)*",

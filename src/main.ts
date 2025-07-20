@@ -21,15 +21,17 @@ import "vuetify/styles";
 import "./styles/main.scss";
 
 // Custom plugins
-import errorSnackbarPlugin from "@/plugins/errorSnackbar";
+import errorSnackbarPlugin from "@/plugins/errorSnackbar.ts";
+
+// Custom directives
+import { vConfirm } from "@/directives/v-confirm.ts";
 
 // Custom components
 import AppLogo from "@/components/common/AppLogo.vue";
-import ThemeChanger from "@/components/common/ThemeChanger.vue";
-import Word from "@/components/common/Word.vue";
 import Countdown from "@/components/common/Countdown.vue";
 import LabeledDivider from "@/components/common/LabeledDivider.vue";
-import { vConfirm } from "@/directives/v-confirm";
+import ThemeChanger from "@/components/common/ThemeChanger.vue";
+import Word from "@/components/common/Word.vue";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -49,8 +51,8 @@ const vuetify = createVuetify({
           accent: "#FF9000",
           background: "#FFFFFF",
           surface: "#FFFFFF",
-          // "surface-variant": "#FFFFFF",
-          'surface-variant': '#F5F5F5',
+          "surface-variant": "#FFFFFF",
+          // 'surface-variant': '#F5F5F5',
           "on-surface": "#0F183E",
           "on-surface-variant": "#0F183E",
           "on-primary": "#FFFFFF",
@@ -68,7 +70,8 @@ const vuetify = createVuetify({
           accent: "#FF9000",
           background: "#000012",
           surface: "#000012",
-          "surface-variant": "#000017",
+          "surface-variant": "#000012",
+          // "surface-variant": "#000017",
           "on-surface": "#FFFFFF",
           "on-surface-variant": "#FFFFFF",
           "on-primary": "#FFFFFF",

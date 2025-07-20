@@ -10,7 +10,7 @@
         <theme-changer />
 
         <!-- Notifications -->
-        <v-btn icon variant="text" @click="toggleNotifications" class="action-btn">
+        <v-btn icon variant="text" @click="toggleNotifications" class="action-btn" disabled>
           <v-icon icon="notifications" />
           <v-badge v-if="notificationCount > 0" :content="notificationCount" color="secondary"
             class="notification-badge" />
@@ -58,7 +58,7 @@ const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 
-const notificationCount = computed(() => 3) // Mock notification count
+const notificationCount = computed(() => 0) // Mock notification count
 
 const initials = computed(() => {
   const name = user.value ? user.value.first_name + ' ' + user.value.last_name : '';

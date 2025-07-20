@@ -110,8 +110,7 @@
 								<div v-for="(round, index) in draftRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4">
 										<v-col>
-											<labeled-divider v-if="index < draftRounds.length - 1"
-												:label="`Round ${round.roundNumber}`">
+											<labeled-divider :label="`Round ${round.roundNumber}`">
 												<h2 class="text-h5 text-center text-on-background">Round {{
 													round.roundNumber }}</h2>
 											</labeled-divider>
@@ -120,16 +119,15 @@
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
 											<v-card :variant="isDark ? 'elevated' : 'tonal'"
-												:color="getPickCardColor(pick.pick)"
-												class="pa-4" v-ripple :id="`pick-${pick.pick.overall_pick}`">
+												:color="getPickCardColor(pick.pick)" class="pa-4" v-ripple
+												:id="`pick-${pick.pick.overall_pick}`">
 												<v-card-title>
 													<v-row>
 														<v-col>
 															<div class="d-flex align-center justify-start gap-2">
 																<span class="font-weight-black">{{
 																	pick?.team?.name }}</span>
-																<v-icon icon="attribution" size="small"
-																	variant="tonal"
+																<v-icon icon="attribution" size="small" variant="tonal"
 																	v-if="pick.team.owner_username === authStore.user?.username" />
 															</div>
 														</v-col>
@@ -138,7 +136,8 @@
 																:team="pick.team"
 																:draftable-players="draftData?.draftable_players"
 																:pick="pick.pick"
-																:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)" @player-selected="loadData" />
+																:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
+																@player-selected="loadData" />
 														</v-col>
 													</v-row>
 												</v-card-title>

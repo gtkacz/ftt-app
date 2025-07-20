@@ -1,4 +1,4 @@
-import { showError } from "../services/errorSnackbar";
+import { showError } from "@/services/errorSnackbar";
 
 export interface JwtPayload {
   user_id?: number;

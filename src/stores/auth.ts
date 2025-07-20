@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
-import { AuthService } from "../api/auth";
+import { AuthService } from "@/api/auth";
 import type {
   LoginData,
   RegisterData,
   RegisterTeamData,
   User,
-} from "../types/auth";
-import { decodeJwt } from "../utils/jwt";
-import { showError } from "../services/errorSnackbar";
+} from "@/types/auth";
+import { decodeJwt } from "@/utils/jwt";
+import { showError } from "@/services/errorSnackbar";
 
 interface AuthState {
   user: null | User;
@@ -74,7 +74,7 @@ export const useAuthStore = defineStore("auth", {
         this.isLoading = false;
       }
     },
-  
+
     async fetchUser(): Promise<void> {
       try {
         this.isLoading = true;

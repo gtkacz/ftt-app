@@ -1,10 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from "@/stores/auth.ts";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL + "/api",
-  headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": true },
+  headers: {
+    "Content-Type": "application/json",
+    "bypass-tunnel-reminder": true,
+  },
   timeout: 10000,
 });
 

@@ -1,5 +1,6 @@
 import { h } from "vue";
 import type { IconAliases, IconProps, IconSet } from "vuetify";
+
 const aliases: IconAliases = {
   collapse: "keyboard_arrow_up",
   complete: "check",

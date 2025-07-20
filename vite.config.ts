@@ -1,28 +1,35 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vuetify from 'vite-plugin-vuetify'
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vite";
+import viteCompression from "vite-plugin-compression";
+import { VitePWA } from "vite-plugin-pwa";
+import vuetify from "vite-plugin-vuetify";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/ftt-app/',
+  base: "/ftt-app/",
   plugins: [
     vue(),
     vuetify({
       autoImport: true,
     }),
+    viteCompression(),
+    VitePWA(),
   ],
-  define: { 'process.env': {}, '__APP_VERSION__': JSON.stringify(process.env.npm_package_version), },
+  define: {
+    "process.env": {},
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
   resolve: {
     alias: {
-      '@': '/src',
+      "@": "/src",
     },
   },
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern-compiler',
+        api: "modern-compiler",
         additionalData: `@use "@/styles/variables.scss" as *;`,
       },
     },
   },
-})
+});

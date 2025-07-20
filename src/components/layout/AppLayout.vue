@@ -1,6 +1,5 @@
 <template>
   <div class="app-layout">
-  {{ isDev }}
     <!-- Main Navigation (apenas quando autenticado) -->
     <AppNavigation v-if="isAuthenticated && isApproved && hasTeam" />
 

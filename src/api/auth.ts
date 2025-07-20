@@ -1,6 +1,6 @@
-import { AuthResponse } from "../types/auth";
-import api from "./axios";
-import { LoginData, RegisterData, RegisterTeamData } from "../types/auth";
+import { AuthResponse } from "@/types/auth.ts";
+import api from "./axios.ts";
+import { LoginData, RegisterData, RegisterTeamData } from "@/types/auth.ts";
 
 export const AuthService = {
   async login(data: LoginData) {

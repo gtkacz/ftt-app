@@ -1,10 +1,6 @@
 import { defineStore } from "pinia";
-import { UserService } from "../api/users";
-import type {
-  UserRecord,
-  UserRequest,
-  PatchedUserRequest,
-} from "../types/auth";
+import { UserService } from "@/api/users";
+import type { UserRecord, UserRequest, PatchedUserRequest } from "@/types/auth";
 
 interface UserState {
   users: UserRecord[];

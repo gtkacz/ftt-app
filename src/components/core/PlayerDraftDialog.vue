@@ -11,14 +11,15 @@
 		</v-avatar>
 
 		<!-- Draft button for user's team -->
-		<v-btn v-else-if="team.id === userTeamId && pick?.is_current" icon variant="outlined"
-			size="small" @click="showDraftDialog = true" v-tooltip="'Draft a player'">
+		<v-btn v-else-if="team.id === userTeamId && pick?.is_current" icon variant="outlined" size="small"
+			@click="showDraftDialog = true" v-tooltip="'Draft a player'">
 			<v-icon>person_add</v-icon>
 		</v-btn>
 
-		
+
 		<!-- Player avatar for user's team with player -->
-		<v-avatar v-else-if="player && pick?.is_pick_made" size="40" class="cursor-pointer" @click="showPlayerDialog = true">
+		<v-avatar v-else-if="player && pick?.is_pick_made" size="40" class="cursor-pointer"
+			@click="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template v-slot:error>
 					<v-icon size="40">account_circle</v-icon>
