@@ -3,22 +3,27 @@
     <div class="welcome-container">
       <div class="welcome-content">
         <div class="welcome-icon">
-          <app-logo size="288px" />
+          <app-logo size="288px" class="animate__animated animate__fadeInDown" />
         </div>
 
-        <h1 class="welcome-title">
-          Welcome to <span class="highlight">Fantasy Trash Talk</span>
+        <h1 class="welcome-title animate__animated animate__fadeInUp">
+          Welcome to <span class="highlight">Fantasy Trash Talk</span>, {{ user.first_name || 'Guest' }}!
         </h1>
 
-        <p class="welcome-subtitle">
+        <!-- <p class="welcome-subtitle animate__animated animate__fadeIn">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit
-        </p>
+        </p> -->
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
+
+const authStore = useAuthStore()
+const user = computed(() => authStore.user)
 </script>
 
 <style lang="scss" scoped>
@@ -82,25 +87,5 @@
   @media (max-width: 768px) {
     font-size: 1.1rem;
   }
-}
-
-.welcome-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.5px;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-top: 40px;
 }
 </style>

@@ -24,7 +24,7 @@
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
-											@click="loadData" class="mt-4" :loading="loading" icon>
+											@click="fetchAllData" class="mt-4" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm
@@ -102,12 +102,12 @@
 									</v-row>
 									<v-row justify="center" align="center">
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
-											@click="loadData" :loading="loading" icon>
+											@click="fetchAllData" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 									</v-row>
 								</v-container>
-								<div v-for="(round, index) in draftRounds" :key="round.roundNumber">
+								<div v-for="round in draftRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4">
 										<v-col>
 											<labeled-divider :label="`Round ${round.roundNumber}`">
@@ -137,7 +137,7 @@
 																:draftable-players="draftData?.draftable_players"
 																:pick="pick.pick"
 																:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
-																@player-selected="loadData" />
+																@player-selected="fetchAllData" />
 														</v-col>
 													</v-row>
 												</v-card-title>
@@ -204,7 +204,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
 import moment from 'moment';
 import momentTz from 'moment-timezone';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
@@ -216,7 +216,6 @@ const isDark = computed(() => themeStore.isDark)
 const loading = ref(true)
 const startDialog = ref(false)
 const dialogAction = ref('Draft')
-const tab = ref('lottery')
 const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
@@ -225,6 +224,7 @@ const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
 })
+const tab = ref(isLotteryHappened.value ? 'draft' : 'lottery')
 
 const isDraftStarted = computed(() => {
 	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
@@ -353,6 +353,7 @@ const fetchLotteryData = async () => {
 		}
 
 		lotteryData.value = picksByTeam
+		tab.value = isLotteryHappened.value ? 'draft' : 'lottery'
 	} catch (error) {
 		console.error('Error fetching draft data:', error)
 		throw error
@@ -375,7 +376,7 @@ const startLottery = async () => {
 		console.error('Error starting lottery:', error)
 		throw error
 	} finally {
-		await loadData()
+		await fetchAllData()
 		startDialog.value = false
 	}
 }
@@ -390,21 +391,38 @@ const startDraft = async () => {
 }
 
 const navigateToPick = async (overallPick: number) => {
-	// Switch to draft tab
-	tab.value = 'draft'
-
-	// Wait for DOM to update
-	await nextTick()
-
-	// Find and scroll to the pick card
 	const pickElement = document.getElementById(`pick-${overallPick}`)
+
 	if (pickElement) {
+		// Scroll to the element
 		pickElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
-		// Add a highlight effect
-		pickElement.classList.add('highlight-pick')
+		// Wait for scroll to complete
+		await new Promise<void>((resolve) => {
+			let timeoutId: number
+
+			const onScrollEnd = () => {
+				clearTimeout(timeoutId)
+				window.removeEventListener('scrollend', onScrollEnd)
+				resolve()
+			}
+
+			// Use scrollend event if available (modern browsers)
+			if ('onscrollend' in window) {
+				window.addEventListener('scrollend', onScrollEnd, { once: true })
+				// Fallback timeout in case scrollend doesn't fire
+				timeoutId = setTimeout(onScrollEnd, 1000)
+			} else {
+				// Fallback for older browsers - estimate scroll duration
+				timeoutId = setTimeout(resolve, 800)
+			}
+		})
+
+		// Add highlight effect after scroll completes
+		pickElement.classList.add('animate__animated', 'animate__tada')
+
 		setTimeout(() => {
-			pickElement.classList.remove('highlight-pick')
+			pickElement.classList.remove('animate__animated', 'animate__tada')
 		}, 2000)
 	}
 }
@@ -430,7 +448,7 @@ const getPickCardColor = (pick: any) => {
 	return 'primary'
 }
 
-const loadData = async () => {
+const fetchAllData = async () => {
 	loading.value = true
 	await Promise.all([
 		fetchTeamsData(),
@@ -441,7 +459,7 @@ const loadData = async () => {
 }
 
 onMounted(() => {
-	loadData()
+	fetchAllData()
 })
 </script>
 

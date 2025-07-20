@@ -20,9 +20,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import AppNavigation from './AppNavigation.vue';
-import AppTopBar from './AppTopBar.vue';
-import NotificationOverlay from '../overlays/NotificationOverlay.vue';
+import AppNavigation from '@/components/layout/AppNavigation.vue';
+import AppTopBar from '@/components/layout/AppTopBar.vue';
+import NotificationOverlay from '@/components/overlays/NotificationOverlay.vue';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);

@@ -5,12 +5,27 @@
       <!-- <p class="page-subtitle">Lorem ipsum dolor sit amet</p> -->
     </div>
 
-    <players-table />
+    <players-table @player-selected="onPlayerSelected" />
+
+    <v-dialog max-width="500" v-model="showPlayerCard">
+      <player-card :player="playerData" :pick="pick" />
+    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import PlayersTable from '../components/core/PlayersTable.vue';
+import { ref } from 'vue';
+import PlayersTable from '@/components/core/PlayersTable.vue';
+import PlayerCard from '@/components/core/PlayerCard.vue';
+
+const showPlayerCard = ref(false);
+const playerData = ref(null);
+const pick = ref(null);
+
+const onPlayerSelected = (player: any) => {
+	playerData.value = player
+	showPlayerCard.value = true
+}
 </script>
 
 <style lang="scss" scoped></style>

@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import FeatureCard from '../components/common/FeatureCard.vue'
+import FeatureCard from '@/components/common/FeatureCard.vue'
 </script>
 
 <style lang="scss" scoped>

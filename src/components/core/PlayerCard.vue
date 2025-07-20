@@ -60,13 +60,13 @@
 			</div>
 
 			<!-- Contract info -->
-			<div class="contract-info">
+			<div class="contract-info" v-if="pick?.contract">
 				<v-chip size="small" variant="tonal" class="salary-chip">
-					{{ formatCurrency(pick.contract?.salary) }}
+					{{ formatCurrency(pick?.contract?.salary) }}
 				</v-chip>
 				<v-chip size="small" variant="tonal" class="salary-chip">
-					{{ pick.contract?.duration }}
-					<word item="yr" :count="pick.contract?.duration" />
+					{{ pick?.contract?.duration }}
+					<word item="yr" :count="pick?.contract?.duration" />
 				</v-chip>
 			</div>
 
@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import NbaTeamIcon from './NBATeamIcon.vue'
+import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
 
 const emit = defineEmits(['draft'])
 
@@ -145,21 +145,24 @@ interface Pick {
 
 interface Props {
 	player: Player
-	pick: Pick
-	canDraft: boolean
+	pick?: Pick
+	canDraft?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	canDraft: false
+	canDraft: false,
 })
 
 const playerMetadata = computed<PlayerMetadata | null>(() => {
 	if (!props.player?.metadata) return null
-	try {
-		return JSON.parse(props.player?.metadata)
-	} catch {
-		return null
+	if (typeof props.player.metadata === 'string') {
+		return JSON.parse(props.player.metadata)
 	}
+	if (typeof props.player.metadata === 'object') {
+		return props.player.metadata as PlayerMetadata
+	}
+
+	return null
 })
 
 const teamColorClass = computed(() => {

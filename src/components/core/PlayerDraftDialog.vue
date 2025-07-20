@@ -63,8 +63,8 @@
 import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 import { computed, ref } from 'vue';
-import PlayersTable from './PlayersTable.vue';
-import PlayerCard from './PlayerCard.vue';
+import PlayersTable from '@/components/core/PlayersTable.vue';
+import PlayerCard from '@/components/core/PlayerCard.vue';
 
 // Props
 const props = withDefaults(defineProps<{

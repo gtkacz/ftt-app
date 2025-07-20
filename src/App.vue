@@ -18,8 +18,8 @@
 <script setup lang="ts">
 import { onErrorCaptured, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import AppLayout from './components/layout/AppLayout.vue';
-import { useAuthStore } from "./stores/auth";
+import AppLayout from '@/components/layout/AppLayout.vue';
+import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
 const router = useRouter();

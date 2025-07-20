@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useThemeStore } from '../../stores/theme';
+import { useThemeStore } from '@/stores/theme';
 
 const loading = ref(true);
 const themeStore = useThemeStore()

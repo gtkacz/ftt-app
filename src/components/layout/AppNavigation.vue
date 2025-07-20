@@ -47,9 +47,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
-import { useNavigationStore } from '../../stores/navigation'
-import NavItem from '../navigation/NavItem.vue'
-import LogoNav from '../navigation/LogoNav.vue'
+import { useNavigationStore } from '@/stores/navigation'
+import NavItem from '@/components/navigation/NavItem.vue'
+import LogoNav from '@/components/navigation/LogoNav.vue'
 
 const version = __APP_VERSION__
 const { mobile } = useDisplay()
@@ -185,12 +185,13 @@ const handleMouseLeave = () => {
   overflow: hidden;
   align-items: center;
   justify-content: center;
-
+  
   &>* {
     width: 100%;
   }
-
+  
   &.mobile {
+    z-index: 1999;
     width: 240px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;

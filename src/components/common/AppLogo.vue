@@ -1,5 +1,5 @@
 <template>
-  <img src="../../assets/logo.png" :width="logoSize" :height="logoSize" alt="Fantasy Trash Talk"
+  <img src="@/assets/logo.png" :width="logoSize" :height="logoSize" alt="Fantasy Trash Talk"
     :class="{ 'app-logo': isReactive }" :style="{ width: logoSize, height: logoSize }" />
 </template>
 

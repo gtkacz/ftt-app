@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useNavigationStore } from '../../stores/navigation'
+import { useNavigationStore } from '@/stores/navigation'
 
 interface Notification {
   id: string
