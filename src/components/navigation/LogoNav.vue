@@ -18,4 +18,10 @@ interface Props {
 const props = defineProps<Props>()
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.nav-item-label {
+  font-weight: bolder;
+  font-size: 1.2rem;
+  left: 2.75rem;
+}
+</style>

@@ -2,8 +2,8 @@
   <div class="page-view">
     <v-snackbar v-model="notificationSnackbar.show" :timeout="notificationSnackbar.timeout"
       :color="notificationSnackbar.color" location="top" multi-line>
-      <v-icon icon="dangerous" class="mr-2" size="large" />
-      <span class="text-on-error">{{ notificationSnackbar.message }}</span>
+      <v-icon :icon="getIcon(notificationSnackbar.color)" class="mr-2" size="large" />
+      <span :class="`text-on-${notificationSnackbar.color}`">{{ notificationSnackbar.message }}</span>
 
       <template #actions>
         <v-btn icon variant="text" @click="notificationSnackbar.show = false">
@@ -118,6 +118,19 @@ const handleSignup = async () => {
     color: 'success'
   };
   loading.value = false;
+};
+
+const getIcon = (color: string) => {
+  switch (color) {
+    case 'success':
+      return 'check_circle';
+    case 'error':
+      return 'error';
+    case 'warning':
+      return 'warning';
+    default:
+      return 'info';
+  }
 };
 </script>
 
