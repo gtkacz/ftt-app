@@ -265,7 +265,6 @@ const isLotteryHappened = computed(() => {
 const tab = ref(isLotteryHappened.value ? 'draft' : 'lottery')
 
 const isDraftStarted = computed(() => {
-	return true // TODO: REMOVE
 	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
 })
 
