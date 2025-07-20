@@ -37,24 +37,24 @@
 							<v-divider class="my-4" v-if="!isLotteryHappened" />
 							<v-row align="center" justify="center">
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
-									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
+									<v-card link :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
 										v-ripple>
-										<v-card-title>
+										<template #title>
 											<div class="d-flex align-center justify-start gap-2">
 												<span class="font-weight-black">{{ team.name
 												}}</span>
 												<v-icon icon="attribution" color="info" size="small" variant="tonal"
 													v-if="team.owner_username === authStore.user?.username" />
 											</div>
-										</v-card-title>
-										<v-card-subtitle>
+										</template>
+										<template #subtitle>
 											@{{ team.owner_username }}
-										</v-card-subtitle>
-										<v-card-text>
+										</template>
+										<template #text>
 											Draft Seed:
 											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
 												lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
-										</v-card-text>
+										</template>
 									</v-card>
 								</v-col>
 							</v-row>
@@ -119,33 +119,28 @@
 
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
-											<v-card :variant="isDark ? 'elevated' : 'tonal'"
+											<v-card link :variant="isDark ? 'elevated' : 'tonal'"
 												:color="getPickCardColor(pick.pick)" class="pa-4" v-ripple
 												:id="`pick-${pick.pick.overall_pick}`" rounded>
-												<v-card-title>
-													<v-row>
-														<v-col>
-															<div class="d-flex align-center justify-start gap-2">
-																<span class="font-weight-black">{{
-																	pick?.team?.name }}</span>
-																<v-icon icon="attribution" size="small" variant="tonal"
-																	v-if="pick.team.owner_username === authStore.user?.username" />
-															</div>
-														</v-col>
-														<v-col class="d-flex justify-end">
-															<player-draft-dialog :player="pick.pick?.player"
-																:team="pick.team"
-																:draftable-players="draftData?.draftable_players"
-																:pick="pick.pick"
-																:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
-																@player-selected="fetchAllData" />
-														</v-col>
-													</v-row>
-												</v-card-title>
-												<v-card-subtitle>
+												<template #title>
+													<div class="d-flex align-center justify-start gap-2">
+														<span class="font-weight-black">{{
+															pick?.team?.name }}</span>
+														<v-icon icon="attribution" size="small" variant="tonal"
+															v-if="pick.team.owner_username === authStore.user?.username" />
+													</div>
+												</template>
+												<template #append>
+													<player-draft-dialog :player="pick.pick?.player" :team="pick.team"
+														:draftable-players="draftData?.draftable_players"
+														:pick="pick.pick"
+														:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
+														@player-selected="fetchAllData" />
+												</template>
+												<template #subtitle>
 													@{{ pick?.team?.owner_username }}
-												</v-card-subtitle>
-												<v-card-text>
+												</template>
+												<template #text>
 													Pick
 													<h2>#{{ pick.pick.overall_pick }}</h2>
 													<countdown :value="pick.pick.time_to_pick" :show-progress="false"
@@ -155,8 +150,8 @@
 													</countdown>
 													<span v-else>{{ pick.pick.player.first_name[0] }}. {{
 														pick.pick.player.last_name }}</span>
-												</v-card-text>
-												<v-card-actions
+												</template>
+												<template #actions
 													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
 													<p>
 														<span>Next Picks:</span>
@@ -170,7 +165,7 @@
 															</v-chip>
 														</v-chip-group>
 													</p>
-												</v-card-actions>
+												</template>
 											</v-card>
 										</v-col>
 									</v-row>
