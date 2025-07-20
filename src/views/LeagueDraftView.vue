@@ -17,7 +17,7 @@
 			<v-card-text v-else>
 				<v-tabs-window v-model="tab">
 					<v-tabs-window-item value="lottery">
-						<v-container fluid>
+						<v-sheet>
 							<v-row align="center" justify="center" v-if="!isLotteryHappened">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column gap-2">
@@ -35,7 +35,7 @@
 								</v-col>
 							</v-row>
 							<v-divider class="my-4" v-if="!isLotteryHappened" />
-							<v-row>
+							<v-row align="center" justify="center">
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
 									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
 										v-ripple>
@@ -58,13 +58,13 @@
 									</v-card>
 								</v-col>
 							</v-row>
-						</v-container>
+						</v-sheet>
 					</v-tabs-window-item>
 					<v-tabs-window-item value="draft">
-						<v-container v-if="isLotteryHappened" fluid>
-							<v-row align="center" justify="center" v-if="!isDraftStarted">
-								<v-col cols="auto">
-									<p class="d-flex align-center justify-center flex-column">
+						<v-sheet v-if="isLotteryHappened">
+							<v-container fluid v-if="!isDraftStarted">
+								<v-row align="center" justify="center" class="w-100">
+									<v-col cols="auto" align="center" justify="center" class="w-100">
 										<span>The draft will start in</span>
 										<countdown :value="moment(draftData.starts_at).unix()" timestamp
 											@expired="startDraft" />
@@ -72,12 +72,12 @@
 											:loading="loading">
 											Start Now
 										</v-btn>
-									</p>
-								</v-col>
-							</v-row>
-							<v-row>
+									</v-col>
+								</v-row>
+							</v-container>
+							<v-container fluid>
 								<!-- Navigation buttons for draft -->
-								<v-container fluid class="my-4" v-if="isDraftStarted">
+								<v-container fluid class="my-4 w-100" v-if="isDraftStarted">
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center flex-column align-center">
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name }} is on the clock (#{{
@@ -107,8 +107,8 @@
 										</v-btn>
 									</v-row>
 								</v-container>
-								<div v-for="round in visibleRounds" :key="round.roundNumber">
-									<v-row align="center" class="my-4">
+								<v-container v-for="round in visibleRounds" :key="round.roundNumber">
+									<v-row align="center" class="my-4 w-100">
 										<v-col>
 											<labeled-divider>
 												<h2 class="text-h5 text-center text-on-background">Round {{
@@ -121,7 +121,7 @@
 										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
 											<v-card :variant="isDark ? 'elevated' : 'tonal'"
 												:color="getPickCardColor(pick.pick)" class="pa-4" v-ripple
-												:id="`pick-${pick.pick.overall_pick}`">
+												:id="`pick-${pick.pick.overall_pick}`" rounded>
 												<v-card-title>
 													<v-row>
 														<v-col>
@@ -174,15 +174,13 @@
 											</v-card>
 										</v-col>
 									</v-row>
-								</div>
+								</v-container>
 
 								<!-- Load more rounds section - shows divider for next round with load buttons -->
-								<div v-if="hasMoreRoundsToLoad" class="my-6 w-100">
+								<v-container v-if="hasMoreRoundsToLoad" class="my-6 w-100">
 									<v-row align="center">
 										<v-col>
 											<labeled-divider>
-												<!-- <h2 class="text-h5 text-center text-on-background">Round {{
-													nextRoundNumber }}</h2> -->
 												<div class="d-flex gap-2">
 													<v-btn size="small" variant="tonal" color="primary"
 														@click="loadNextRound" :loading="loadingMoreRounds"
@@ -190,7 +188,7 @@
 														v-tooltip="`Load Round ${nextRoundNumber}`">
 														Load Next
 													</v-btn>
-													<v-btn size="small" variant="tonal" color="secondary"
+													<v-btn size="small" variant="tonal" color="info"
 														@click="loadAllRounds" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`">
 														Load All
@@ -201,14 +199,14 @@
 									</v-row>
 
 									<!-- Show loading indicator when loading more rounds -->
-									<v-row v-if="loadingMoreRounds" justify="center" class="my-4">
+									<v-row v-if="loadingMoreRounds" justify="center" class="my-4 w-100">
 										<v-col cols="auto">
 											<v-progress-circular indeterminate color="primary" size="32" />
 										</v-col>
 									</v-row>
-								</div>
-							</v-row>
-						</v-container>
+								</v-container>
+							</v-container>
+						</v-sheet>
 					</v-tabs-window-item>
 					<v-dialog v-model="startDialog" max-width="320" persistent>
 						<v-list class="py-2" color="primary" elevation="12" rounded="lg">
