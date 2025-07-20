@@ -4,7 +4,7 @@
 		<v-avatar v-if="player && (team.id !== userTeamId || disabled)" size="40" class="cursor-pointer"
 			@click="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
-				<template v-slot:error>
+				<template #error>
 					<v-icon size="40">account_circle</v-icon>
 				</template>
 			</v-img>
@@ -21,7 +21,7 @@
 		<v-avatar v-else-if="player && pick?.is_pick_made" size="40" class="cursor-pointer"
 			@click="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
-				<template v-slot:error>
+				<template #error>
 					<v-icon size="40">account_circle</v-icon>
 				</template>
 			</v-img>

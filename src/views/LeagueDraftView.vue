@@ -206,11 +206,11 @@
 					<v-dialog v-model="startDialog" max-width="320" persistent>
 						<v-list class="py-2" color="primary" elevation="12" rounded="lg">
 							<v-list-item :title="`Starting ${dialogAction}...`">
-								<template v-slot:prepend>
+								<template #prepend>
 									<app-logo class="mr-4" />
 								</template>
 
-								<template v-slot:append>
+								<template #append>
 									<v-progress-circular color="primary" indeterminate="disable-shrink" size="16"
 										width="2"></v-progress-circular>
 								</template>

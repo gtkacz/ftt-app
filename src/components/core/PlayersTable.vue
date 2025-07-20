@@ -6,9 +6,9 @@
 
 			<!-- Filters and Column Settings -->
 			<v-expand-transition>
-				<v-card-text v-if="!loading" class="pa-0">
+				<v-container fluid v-if="!loading" class="pa-0">
 					<slot name="action-row">
-						<v-row class="mb-4" align="center">
+						<v-row class="mb-4" align="center" justify="center">
 							<!-- Search bar - 75% width -->
 							<slot name="search">
 								<v-col cols="9">
@@ -20,17 +20,18 @@
 
 							<!-- Icon buttons - 25% width -->
 							<slot name="extra-actions">
-								<v-col cols="3" class="d-flex justify-end gap-2">
+								<v-spacer />
+								<v-col class="d-flex justify-end gap-2">
 									<!-- Sort menu -->
-									<v-menu v-model="sortMenu" :close-on-content-click="false" location="bottom">
-										<template v-slot:activator="{ props }" v-tooltip="'Sort table'">
+									<!-- <v-menu rounded v-model="sortMenu" :close-on-content-click="false" location="bottom">
+										<template #activator="{ props }" v-tooltip="'Sort table'">
 											<v-btn v-bind="props" icon variant="outlined" size="small">
 												<v-icon icon="sort" />
 											</v-btn>
 										</template>
-										<v-card min-width="300" density="comfortable" class="pa-4">
-											<template v-slot:title class="text-h6">Sort Options</template>
-											<template v-slot:append><v-btn variant="text" icon @click="sortMenu = false"
+										<v-card rounded min-width="300" density="comfortable" class="pa-4">
+											<template #title class="text-h6">Sort Options</template>
+											<template #append><v-btn variant="text" icon @click="sortMenu = false"
 													size="small"><v-icon icon="close" /></v-btn></template>
 											<v-divider />
 											<v-card-text>
@@ -56,11 +57,11 @@
 												</v-btn>
 											</v-card-actions>
 										</v-card>
-									</v-menu>
+									</v-menu> -->
 
 									<!-- Filter button with menu -->
-									<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
-										<template v-slot:activator="{ props }" v-tooltip="'Filter players'">
+									<v-menu rounded v-model="filterMenu" :close-on-content-click="false" location="bottom">
+										<template #activator="{ props }" v-tooltip="'Filter players'">
 											<v-btn v-bind="props" icon variant="outlined" size="small"
 												:color="hasActiveFilters ? 'primary' : undefined">
 												<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
@@ -69,13 +70,9 @@
 												</v-badge>
 											</v-btn>
 										</template>
-										<v-card min-width="500" density="comfortable" class="pa-4">
-											<template v-slot:title class="text-h6">Filters</template>
-											<template v-slot:append><v-btn variant="text" icon
-													@click="filterMenu = false" size="small"><v-icon
-														icon="close" /></v-btn></template>
-											<v-divider />
-											<v-card-text>
+										<v-card rounded min-width="500" density="comfortable" class="pa-4">
+											<template #title class="text-h6">Filters<v-divider class="my-4" /></template>
+											<template #text>
 												<v-row>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.team" :items="teams"
@@ -88,19 +85,19 @@
 															label="NBA Roster" clearable density="compact"
 															variant="outlined" prepend-inner-icon="sports_basketball"
 															multiple chips closable-chips single-line counter>
-															<template v-slot:item="{ item, props }">
+															<template #item="{ item, props }">
 																<v-list-item v-bind="props">
-																	<template v-slot:prepend
+																	<template #prepend
 																		v-if="!isSpecialNBAFilter(item.value)">
 																		<nba-team-icon :team="item.value" :size="20"
 																			class="mr-2" />
 																	</template>
 																</v-list-item>
 															</template>
-															<template v-slot:chip="{ item }">
+															<template #chip="{ item }">
 																<v-chip closable
 																	@click:close="removeNBAFilter(item.value)">
-																	<template v-slot:prepend
+																	<template #prepend
 																		v-if="!isSpecialNBAFilter(item.value)">
 																		<nba-team-icon :team="item.value" :size="16"
 																			class="mr-1" />
@@ -122,94 +119,94 @@
 															multiple chips closable-chips></v-select>
 													</v-col>
 												</v-row>
-											</v-card-text>
-											<v-card-actions>
+											</template>
+											<template #actions>
 												<v-spacer></v-spacer>
 												<v-btn @click="clearFilters" icon variant="outlined" size="small"
 													:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
 													<v-icon icon="filter_alt_off" />
 												</v-btn>
-											</v-card-actions>
+											</template>
 										</v-card>
 									</v-menu>
 
 									<!-- Manage columns button -->
-									<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
+									<v-menu rounded v-model="columnMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
-										<template v-slot:activator="{ props }" v-tooltip="'Manage columns'">
+										<template #activator="{ props }" v-tooltip="'Manage columns'">
 											<v-btn v-bind="props" icon variant="outlined" size="small">
 												<v-icon icon="view_column" />
 											</v-btn>
 										</template>
-										<v-card min-width="500" density="comfortable" class="pa-4">
-											<v-card-title>Manage Columns</v-card-title>
-											<v-divider />
-											<v-card-text>
+										<v-card rounded min-width="500" density="comfortable" class="pa-4">
+											<template #title>Manage Columns<v-divider class="my-4" /></template>
+											<template #text>
 												<v-list>
 													<v-list-item v-for="(header, index) in editableHeaders"
 														:key="header.key"
 														:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'"
-														v-if="!header?.meta && !header?.hidden">
-														<template v-slot:prepend>
+														v-if="!(header?.hidden ?? false)">
+														{{ !(header?.hidden ?? false) }}
+														<template #prepend>
 															<v-icon v-if="header.key !== 'player'"
 																@mousedown="startDrag(index)"
 																style="cursor: move;">drag_handle</v-icon>
 															<v-icon v-else>lock</v-icon>
 														</template>
 														<v-list-item-title>{{ header.title }}</v-list-item-title>
-														<template v-slot:append>
+														<template #append>
 															<v-checkbox v-model="header.visible"
 																:disabled="header.key === 'player'" hide-details
 																density="compact"></v-checkbox>
 														</template>
 													</v-list-item>
 												</v-list>
-											</v-card-text>
-											<v-card-actions>
+											</template>
+											<template #actions>
 												<v-spacer></v-spacer>
 												<v-btn icon variant="outlined" @click="saveColumnSettings"
 													color="success" size="small"><v-icon icon="check" /></v-btn>
-											</v-card-actions>
+											</template>
 										</v-card>
 									</v-menu>
 
 									<!-- Settings -->
-									<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
+									<v-menu rounded v-model="settingsMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
-										<template v-slot:activator="{ props }" v-tooltip="'Display settings'">
+										<template #activator="{ props }" v-tooltip="'Display settings'">
 											<v-btn v-bind="props" icon variant="outlined" size="small">
 												<v-icon icon="settings" />
 											</v-btn>
 										</template>
-										<v-card min-width="500" density="comfortable" class="pa-4">
+										<v-card rounded min-width="500" density="comfortable" class="pa-4">
 											<v-card-title>Display Settings</v-card-title>
 											<v-divider />
 											<v-card-text>
 												<v-list>
 													<v-list-item>
 														<v-list-item-title>Show players' weight</v-list-item-title>
-														<template v-slot:append>
+														<template #append>
 															<v-checkbox v-model="showWeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
 														<v-list-item-title>Show players' height</v-list-item-title>
-														<template v-slot:append>
+														<template #append>
 															<v-checkbox v-model="showHeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
 														<v-list-item-title>Use metric weight units</v-list-item-title>
-														<template v-slot:append>
+														<template #append>
 															<v-checkbox v-model="convertWeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
 														<v-list-item-title>Use metric height units</v-list-item-title>
-														<template v-slot:append>
+														<template #append>
 															<v-checkbox v-model="convertHeight" hide-details
 																density="compact" />
 														</template>
@@ -222,7 +219,7 @@
 							</slot>
 						</v-row>
 					</slot>
-				</v-card-text>
+				</v-container>
 			</v-expand-transition>
 
 			<!-- Data table -->
@@ -234,12 +231,12 @@
 				@click:row="(event, { item }) => selectPlayer(item)">
 
 				<!-- Player photo and name -->
-				<template v-slot:item.player="{ item }">
+				<template #item.player="{ item }">
 					<div class="d-flex align-center py-2">
 						<v-avatar size="40" class="mr-3">
 							<v-img :src="item.photo || '/placeholder-player.png'"
 								:alt="`${item.first_name} ${item.last_name}`" cover>
-								<template v-slot:error>
+								<template #error>
 									<v-icon size="40">account</v-icon>
 								</template>
 							</v-img>
@@ -268,7 +265,7 @@
 				</template>
 
 				<!-- Position -->
-				<template v-slot:item.primary_position="{ item }">
+				<template #item.primary_position="{ item }">
 					<v-chip-group v-if="item.primary_position" column>
 						<v-chip v-tooltip="getPositionTooltip(item.primary_position)">
 							{{ item.primary_position }}
@@ -281,13 +278,13 @@
 				</template>
 
 				<!-- Team -->
-				<template v-slot:item.team_name="{ item }">
+				<template #item.team_name="{ item }">
 					<span v-if="item.team_name">{{ item.team_name }}</span>
 					<span v-else class="text-grey-darken-1">Free Agent</span>
 				</template>
 
 				<!-- Salary -->
-				<template v-slot:item.salary="{ item }">
+				<template #item.salary="{ item }">
 					<span v-if="item.salary" class="font-weight-medium">
 						{{ formatCurrency(item.salary) }}
 					</span>
@@ -295,7 +292,7 @@
 				</template>
 
 				<!-- Contract -->
-				<template v-slot:item.contract_duration="{ item }">
+				<template #item.contract_duration="{ item }">
 					<span v-if="item.contract_duration" class="font-weight-medium">
 						{{ item.contract_duration }}
 						<word item="year" :count="item.contract_duration" />
@@ -304,7 +301,7 @@
 				</template>
 
 				<!-- Status badges -->
-				<template v-slot:item.status="{ item }">
+				<template #item.status="{ item }">
 					<v-chip-group column>
 						<v-chip v-if="item.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'">
 							RFA
@@ -319,7 +316,7 @@
 				</template>
 
 				<!-- Pagination footer -->
-				<template v-slot:bottom>
+				<template #bottom>
 					<slot name="pagination-footer">
 						<v-divider />
 						<v-container fluid class="pa-2 mt-4">

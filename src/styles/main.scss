@@ -169,6 +169,10 @@ input:-webkit-autofill:active {
 
 .page-view {
   padding: 24px;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: 0px;
+  }
 }
 
 .page-header {

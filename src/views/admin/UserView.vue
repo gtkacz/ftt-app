@@ -19,7 +19,7 @@
 						<v-col cols="3" class="d-flex justify-end gap-2">
 							<!-- Filter button with menu -->
 							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Filter users'">
+								<template #activator="{ props }" v-tooltip="'Filter users'">
 									<v-btn v-bind="props" icon variant="outlined" size="small"
 										:color="hasActiveFilters ? 'primary' : undefined">
 										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
@@ -29,8 +29,8 @@
 									</v-btn>
 								</template>
 								<v-card min-width="600" density="comfortable" class="pa-4">
-									<template v-slot:title class="text-h6">Filters</template>
-									<template v-slot:append><v-btn variant="text" icon @click="filterMenu = false"
+									<template #title class="text-h6">Filters</template>
+									<template #append><v-btn variant="text" icon @click="filterMenu = false"
 											size="small"><v-icon icon="close" /></v-btn></template>
 									<v-divider />
 									<v-card-text>
@@ -73,7 +73,7 @@
 													<v-range-slider v-model="filters.dateJoinedRange" :max="365"
 														:min="0" :step="1" hide-details class="mt-4"
 														thumb-label="always">
-														<template v-slot:thumb-label="{ modelValue }">
+														<template #thumb-label="{ modelValue }">
 															{{ modelValue }}d
 														</template>
 													</v-range-slider>
@@ -99,7 +99,7 @@
 												<div v-else>
 													<v-range-slider v-model="filters.lastLoginRange" :max="365" :min="0"
 														:step="1" hide-details class="mt-4" thumb-label="always">
-														<template v-slot:thumb-label="{ modelValue }">
+														<template #thumb-label="{ modelValue }">
 															{{ modelValue }}d
 														</template>
 													</v-range-slider>
@@ -123,7 +123,7 @@
 							<!-- Manage columns button -->
 							<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Manage columns'">
+								<template #activator="{ props }" v-tooltip="'Manage columns'">
 									<v-btn v-bind="props" icon variant="outlined" size="small">
 										<v-icon icon="view_column" />
 									</v-btn>
@@ -135,13 +135,13 @@
 										<v-list>
 											<v-list-item v-for="(header, index) in allHeaders" :key="header.key"
 												:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'">
-												<template v-slot:prepend>
+												<template #prepend>
 													<v-icon v-if="header.key !== 'user'" @mousedown="startDrag(index)"
 														style="cursor: move;">drag_handle</v-icon>
 													<v-icon v-else>lock</v-icon>
 												</template>
 												<v-list-item-title>{{ header.title }}</v-list-item-title>
-												<template v-slot:append>
+												<template #append>
 													<v-checkbox v-model="header.visible"
 														:disabled="header.key === 'user'" hide-details
 														density="compact"></v-checkbox>
@@ -160,7 +160,7 @@
 							<!-- Settings -->
 							<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template v-slot:activator="{ props }" v-tooltip="'Settings'">
+								<template #activator="{ props }" v-tooltip="'Settings'">
 									<v-btn v-bind="props" icon variant="outlined" size="small">
 										<v-icon icon="settings" />
 									</v-btn>
@@ -172,14 +172,14 @@
 										<v-list>
 											<v-list-item>
 												<v-list-item-title>Use relative dates</v-list-item-title>
-												<template v-slot:append>
+												<template #append>
 													<v-checkbox v-model="useRelativeDates" hide-details
 														density="compact" />
 												</template>
 											</v-list-item>
 											<v-list-item>
 												<v-list-item-title>Show bulk action checkboxes</v-list-item-title>
-												<template v-slot:append>
+												<template #append>
 													<v-checkbox v-model="showCheckboxes" hide-details
 														density="compact" />
 												</template>
@@ -203,7 +203,7 @@
 				:show-select="showCheckboxes" item-value="id" @click:row="(event, { item }) => viewUser(item)">
 
 				<!-- User photo and name -->
-				<template v-slot:item.user="{ item }">
+				<template #item.user="{ item }">
 					<div class="d-flex align-center py-2" v-if="item.is_active">
 						<v-avatar size="40" class="mr-3">
 							<v-icon size="40" variant="outlined" :filled="false" icon="account_circle" />
@@ -251,7 +251,7 @@
 				</template>
 
 				<!-- Email -->
-				<template v-slot:item.email="{ item }">
+				<template #item.email="{ item }">
 					<a v-if="item.is_active" :href="`mailto:${item.email}`" @click.stop class="text-decoration-none">
 						{{ item.email }}
 					</a>
@@ -259,13 +259,13 @@
 				</template>
 
 				<!-- Team -->
-				<template v-slot:item.team_name="{ item }">
+				<template #item.team_name="{ item }">
 					<span v-if="item.team">{{ item.team.name }}</span>
 					<span v-else class="text-grey-darken-1">No Team</span>
 				</template>
 
 				<!-- Status badges -->
-				<template v-slot:item.status="{ item }">
+				<template #item.status="{ item }">
 					<v-chip-group column>
 						<v-chip v-if="item.is_active" color="success" size="x-small" v-tooltip="'Active'">
 							Active
@@ -286,14 +286,14 @@
 				</template>
 
 				<!-- Join Date -->
-				<template v-slot:item.date_joined="{ item }">
+				<template #item.date_joined="{ item }">
 					<span>
 						{{ formatDate(item.date_joined) }}
 					</span>
 				</template>
 
 				<!-- Last Login -->
-				<template v-slot:item.last_login="{ item }">
+				<template #item.last_login="{ item }">
 					<span v-if="item?.last_login">
 						{{ formatDate(item.last_login) }}
 					</span>
@@ -301,7 +301,7 @@
 				</template>
 
 				<!-- Updated At -->
-				<template v-slot:item.updated_at="{ item }">
+				<template #item.updated_at="{ item }">
 					<span v-if="item?.updated_at">
 						{{ formatDate(item.updated_at) }}
 					</span>
@@ -309,7 +309,7 @@
 				</template>
 
 				<!-- Pagination footer -->
-				<template v-slot:bottom>
+				<template #bottom>
 					<v-divider />
 					<v-container fluid class="pa-2 mt-4">
 						<v-row justify="space-between" align="center">
@@ -379,7 +379,7 @@
 					</v-col>
 					<v-col cols="auto">
 						<v-menu v-model="bulkActionMenu" :close-on-content-click="false" location="top">
-							<template v-slot:activator="{ props }">
+							<template #activator="{ props }">
 								<v-btn v-bind="props" icon variant="tonal" color="white" class="mr-2">
 									<v-icon icon="sweep" />
 								</v-btn>
@@ -387,26 +387,26 @@
 							<v-card>
 								<v-list>
 									<v-list-item @click="toggleBulkAction('toggleActive')">
-										<template v-slot:prepend>
+										<template #prepend>
 											<v-icon :icon="getToggleIcon('active')" />
 										</template>
 										<v-list-item-title>{{ getToggleText('active') }}</v-list-item-title>
 									</v-list-item>
 									<v-list-item @click="toggleBulkAction('toggleApproved')">
-										<template v-slot:prepend>
+										<template #prepend>
 											<v-icon :icon="getToggleIcon('approved')" />
 										</template>
 										<v-list-item-title>{{ getToggleText('approved') }}</v-list-item-title>
 									</v-list-item>
 									<v-list-item @click="toggleBulkAction('toggleStaff')">
-										<template v-slot:prepend>
+										<template #prepend>
 											<v-icon :icon="getToggleIcon('staff')" />
 										</template>
 										<v-list-item-title>{{ getToggleText('staff') }}</v-list-item-title>
 									</v-list-item>
 									<v-divider v-if="isAdmin" />
 									<v-list-item v-if="isAdmin" @click="toggleBulkAction('delete')">
-										<template v-slot:prepend>
+										<template #prepend>
 											<v-icon icon="delete" color="error" />
 										</template>
 										<v-list-item-title class="text-error">Delete Users</v-list-item-title>
@@ -434,7 +434,7 @@
 					<p class="mb-3">You are about to apply the following changes to {{ selected.length }} users:</p>
 					<v-list density="compact">
 						<v-list-item v-if="pendingChanges.toggleActive !== null">
-							<template v-slot:prepend>
+							<template #prepend>
 								<v-icon :icon="pendingChanges.toggleActive ? 'toggle_on' : 'toggle_off'"
 									:color="pendingChanges.toggleActive ? 'success' : 'error'" />
 							</template>
@@ -443,7 +443,7 @@
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.toggleApproved !== null">
-							<template v-slot:prepend>
+							<template #prepend>
 								<v-icon :icon="pendingChanges.toggleApproved ? 'check_circle' : 'cancel'"
 									:color="pendingChanges.toggleApproved ? 'primary' : 'warning'" />
 							</template>
@@ -452,7 +452,7 @@
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.toggleStaff !== null">
-							<template v-slot:prepend>
+							<template #prepend>
 								<v-icon icon="badge" color="warning" />
 							</template>
 							<v-list-item-title>
@@ -460,7 +460,7 @@
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.delete">
-							<template v-slot:prepend>
+							<template #prepend>
 								<v-icon icon="delete_forever" color="error" />
 							</template>
 							<v-list-item-title class="text-error">

@@ -18,7 +18,7 @@
 
         <!-- User Profile Menu -->
         <v-menu offset-y>
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <v-btn icon variant="text" v-bind="props" class="action-btn">
               <v-avatar size="32" color="secondary">
                 <span class="text-h7">{{ initials }}</span>
@@ -28,14 +28,14 @@
 
           <v-list>
             <v-list-item @click="navigateToProfile">
-              <template v-slot:prepend>
+              <template #prepend>
                 <v-icon icon="person" />
               </template>
               <v-list-item-title>Profile</v-list-item-title>
             </v-list-item>
 
             <v-list-item @click="handleLogout">
-              <template v-slot:prepend>
+              <template #prepend>
                 <v-icon icon="logout" />
               </template>
               <v-list-item-title>Logout</v-list-item-title>

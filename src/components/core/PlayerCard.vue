@@ -1,5 +1,5 @@
 <template>
-	<v-card class="nba-player-card px-2" :class="teamColorClass" elevation="8" max-width="19vw" height="10vh">
+	<v-card class="nba-player-card px-2" :class="teamColorClass" elevation="8">
 		<!-- Header with team info -->
 		<div class="card-header">
 			<div class="team-info">
@@ -13,7 +13,7 @@
 		<div class="photo-section">
 			<v-img :src="player?.photo" :alt="`${player?.first_name} ${player?.last_name}`" class="player-photo"
 				height="220" cover>
-				<template v-slot:error>
+				<template #error>
 					<div class="photo-placeholder">
 						<v-icon size="64" color="white" icon="account" />
 					</div>
@@ -198,6 +198,8 @@ const onDraftConfirm = () => {
 	border-radius: 16px !important;
 	overflow: hidden;
 	transition: all 0.3s ease;
+	max-width: 19vw;
+	height: 10vh;
 
 	// Sheen effect
 	&::before {

@@ -6,7 +6,7 @@
       <v-icon icon="dangerous" class="mr-2" size="large" />
       <span class="text-on-error">{{ errorSnackbar.message }}</span>
 
-      <template v-slot:actions>
+      <template #actions>
         <v-btn icon variant="text" @click="errorSnackbar.show = false">
           <v-icon icon="close" />
         </v-btn>
