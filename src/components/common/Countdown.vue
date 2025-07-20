@@ -28,9 +28,6 @@ import {
 	onUnmounted,
 	watch,
 	nextTick,
-	withDefaults,
-	defineProps,
-	defineEmits,
 } from 'vue'
 import moment from 'moment'
 

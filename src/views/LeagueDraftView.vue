@@ -423,6 +423,7 @@ const goToMyNextPick = () => {
 }
 
 const getPickCardColor = (pick: any) => {
+	if (!isDraftStarted.value) return 'primary'
 	if (pick.is_pick_made) return 'success'
 	if (pick.is_auto_pick) return 'error'
 	if (pick.is_current && myNextUnmadePick.value === nextUnmadePick.value) return 'warning'

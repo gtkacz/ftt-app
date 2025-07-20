@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
-import { computed, ref, defineEmits } from 'vue';
+import { computed, ref } from 'vue';
 import PlayersTable from './PlayersTable.vue';
 import PlayerCard from './PlayerCard.vue';
 

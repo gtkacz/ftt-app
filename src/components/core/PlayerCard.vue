@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits } from 'vue'
+import { computed } from 'vue'
 import NbaTeamIcon from './NBATeamIcon.vue'
 
 const emit = defineEmits(['draft'])
