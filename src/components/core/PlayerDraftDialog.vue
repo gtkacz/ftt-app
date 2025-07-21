@@ -73,7 +73,7 @@ const props = withDefaults(defineProps<{
 		[key: string]: any
 	}
 	draftablePlayers: any[]
-	player?: number
+	player?: object | null
 	pick?: any
 	disabled: boolean
 }>(), {

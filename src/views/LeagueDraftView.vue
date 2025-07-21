@@ -130,7 +130,7 @@
 												</template>
 												<template #append>
 													<player-draft-dialog :player="pick.pick?.player" :team="pick.team"
-														:draftable-players="draftData?.draftable_players"
+														:draftable-players="getDraftablePlayers"
 														:pick="pick.pick"
 														:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
 														@player-selected="fetchAllData" />
@@ -394,6 +394,11 @@ const getTeamFuturePicks = (teamId: number, currentRound: number) => {
 	return lotteryData.value[teamId].filter(pick => pick.pick__round_number > currentRound)
 }
 
+const getDraftablePlayers = computed(() => {
+	if (!draftData.value) return []
+	return draftData.value.draftable_players.filter(player => !player.team.id)
+})
+
 const fetchTeamsData = async () => {
 	try {
 		const response = await api.get("/teams/")
@@ -465,7 +470,7 @@ const startDraft = async () => {
 	if (!isStaff.value) return
 	dialogAction.value = 'Draft'
 	startDialog.value = true
-	await new Promise(r => setTimeout(r, 2000));
+	fetchDraftData()
 	startDialog.value = false
 	return;
 }
