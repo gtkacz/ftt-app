@@ -59,6 +59,10 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
 });
 
 onMounted(async () => {
+  if (!authStore.user) {
+    authStore.logout();
+    router.push({ name: 'login' });
+  }
   if (authStore.isAuthenticated) {
     try {
       await Promise.all([
