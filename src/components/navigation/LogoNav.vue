@@ -1,16 +1,9 @@
 <template>
-  <div class="nav-item">
-    <div class="nav-item-content" :class="{ expanded }">
-      <app-logo />
-      <transition name="fade">
-        <span
-          v-if="expanded"
-          class="nav-item-label text-secondary"
-        >
-          {{ label }}
-        </span>
-      </transition>
-    </div>
+  <div class="nav-logo-content" :class="{ expanded }">
+    <app-logo class="logo-icon" />
+    <transition name="fade">
+      <span v-if="expanded" class="logo-label">{{ label }}</span>
+    </transition>
   </div>
 </template>
 
@@ -19,37 +12,59 @@ interface Props {
   label: string
   expanded: boolean
 }
-
 const props = defineProps<Props>()
+const { label, expanded } = props
 </script>
 
 <style scoped lang="scss">
-.nav-item {
-  width: 100%;
+.nav-logo-content {
+  position: relative;
+  width: 64px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.nav-item-content {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0 8px;
-  min-width: 0;
-  justify-content: center;
+  transition: width 0.3s ease;
+  overflow: visible;
 
   &.expanded {
+    width: 240px;
     justify-content: flex-start;
     padding-left: 16px;
   }
 }
 
-.nav-item-label {
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.logo-label {
+  position: absolute;
+  left: 64px;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: bolder;
   white-space: nowrap;
-  max-width: 140px;
-  font-size: clamp(0.65rem, 1.5vw, 1rem);
+  font-size: 1rem;
+  line-height: 40px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
 }
 </style>
