@@ -28,63 +28,82 @@ export const useAuthStore = defineStore("auth", {
   }),
 
   actions: {
-    async login(data: LoginData): Promise<boolean> {
-      if (this.isLoading) return false;
+    // Helper method to ensure loading state is reset
+    async withLoadingState<T>(action: () => Promise<T>): Promise<T | null> {
+      if (this.isLoading) return null;
+
       try {
         this.isLoading = true;
-        const response = await AuthService.login(data);
-
-        this.setTokens(response.access, response.refresh);
-
-        this.setUser(response.user);
-
-        return true;
-      } catch (error) {
-        showError("Login failed:", error);
-        return false;
+        return await action();
       } finally {
+        // This will ALWAYS run, even if there's an error
         this.isLoading = false;
       }
+    },
+
+    async login(data: LoginData): Promise<boolean> {
+      const result = await this.withLoadingState(async () => {
+        try {
+          const response = await AuthService.login(data);
+          this.setTokens(response.access, response.refresh);
+          this.setUser(response.user);
+          return true;
+        } catch (error) {
+          showError("Login failed:", error);
+          return false;
+        }
+      });
+
+      return result ?? false;
     },
 
     async register(data: RegisterData): Promise<boolean> {
-      try {
-        this.isLoading = true;
-        await AuthService.register(data);
-        return true;
-      } catch (error) {
-        showError("Registration failed:", error);
-        return false;
-      } finally {
-        this.isLoading = false;
-      }
+      const result = await this.withLoadingState(async () => {
+        try {
+          await AuthService.register(data);
+          return true;
+        } catch (error) {
+          showError("Registration failed:", error);
+          return false;
+        }
+      });
+
+      return result ?? false;
     },
 
     async createTeam(data: RegisterTeamData): Promise<boolean> {
-      try {
-        this.isLoading = true;
-        await AuthService.createTeam(data);
-        await AuthService.fetchUser(this.user?.id!);
-        this.setUser(this.user!);
-        return true;
-      } catch (error) {
-        showError("Registration failed:", error);
-        return false;
-      } finally {
-        this.isLoading = false;
-      }
+      const result = await this.withLoadingState(async () => {
+        try {
+          await AuthService.createTeam(data);
+          // Fix: Properly use the response from fetchUser
+          const updatedUser = await AuthService.fetchUser(this.user?.id!);
+          this.setUser(updatedUser);
+          return true;
+        } catch (error) {
+          showError("Team creation failed:", error);
+          return false;
+        }
+      });
+
+      return result ?? false;
     },
 
     async fetchUser(): Promise<void> {
-      try {
-        this.isLoading = true;
-        const response = await AuthService.fetchUser(this.user?.id!);
-        this.setUser(response);
-      } catch (error) {
-        showError("Failed to fetch user data:", error);
-      } finally {
-        this.isLoading = false;
-      }
+      await this.withLoadingState(async () => {
+        try {
+          if (!this.user?.id) {
+            throw new Error("No user ID available");
+          }
+          const response = await AuthService.fetchUser(this.user.id);
+          this.setUser(response);
+        } catch (error) {
+          showError("Failed to fetch user data:", error);
+          // Consider logging out if user fetch fails
+          if (error instanceof Error && error.message.includes("401")) {
+            this.logout();
+          }
+        }
+      });
     },
 
     setTokens(access: string, refresh?: string): void {
@@ -98,6 +117,12 @@ export const useAuthStore = defineStore("auth", {
     },
 
     setUser(userData: any): void {
+      // Add validation to ensure userData exists
+      if (!userData) {
+        console.error("Attempted to set user with null/undefined data");
+        return;
+      }
+
       this.user = {
         id: userData.id,
         username: userData.username,
@@ -133,6 +158,8 @@ export const useAuthStore = defineStore("auth", {
     },
 
     logout(): void {
+      // Ensure loading state is reset on logout
+      this.isLoading = false;
       this.user = null;
       this.accessToken = null;
       this.refreshToken = null;
@@ -140,13 +167,23 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
     },
+
+    // Emergency reset method if loading gets stuck
+    resetLoadingState(): void {
+      this.isLoading = false;
+    },
   },
 
   getters: {
     isAuthenticated(): boolean {
       if (!this.accessToken) return false;
-      const decoded = decodeJwt(this.accessToken);
-      return decoded?.exp ? decoded.exp > Date.now() / 1000 : false;
+      try {
+        const decoded = decodeJwt(this.accessToken);
+        return decoded?.exp ? decoded.exp > Date.now() / 1000 : false;
+      } catch {
+        // If JWT decode fails, consider user not authenticated
+        return false;
+      }
     },
     isStaff(): boolean {
       return this.user?.is_staff || false;

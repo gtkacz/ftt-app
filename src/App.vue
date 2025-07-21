@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { onErrorCaptured, onMounted, ref, watch } from "vue";
+import { onErrorCaptured, onMounted, ref, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { useAuthStore } from "@/stores/auth";
@@ -24,6 +24,11 @@ import { useAuthStore } from "@/stores/auth";
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+
+const brokenLogin = computed(() => {
+  const localAuth = JSON.parse(localStorage.getItem('auth') || '{}');
+  return !localAuth.user?.id && localAuth.isLoading;
+});
 
 const errorSnackbar = ref({
   show: false,
@@ -58,10 +63,25 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
   }
 });
 
-onMounted(async () => {
-  if (!authStore.user) {
+// Check for broken login state
+watch(brokenLogin, (isBroken) => {
+  if (isBroken && route.name !== 'login') {
     authStore.logout();
-    router.push({ name: 'login' });
+    router.push({
+      name: 'login',
+      query: { redirect: route.fullPath }
+    });
+  }
+});
+
+onMounted(async () => {
+  if (brokenLogin.value) {
+    authStore.logout();
+    router.push({
+      name: 'login',
+      query: { redirect: route.fullPath }
+    });
+    return;
   }
   if (authStore.isAuthenticated) {
     try {
