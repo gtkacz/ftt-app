@@ -10,7 +10,12 @@
 
 <script setup lang="ts">
 
-defineProps<{ label: string }>()
+// Label prop can be not passed if the slot is used
+const props = withDefaults(defineProps<{
+	label?: string | null;
+}>(), {
+	label: null
+});
 </script>
 
 <style lang="scss" scoped>

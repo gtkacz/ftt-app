@@ -1,5 +1,5 @@
 <template>
-	<v-dialog :model-value="modelValue" @update:model-value="handleClose">
+	<v-dialog :model-value="modelValue" @update:model-value="handleClose" class="w-100">
 		<v-card>
 			<v-card-title>
 				<slot name="title">Confirm</slot>

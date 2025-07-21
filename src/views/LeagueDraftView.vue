@@ -63,16 +63,14 @@
 					<v-tabs-window-item value="draft">
 						<v-sheet v-if="isLotteryHappened">
 							<v-container fluid v-if="!isDraftStarted">
-								<v-row align="center" justify="center" class="w-100">
-									<v-col cols="auto" align="center" justify="center" class="w-100">
-										<span>The draft will start in</span>
-										<countdown :value="moment(draftData.starts_at).unix()" timestamp
-											@expired="startDraft" />
-										<v-btn v-if="isStaff" color="primary" @click="startDraft" v-confirm class="mt-4"
-											:loading="loading">
-											Start Now
-										</v-btn>
-									</v-col>
+								<v-row align="center" justify="center" class="w-100 flex-column">
+									<span>The draft will start in</span>
+									<countdown :value="moment(draftData.starts_at).unix()" timestamp
+										@expired="startDraft" />
+									<v-btn v-if="isStaff" color="primary" @click="startDraft" v-confirm class="mt-4"
+										:loading="loading">
+										Start Now
+									</v-btn>
 								</v-row>
 							</v-container>
 							<v-container fluid>

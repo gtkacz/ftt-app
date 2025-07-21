@@ -1,5 +1,5 @@
 <template>
-	<v-dialog v-model="open" max-width="25vw" persistent>
+	<v-dialog v-model="open" class="confirm-dialog" persistent>
 		<v-card class="d-flex flex-column align-center justify-center pa-8 gap-2" rounded="lg">
 			<v-card-title class="d-flex align-center justify-center flex-column">
 				<v-icon icon="warning" color="warning" />
@@ -50,5 +50,13 @@ function cancel() {
 <style scoped lang="scss">
 .action-btn {
 	min-width: 10vw !important;
+}
+
+.confirm-dialog {
+	max-width: 25vw;
+
+	@media (max-width: 600px) {
+		max-width: 90vw;
+	}
 }
 </style>
