@@ -180,19 +180,21 @@ router.beforeEach(async (to, from, next) => {
   const title = (to.meta.title as string) || "Fantasy Trash Talk";
   document.title = title;
 
-  if (
-    typeof to.meta.requiresAuth !== "undefined" ? to.meta.requiresAuth : true
-  ) {
+  const requiresAuth = to.meta.requiresAuth !== false;
+  const requiresStaff = to.meta.requiresStaff === true;
+
+  if (requiresAuth) {
     if (authStore.isAuthenticated) {
       try {
-        if (to.name === "login") {
-          next(from.fullPath ? from.fullPath : "/");
-          return;
-        }
-        if (!authStore.user?.is_approved || authStore.user?.team) {
+        if (!authStore.user) {
           await authStore.refreshAccessToken();
           await authStore.fetchUser();
         }
+        if (to.name === "login") {
+          next(from.fullPath || "/");
+          return;
+        }
+
         if (!authStore.user?.is_approved && to.name !== "approval") {
           next("/approval");
           return;
@@ -208,15 +210,12 @@ router.beforeEach(async (to, from, next) => {
         if (
           authStore.user?.is_approved &&
           !!authStore.user?.team &&
-          (to.name === "create-team" ||
-            to.name === "approval" ||
-            to.name === "login" ||
-            to.name === "signup")
+          ["create-team", "approval", "login", "signup"].includes(to.name?.toString() || "")
         ) {
           next("/");
           return;
         }
-        if (to.meta.requiresStaff && !authStore.isStaff) {
+        if (requiresStaff && !authStore.isStaff) {
           next("/unauthorized");
           return;
         }
