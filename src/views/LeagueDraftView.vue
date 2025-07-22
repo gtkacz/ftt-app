@@ -118,30 +118,16 @@
 									</div>
 								</v-container>
 								<!-- Collapsed rounds section - shows divider for collapsed rounds with load button -->
-								<v-container v-if="collapsedRoundsCount > 0" class="my-6 w-100">
-									<v-row align="center">
-											<labeled-divider>
-												<div class="d-flex ga-2">
-													<v-btn size="small" variant="tonal" color="info"
-														@click="loadCollapsedRounds" :loading="loadingMoreRounds"
-														:disabled="loadingMoreRounds" class="round-btn"
-														v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`">
-														Load Past Rounds
-													</v-btn>
-												</div>
-											</labeled-divider>
-									</v-row>
-
-									<!-- Show loading indicator when loading collapsed rounds -->
-									<v-row v-if="loadingMoreRounds" justify="center" class="my-4 w-100">
-										<v-col cols="auto">
-											<v-progress-circular indeterminate color="primary" size="32" />
-										</v-col>
-									</v-row>
-								</v-container>
-								<v-container v-for="round in visibleRounds" :key="round.roundNumber">
+								<v-container v-for="(round, index) in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4 w-100">
-										<v-col>
+										<v-col class="text-center">
+											<v-btn size="small" variant="tonal" color="info"
+												@click="loadCollapsedRounds" :loading="loadingMoreRounds"
+												:disabled="loadingMoreRounds" class="round-btn mb-4"
+												v-if="collapsedRoundsCount > 0 && index === 0"
+												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`">
+												Load Past Rounds
+											</v-btn>
 											<labeled-divider>
 												<h2 class="text-h5 text-center text-on-background">Round {{
 													round.roundNumber }}</h2>
@@ -287,7 +273,7 @@ const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').
 const showRoundsUpTo = ref(1)
 const showRoundsFrom = ref(1)
 const loadingMoreRounds = ref(false)
-const hasSetInitialRoundsFrom  = ref(false)
+const hasSetInitialRoundsFrom = ref(false)
 
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
@@ -400,10 +386,10 @@ const myNextUnmadePick = computed(() => {
 })
 
 watch(showRoundsUpTo, (newValue) => {
-  if (!hasSetInitialRoundsFrom.value) {
-    showRoundsFrom.value = Math.max(1, newValue - 1)
-    hasSetInitialRoundsFrom.value = true
-  }
+	if (!hasSetInitialRoundsFrom.value) {
+		showRoundsFrom.value = Math.max(1, newValue - 1)
+		hasSetInitialRoundsFrom.value = true
+	}
 })
 
 // Watch for changes in nextUnmadePick to auto-adjust visible rounds

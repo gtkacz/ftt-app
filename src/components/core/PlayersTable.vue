@@ -29,7 +29,7 @@
 												<v-icon icon="sort" />
 											</v-btn>
 										</template>
-<v-card rounded min-width="300" density="comfortable" class="pa-4">
+<v-card rounded width="300" density="comfortable" class="pa-4">
 	<template #title class="text-h6">Sort Options</template>
 	<template #append><v-btn variant="text" icon @click="sortMenu = false"
 													size="small"><v-icon icon="close" /></v-btn></template>
@@ -67,7 +67,7 @@
 												</v-badge>
 											</v-btn>
 										</template>
-										<v-card rounded min-width="500" density="comfortable" class="pa-4">
+										<v-card rounded width="500" density="comfortable" class="pa-4">
 											<template #title class="text-h6">Filters<v-divider
 													class="my-4" /></template>
 											<template #text>
@@ -82,7 +82,7 @@
 														<v-select rounded v-model="filters.realTeam" :items="realTeams"
 															label="NBA Roster" clearable density="compact"
 															variant="outlined" prepend-inner-icon="sports_basketball"
-															multiple chips closable-chips single-line counter>
+															multiple chips closable-chips single-line counter color="primary">
 															<template #item="{ item, props }">
 																<v-list-item v-bind="props">
 																	<template #prepend
@@ -117,21 +117,44 @@
 															multiple chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<label class="text-caption text-grey">Salary Range (M)</label>
-														<v-range-slider v-model="filters.salaryRange" :min="0"
-															:max="maxSalary" :step="1" thumb-label="always"
-															density="compact" class="mt-2">
-															<template #thumb-label="{ modelValue }">
-																${{ modelValue }}M
-															</template>
-														</v-range-slider>
+														<v-card variant="outlined" rounded class="pa-3">
+															<v-card-title class="text-subtitle-2 pa-0 pb-2">
+																<v-icon size="16" class="mr-1">payments</v-icon>
+																Salary
+															</v-card-title>
+															<div class="d-flex align-center gap-2 mb-2">
+																<v-chip size="x-small" variant="outlined">${{
+																	filters.salaryRange[0] }}M</v-chip>
+																<v-spacer></v-spacer>
+																<v-chip size="x-small" variant="outlined">${{
+																	filters.salaryRange[1] }}M</v-chip>
+															</div>
+															<v-range-slider v-model="filters.salaryRange" :min="0"
+																:max="maxSalary" :step="1" color="success"
+																track-color="grey-lighten-3" density="compact" />
+														</v-card>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<label class="text-caption text-grey">Contract Duration
-															(Years)</label>
-														<v-range-slider v-model="filters.durationRange" :min="0"
-															:max="maxDuration" :step="1" thumb-label="always"
-															density="compact" class="mt-2" />
+														<v-card variant="outlined" rounded class="pa-3">
+															<v-card-title class="text-subtitle-2 pa-0 pb-2">
+																<v-icon size="16" class="mr-1">schedule</v-icon>
+																Contract Duration
+															</v-card-title>
+															<div class="d-flex align-center gap-2 mb-2">
+																<v-chip size="x-small" variant="outlined">{{
+																	filters.durationRange[0] }}yr{{
+																		filters.durationRange[0] !== 1 ? 's' : ''
+																	}}</v-chip>
+																<v-spacer></v-spacer>
+																<v-chip size="x-small" variant="outlined">{{
+																	filters.durationRange[1] }}yr{{
+																		filters.durationRange[1] !== 1 ? 's' : ''
+																	}}</v-chip>
+															</div>
+															<v-range-slider v-model="filters.durationRange" :min="0"
+																:max="maxDuration" :step="1" color="primary"
+																track-color="grey-lighten-3" density="compact" />
+														</v-card>
 													</v-col>
 												</v-row>
 											</template>
@@ -153,7 +176,7 @@
 												<v-icon icon="view_column" />
 											</v-btn>
 										</template>
-										<v-card rounded min-width="500" density="comfortable" class="pa-4">
+										<v-card rounded width="500" density="comfortable" class="pa-4">
 											<template #title>Manage Columns<v-divider class="my-4" /></template>
 											<template #text>
 												<v-list>
@@ -192,7 +215,7 @@
 												<v-icon icon="settings" />
 											</v-btn>
 										</template>
-										<v-card rounded min-width="500" density="comfortable" class="pa-4">
+										<v-card rounded width="500" density="comfortable" class="pa-4">
 											<v-card-title>Display Settings</v-card-title>
 											<v-divider />
 											<v-card-text>
