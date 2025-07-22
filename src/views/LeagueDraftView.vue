@@ -75,15 +75,23 @@
 							</v-container>
 							<v-container fluid>
 								<!-- Navigation buttons for draft -->
-								<v-container fluid class="ga-8 d-flex flex-column align-center justify-center" v-if="isDraftStarted">
+								<v-container fluid class="ga-8 d-flex flex-column align-center justify-center"
+									v-if="isDraftStarted">
 									<div>
 										<div class="d-flex justify-center flex-column align-center text-center">
-											<h5 class="text-h5">{{ nextUnmadePick?.team?.name === authStore.user?.team?.name ? 'You are' : nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
-												nextUnmadePick.pick.overall_pick }})</h5>
+											<h5 class="text-h5">{{ nextUnmadePick?.team?.name ===
+												authStore.user?.team?.name ? 'You are' :
+												nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
+													nextUnmadePick.pick.overall_pick }})</h5>
 											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
-												#label="{ formattedTime }">
+												#label="{ formattedTime }" @expired="fetchAllData">
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
+											<span class="text-caption"
+												v-if="nextUnmadePick?.team?.name !== authStore.user?.team?.name">Picks
+												until you: {{
+													myNextUnmadePick?.pick.overall_pick - nextUnmadePick?.pick.overall_pick
+												}}</span>
 										</div>
 									</div>
 									<div class="d-flex flex-column flex-lg-row ga-2 justify-center align-center">
@@ -95,6 +103,12 @@
 											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn">
 											Go to My Next Pick
 										</v-btn>
+										<!-- <v-btn color="warning" variant="tonal" prepend-icon="compress"
+											@click="collapsePastRounds"
+											:disabled="!hasPastRoundsToCollapse || loadingMoreRounds" class="pick-btn"
+											v-tooltip="'Collapse past rounds'">
+											Collapse Past Rounds
+										</v-btn> -->
 									</div>
 									<div justify="center" align="center">
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
@@ -102,6 +116,28 @@
 											<v-icon icon="refresh" />
 										</v-btn>
 									</div>
+								</v-container>
+								<!-- Collapsed rounds section - shows divider for collapsed rounds with load button -->
+								<v-container v-if="collapsedRoundsCount > 0" class="my-6 w-100">
+									<v-row align="center">
+											<labeled-divider>
+												<div class="d-flex ga-2">
+													<v-btn size="small" variant="tonal" color="info"
+														@click="loadCollapsedRounds" :loading="loadingMoreRounds"
+														:disabled="loadingMoreRounds" class="round-btn"
+														v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`">
+														Load Past Rounds
+													</v-btn>
+												</div>
+											</labeled-divider>
+									</v-row>
+
+									<!-- Show loading indicator when loading collapsed rounds -->
+									<v-row v-if="loadingMoreRounds" justify="center" class="my-4 w-100">
+										<v-col cols="auto">
+											<v-progress-circular indeterminate color="primary" size="32" />
+										</v-col>
+									</v-row>
 								</v-container>
 								<v-container v-for="round in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4 w-100">
@@ -124,13 +160,13 @@
 															pick?.team?.name }}</span>
 														<v-icon icon="attribution" size="small" variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
-														<v-icon size="small" icon="smart_toy" v-if="pick.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
+														<v-icon size="small" icon="smart_toy"
+															v-if="pick.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
 													</div>
 												</template>
 												<template #append>
 													<player-draft-dialog :player="pick.pick?.player" :team="pick.team"
-														:draftable-players="getDraftablePlayers"
-														:pick="pick.pick"
+														:draftable-players="getDraftablePlayers" :pick="pick.pick"
 														:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
 														@player-selected="fetchAllData" />
 												</template>
@@ -145,8 +181,9 @@
 														:frozen="!isDraftStarted || !pick.pick.is_current">
 														<span>{{ formattedTime }}</span>
 													</countdown>
-													<span v-else class="d-flex align-center ga-1 text-weight-bold">{{ pick.pick.player.first_name[0] }}. {{
-														pick.pick.player.last_name }}</span>
+													<span v-else class="d-flex align-center ga-1 text-weight-bold">{{
+														pick.pick.player.first_name[0] }}. {{
+															pick.pick.player.last_name }}</span>
 												</template>
 												<template #actions
 													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
@@ -177,13 +214,14 @@
 													<v-btn size="small" variant="tonal" color="primary"
 														@click="loadNextRound" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds"
-														v-tooltip="`Load Round ${nextRoundNumber}`">
-														Load Next
+														v-tooltip="`Load Round ${nextRoundNumber}`" class="round-btn">
+														Load Next Round
 													</v-btn>
 													<v-btn size="small" variant="tonal" color="info"
 														@click="loadAllRounds" :loading="loadingMoreRounds"
-														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`">
-														Load All
+														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`"
+														class="round-btn">
+														Load All Rounds
 													</v-btn>
 												</div>
 											</labeled-divider>
@@ -247,7 +285,9 @@ const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').
 
 // New reactive refs for round loading functionality
 const showRoundsUpTo = ref(1)
+const showRoundsFrom = ref(1)
 const loadingMoreRounds = ref(false)
+const hasSetInitialRoundsFrom  = ref(false)
 
 const isLotteryHappened = computed(() => {
 	return lotteryData.value && Object.keys(lotteryData.value).length > 0
@@ -314,9 +354,9 @@ const draftRounds = computed(() => {
 		.sort((a, b) => a.roundNumber - b.roundNumber)
 })
 
-// New computed property to show only visible rounds
+// Show only visible rounds
 const visibleRounds = computed(() => {
-	return draftRounds.value.slice(0, showRoundsUpTo.value)
+	return draftRounds.value.slice(showRoundsFrom.value, showRoundsUpTo.value)
 })
 
 // Computed property to check if there are more rounds to load
@@ -327,6 +367,14 @@ const hasMoreRoundsToLoad = computed(() => {
 // Computed property for the next round number to display in the load divider
 const nextRoundNumber = computed(() => {
 	return showRoundsUpTo.value + 1
+})
+
+const hasPastRoundsToCollapse = computed(() => {
+	return showRoundsUpTo.value > 1
+})
+
+const collapsedRoundsCount = computed(() => {
+	return showRoundsFrom.value - 1
 })
 
 const allPicksSorted = computed(() => {
@@ -349,6 +397,13 @@ const myNextUnmadePick = computed(() => {
 		!pickData.pick.is_pick_made &&
 		pickData.team.owner_username === authStore.user.username
 	)
+})
+
+watch(showRoundsUpTo, (newValue) => {
+  if (!hasSetInitialRoundsFrom.value) {
+    showRoundsFrom.value = Math.max(1, newValue - 1)
+    hasSetInitialRoundsFrom.value = true
+  }
 })
 
 // Watch for changes in nextUnmadePick to auto-adjust visible rounds
@@ -383,6 +438,32 @@ const loadAllRounds = async () => {
 		await new Promise(resolve => setTimeout(resolve, 800))
 
 		showRoundsUpTo.value = draftRounds.value.length
+		loadingMoreRounds.value = false
+	}
+}
+
+const collapsePastRounds = async () => {
+	if (showRoundsFrom.value < showRoundsUpTo.value) {
+		loadingMoreRounds.value = true
+		await new Promise(resolve => setTimeout(resolve, 500))
+
+		// Collapse up to the round before the current pick, but keep at least 1 round visible
+		if (nextUnmadePick.value) {
+			const currentRound = nextUnmadePick.value.pick.pick__round_number
+			showRoundsFrom.value = Math.max(1, Math.min(currentRound, showRoundsUpTo.value))
+		} else {
+			showRoundsFrom.value = Math.min(showRoundsFrom.value + 1, showRoundsUpTo.value)
+		}
+
+		loadingMoreRounds.value = false
+	}
+}
+
+const loadCollapsedRounds = async () => {
+	if (hasPastRoundsToCollapse.value) {
+		loadingMoreRounds.value = true
+		await new Promise(resolve => setTimeout(resolve, 500))
+		showRoundsFrom.value = 0
 		loadingMoreRounds.value = false
 	}
 }
@@ -556,5 +637,9 @@ onMounted(() => {
 <style lang="scss" scoped>
 .pick-btn {
 	width: 200px;
+}
+
+.round-btn {
+	width: 150px;
 }
 </style>
