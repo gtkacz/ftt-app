@@ -393,11 +393,11 @@ const defaultHeaders = ref(props.headers && props.headers.length
 	? props.headers
 	: [
 		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
+		{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
 		{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
 		{ title: 'Team', key: 'team.name', width: '150px', visible: true, sortable: true },
 		{ title: 'Salary', key: 'contract.salary', align: 'end', width: '120px', visible: true, sortable: true },
 		{ title: 'Contract Duration', key: 'contract.duration', align: 'end', width: '120px', visible: true, sortable: true },
-		{ title: 'Relevancy', key: 'relevancy', align: 'end', width: '120px', visible: false, hidden: true, sortable: true },
 		{ title: 'Status', key: 'status', width: '120px', sortable: false },
 	])
 const allHeaders = ref(defaultHeaders.value)
