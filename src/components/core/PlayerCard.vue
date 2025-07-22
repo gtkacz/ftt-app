@@ -156,7 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
 const playerMetadata = computed<PlayerMetadata | null>(() => {
 	if (!props.player?.metadata) return null
 	if (typeof props.player.metadata === 'string') {
-		return JSON.parse(props.player.metadata)
+		return JSON.parse(props.player.metadata.replaceAll("NaN", "null")) as PlayerMetadata
 	}
 	if (typeof props.player.metadata === 'object') {
 		return props.player.metadata as PlayerMetadata

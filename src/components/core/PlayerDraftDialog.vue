@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- Player avatar for other teams with player -->
-		<v-avatar v-if="player && (team.id !== userTeamId || disabled)" size="40" class="cursor-pointer"
+		<v-avatar v-if="player && ((!isStaff && team.id !== userTeamId) || disabled)" size="40" class="cursor-pointer"
 			@click="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template #error>
@@ -11,7 +11,7 @@
 		</v-avatar>
 
 		<!-- Draft button for user's team -->
-		<v-btn v-else-if="team.id === userTeamId && pick?.is_current" icon variant="outlined" size="small"
+		<v-btn v-else-if="(team.id === userTeamId || isStaff) && pick?.is_current" icon variant="outlined" size="small"
 			@click="showDraftDialog = true" v-tooltip="'Draft a player'">
 			<v-icon>person_add</v-icon>
 		</v-btn>
@@ -87,6 +87,7 @@ const emit = defineEmits<{
 // State
 const authStore = useAuthStore()
 const userTeamId = computed(() => authStore.user?.team?.id)
+const isStaff = computed(() => authStore.user?.is_staff)
 const showPlayerDialog = ref(false)
 const showDraftDialog = ref(false)
 const showPickDialog = ref(false)
