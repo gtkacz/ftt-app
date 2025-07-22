@@ -82,7 +82,8 @@
 														<v-select rounded v-model="filters.realTeam" :items="realTeams"
 															label="NBA Roster" clearable density="compact"
 															variant="outlined" prepend-inner-icon="sports_basketball"
-															multiple chips closable-chips single-line counter color="primary">
+															multiple chips closable-chips single-line counter
+															color="primary">
 															<template #item="{ item, props }">
 																<v-list-item v-bind="props">
 																	<template #prepend
@@ -117,44 +118,54 @@
 															multiple chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<v-card variant="outlined" rounded class="pa-3">
-															<v-card-title class="text-subtitle-2 pa-0 pb-2">
-																<v-icon size="16" class="mr-1">payments</v-icon>
-																Salary
-															</v-card-title>
-															<div class="d-flex align-center gap-2 mb-2">
-																<v-chip size="x-small" variant="outlined">${{
-																	filters.salaryRange[0] }}M</v-chip>
-																<v-spacer></v-spacer>
-																<v-chip size="x-small" variant="outlined">${{
-																	filters.salaryRange[1] }}M</v-chip>
-															</div>
-															<v-range-slider v-model="filters.salaryRange" :min="0"
-																:max="maxSalary" :step="1" color="success"
-																track-color="grey-lighten-3" density="compact" />
-														</v-card>
+														<v-text-field rounded readonly variant="outlined" density="compact"
+															prepend-inner-icon="payments" label="Salary Range"
+															:model-value="`$${filters.salaryRange[0]}M - $${filters.salaryRange[1]}M`"
+															@click="showSalaryFilter = !showSalaryFilter"
+															:append-inner-icon="showSalaryFilter ? 'expand_less' : 'expand_more'"
+															style="cursor: pointer;" />
+														<v-expand-transition>
+															<v-card v-show="showSalaryFilter" variant="outlined"
+																class="mt-2 pa-3">
+																<div class="d-flex align-center gap-2 mb-2">
+																	<v-chip size="x-small" variant="outlined">${{
+																		filters.salaryRange[0] }}M</v-chip>
+																	<v-spacer></v-spacer>
+																	<v-chip size="x-small" variant="outlined">${{
+																		filters.salaryRange[1] }}M</v-chip>
+																</div>
+																<v-range-slider v-model="filters.salaryRange" :min="0"
+																	:max="maxSalary" :step="1" color="success"
+																	track-color="grey-lighten-3" density="compact" />
+															</v-card>
+														</v-expand-transition>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<v-card variant="outlined" rounded class="pa-3">
-															<v-card-title class="text-subtitle-2 pa-0 pb-2">
-																<v-icon size="16" class="mr-1">schedule</v-icon>
-																Contract Duration
-															</v-card-title>
-															<div class="d-flex align-center gap-2 mb-2">
-																<v-chip size="x-small" variant="outlined">{{
-																	filters.durationRange[0] }}yr{{
-																		filters.durationRange[0] !== 1 ? 's' : ''
-																	}}</v-chip>
-																<v-spacer></v-spacer>
-																<v-chip size="x-small" variant="outlined">{{
-																	filters.durationRange[1] }}yr{{
-																		filters.durationRange[1] !== 1 ? 's' : ''
-																	}}</v-chip>
-															</div>
-															<v-range-slider v-model="filters.durationRange" :min="0"
-																:max="maxDuration" :step="1" color="primary"
-																track-color="grey-lighten-3" density="compact" />
-														</v-card>
+														<v-text-field readonly rounded variant="outlined" density="compact"
+															prepend-inner-icon="schedule" label="Contract Duration"
+															:model-value="`${filters.durationRange[0]} - ${filters.durationRange[1]} years`"
+															@click="showDurationFilter = !showDurationFilter"
+															:append-inner-icon="showDurationFilter ? 'expand_less' : 'expand_more'"
+															style="cursor: pointer;" />
+														<v-expand-transition>
+															<v-card v-show="showDurationFilter" variant="outlined"
+																class="mt-2 pa-3">
+																<div class="d-flex align-center gap-2 mb-2">
+																	<v-chip size="x-small" variant="outlined">{{
+																		filters.durationRange[0] }}yr{{
+																			filters.durationRange[0] !== 1 ? 's' : ''
+																		}}</v-chip>
+																	<v-spacer></v-spacer>
+																	<v-chip size="x-small" variant="outlined">{{
+																		filters.durationRange[1] }}yr{{
+																			filters.durationRange[1] !== 1 ? 's' : ''
+																		}}</v-chip>
+																</div>
+																<v-range-slider v-model="filters.durationRange" :min="0"
+																	:max="maxDuration" :step="1" color="primary"
+																	track-color="grey-lighten-3" density="compact" />
+															</v-card>
+														</v-expand-transition>
 													</v-col>
 												</v-row>
 											</template>
@@ -413,6 +424,8 @@ const filterMenu = ref<boolean>(false)
 const sortMenu = ref<boolean>(false)
 const showHeight = ref<boolean>(false)
 const showWeight = ref<boolean>(false)
+const showSalaryFilter = ref<boolean>(false)
+const showDurationFilter = ref<boolean>(false)
 const convertWeight = ref<boolean>(true)
 const convertHeight = ref<boolean>(false)
 const draggedIndex = ref<number | null>(null)
