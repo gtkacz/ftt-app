@@ -16,7 +16,7 @@
 						</v-col>
 
 						<!-- Icon buttons - 25% width -->
-						<v-col cols="3" class="d-flex justify-end gap-2">
+						<v-col cols="3" class="d-flex justify-end ga-2">
 							<!-- Filter button with menu -->
 							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
 								<template #activator="{ props }" v-tooltip="'Filter users'">
@@ -209,7 +209,7 @@
 							<v-icon size="40" variant="outlined" :filled="false" icon="account_circle" />
 						</v-avatar>
 						<div>
-							<div class="font-weight-medium d-flex align-center gap-1">
+							<div class="font-weight-medium d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
 									v-tooltip="'Administrator'" />
@@ -219,7 +219,7 @@
 							<div class="text-caption text-grey">
 								@{{ item.username }}
 							</div>
-							<div v-if="item.team" class="text-caption text-grey d-flex align-center gap-1">
+							<div v-if="item.team" class="text-caption text-grey d-flex align-center ga-1">
 								<v-icon size="20">groups</v-icon>
 								{{ item.team.name }}
 							</div>
@@ -231,7 +231,7 @@
 						</v-avatar>
 						<div>
 							<div
-								class="font-weight-medium text-grey-darken-1 text-decoration-line-through d-flex align-center gap-1">
+								class="font-weight-medium text-grey-darken-1 text-decoration-line-through d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
 									v-tooltip="'Administrator'" />
@@ -242,7 +242,7 @@
 								@{{ item.username }}
 							</div>
 							<div v-if="item.team"
-								class="text-caption text-grey-darken-1 text-decoration-line-through d-flex align-center gap-1">
+								class="text-caption text-grey-darken-1 text-decoration-line-through d-flex align-center ga-1">
 								<v-icon size="20">groups</v-icon>
 								{{ item.team.name }}
 							</div>
@@ -318,8 +318,8 @@
 									Showing {{ paginationText }}
 								</span>
 							</v-col>
-							<v-col cols="6" class="d-flex gap-2">
-								<v-row class="gap-2" align="center" justify="end">
+							<v-col cols="6" class="d-flex ga-2">
+								<v-row class="ga-2" align="center" justify="end">
 									<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
 										:item-title="item => item === -1 ? 'All' : item" label="Items per page"
 										density="compact" variant="outlined" hide-details
@@ -356,7 +356,7 @@
 						<span class="text-h6 mr-2">{{ selected.length }} users selected</span>
 					</v-col>
 					<v-col>
-						<div class="d-flex flex-wrap gap-2">
+						<div class="d-flex flex-wrap ga-2">
 							<v-chip v-if="pendingChanges.toggleActive !== null" closable
 								@click:close="pendingChanges.toggleActive = null"
 								:color="pendingChanges.toggleActive ? 'success' : 'error'">
@@ -998,11 +998,11 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.gap-1 {
+.ga-1 {
 	gap: 4px;
 }
 
-.gap-2 {
+.ga-2 {
 	gap: 8px;
 }
 

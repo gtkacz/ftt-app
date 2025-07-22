@@ -20,7 +20,7 @@
 						<v-sheet>
 							<v-row align="center" justify="center" v-if="!isLotteryHappened">
 								<v-col cols="auto">
-									<p class="d-flex align-center justify-center flex-column gap-2">
+									<p class="d-flex align-center justify-center flex-column ga-2">
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
@@ -40,7 +40,7 @@
 									<v-card link :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
 										v-ripple>
 										<template #title>
-											<div class="d-flex align-center justify-start gap-2">
+											<div class="d-flex align-center justify-start ga-2">
 												<span class="font-weight-black">{{ team.name
 												}}</span>
 												<v-icon icon="attribution" color="info" size="small" variant="tonal"
@@ -75,35 +75,33 @@
 							</v-container>
 							<v-container fluid>
 								<!-- Navigation buttons for draft -->
-								<v-container fluid class="my-4 w-100" v-if="isDraftStarted">
-									<v-row>
-										<v-col cols="12" class="d-flex justify-center flex-column align-center">
+								<v-container fluid class="ga-8 d-flex flex-column align-center justify-center" v-if="isDraftStarted">
+									<div>
+										<div class="d-flex justify-center flex-column align-center text-center">
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name === authStore.user?.team?.name ? 'You are' : nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
 												nextUnmadePick.pick.overall_pick }})</h5>
 											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
 												#label="{ formattedTime }">
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
-										</v-col>
-									</v-row>
-									<v-row>
-										<v-col cols="12" class="d-flex justify-center gap-2">
-											<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
-												@click="goToNextPick" :disabled="!nextUnmadePick">
-												Go to Next Pick
-											</v-btn>
-											<v-btn color="secondary" variant="tonal" prepend-icon="resume"
-												@click="goToMyNextPick" :disabled="!myNextUnmadePick">
-												Go to My Next Pick
-											</v-btn>
-										</v-col>
-									</v-row>
-									<v-row justify="center" align="center">
+										</div>
+									</div>
+									<div class="d-flex flex-column flex-lg-row ga-2 justify-center align-center">
+										<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
+											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn">
+											Go to Next Pick
+										</v-btn>
+										<v-btn color="secondary" variant="tonal" prepend-icon="resume"
+											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn">
+											Go to My Next Pick
+										</v-btn>
+									</div>
+									<div justify="center" align="center">
 										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
 											@click="fetchAllData" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
-									</v-row>
+									</div>
 								</v-container>
 								<v-container v-for="round in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4 w-100">
@@ -121,7 +119,7 @@
 												:color="getPickCardColor(pick.pick)" class="pa-4" v-ripple
 												:id="`pick-${pick.pick.overall_pick}`" rounded>
 												<template #title>
-													<div class="d-flex align-center justify-start gap-2">
+													<div class="d-flex align-center justify-start ga-2">
 														<span class="font-weight-black">{{
 															pick?.team?.name }}</span>
 														<v-icon icon="attribution" size="small" variant="tonal"
@@ -147,7 +145,7 @@
 														:frozen="!isDraftStarted || !pick.pick.is_current">
 														<span>{{ formattedTime }}</span>
 													</countdown>
-													<span v-else class="d-flex align-center gap-1 text-weight-bold">{{ pick.pick.player.first_name[0] }}. {{
+													<span v-else class="d-flex align-center ga-1 text-weight-bold">{{ pick.pick.player.first_name[0] }}. {{
 														pick.pick.player.last_name }}</span>
 												</template>
 												<template #actions
@@ -175,7 +173,7 @@
 									<v-row align="center">
 										<v-col>
 											<labeled-divider>
-												<div class="d-flex gap-2">
+												<div class="d-flex ga-2">
 													<v-btn size="small" variant="tonal" color="primary"
 														@click="loadNextRound" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds"
@@ -555,4 +553,8 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.pick-btn {
+	width: 200px;
+}
+</style>

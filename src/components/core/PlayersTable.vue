@@ -21,7 +21,7 @@
 							<!-- Icon buttons - 25% width -->
 							<slot name="extra-actions">
 								<v-spacer />
-								<v-col class="d-flex justify-end gap-2">
+								<v-col class="d-flex justify-end ga-2">
 									<!-- Sort menu -->
 									<!-- <v-menu rounded v-model="sortMenu" :close-on-content-click="false" location="bottom">
 										<template #activator="{ props }" v-tooltip="'Sort table'">
@@ -259,15 +259,15 @@
 							<div class="font-weight-medium">
 								{{ item.last_name }}, {{ item.first_name }}
 							</div>
-							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center gap-1">
+							<div v-if="item.real_team" class="text-caption text-grey d-flex align-center ga-1">
 								<nba-team-icon :team="item.real_team.abbreviation" :size="16" />
 								{{ item.real_team.abbreviation }}
 							</div>
-							<div v-else class="text-caption text-grey-darken-1 d-flex align-center gap-1">
+							<div v-else class="text-caption text-grey-darken-1 d-flex align-center ga-1">
 								<nba-team-icon team="NBA" :size="12" />
 								<span>Unsigned ({{ getSeasonFromYear(item.metadata?.TO_YEAR) }})</span>
 							</div>
-							<div class="text-caption text-grey d-flex align-center gap-1"
+							<div class="text-caption text-grey d-flex align-center ga-1"
 								v-if="(showHeight || showWeight) && (item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
 								<span v-if="showHeight && item.metadata?.HEIGHT">{{ parseHeight(item.metadata?.HEIGHT)
 								}}</span>
@@ -334,8 +334,8 @@
 										Showing {{ paginationText }}
 									</span>
 								</v-col>
-								<v-col cols="6" class="d-flex gap-2">
-									<v-row class="gap-2" align="center" justify="end">
+								<v-col cols="6" class="d-flex ga-2">
+									<v-row class="ga-2" align="center" justify="end">
 										<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
 											:item-title="item => item === -1 ? 'All' : item" label="Items per page"
 											density="compact" variant="outlined" hide-details
@@ -802,11 +802,11 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.gap-1 {
+.ga-1 {
 	gap: 4px;
 }
 
-.gap-2 {
+.ga-2 {
 	gap: 8px;
 }
 
