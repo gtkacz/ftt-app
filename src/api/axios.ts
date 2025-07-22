@@ -31,7 +31,7 @@ api.interceptors.response.use(
 
       authStore.logout();
 
-      router.push({
+      router?.push({
         path: "/login",
         query: { redirect: router.currentRoute.value.fullPath },
       });

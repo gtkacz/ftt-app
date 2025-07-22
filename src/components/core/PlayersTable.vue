@@ -146,7 +146,6 @@
 														:key="header.key"
 														:prepend-icon="index === 0 ? 'drag_indicator' : 'drag_handle'"
 														v-if="!(header?.hidden ?? false)">
-														{{ !(header?.hidden ?? false) }}
 														<template #prepend>
 															<v-icon v-if="header.key !== 'player'"
 																@mousedown="startDrag(index)"
