@@ -24,6 +24,7 @@ import { useAuthStore } from "@/stores/auth";
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const storageName = ref('')
 
 const brokenLogin = computed(() => {
   const localAuth = JSON.parse(localStorage.getItem('auth') || '{}');
@@ -74,7 +75,19 @@ watch(brokenLogin, (isBroken) => {
   }
 });
 
+// Initialize storage name from localStorage if available
+watch(storageName, (newName) => {
+  if (newName) {
+    localStorage.name = newName;
+  } else {
+    localStorage.removeItem('name');
+  }
+}, { immediate: true });
+
 onMounted(async () => {
+  if (localStorage.name) {
+    storageName.value = localStorage.name;
+  }
   if (brokenLogin.value) {
     authStore.logout();
     router.push({

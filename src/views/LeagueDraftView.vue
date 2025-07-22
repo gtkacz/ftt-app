@@ -78,7 +78,7 @@
 								<v-container fluid class="my-4 w-100" v-if="isDraftStarted">
 									<v-row>
 										<v-col cols="12" class="d-flex justify-center flex-column align-center">
-											<h5 class="text-h5">{{ nextUnmadePick?.team?.name }} is on the clock (#{{
+											<h5 class="text-h5">{{ nextUnmadePick?.team?.name === authStore.user?.team?.name ? 'You are' : nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
 												nextUnmadePick.pick.overall_pick }})</h5>
 											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
 												#label="{ formattedTime }">
@@ -126,6 +126,7 @@
 															pick?.team?.name }}</span>
 														<v-icon icon="attribution" size="small" variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
+														<v-icon size="small" icon="smart_toy" v-if="pick.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
 													</div>
 												</template>
 												<template #append>
@@ -146,7 +147,7 @@
 														:frozen="!isDraftStarted || !pick.pick.is_current">
 														<span>{{ formattedTime }}</span>
 													</countdown>
-													<span v-else>{{ pick.pick.player.first_name[0] }}. {{
+													<span v-else class="d-flex align-center gap-1 text-weight-bold">{{ pick.pick.player.first_name[0] }}. {{
 														pick.pick.player.last_name }}</span>
 												</template>
 												<template #actions
@@ -400,51 +401,35 @@ const getDraftablePlayers = computed(() => {
 })
 
 const fetchTeamsData = async () => {
-	try {
-		const response = await api.get("/teams/")
-		teamsData.value = response.data.results
-	} catch (error) {
-		console.error('Error fetching draft data:', error)
-		throw error
-	}
+	const response = await api.get("/teams/")
+	teamsData.value = response.data.results
 }
 
 const fetchDraftData = async () => {
-	try {
-		const response = await api.get(`/drafts/?year=${currentDate.year()}`)
-		draftData.value = response.data.results[0]
-	} catch (error) {
-		console.error('Error fetching draft data:', error)
-		throw error
-	}
+	const response = await api.get(`/drafts/?year=${currentDate.year()}`)
+	draftData.value = response.data.results[0]
 }
 
 const fetchLotteryData = async () => {
-	try {
-		const response = await api.get(`/drafts/${draftData.value.id}/picks/`)
-		const rawData = response.data.picks
+	const response = await api.get(`/drafts/${draftData.value.id}/picks/`)
+	const rawData = response.data.picks
 
-		const picksByTeam = rawData.reduce<Record<number, any[]>>((acc, pick) => {
-			const teamId = pick.pick__current_team;
-			if (!acc[teamId]) {
-				acc[teamId] = [];
-			}
-			acc[teamId].push(pick);
-			return acc;
-		}, {});
-
-		for (const teamId in picksByTeam) {
-			picksByTeam[teamId].sort((a, b) => a.pick__round_number - b.pick__round_number);
+	const picksByTeam = rawData.reduce<Record<number, any[]>>((acc, pick) => {
+		const teamId = pick.pick__current_team;
+		if (!acc[teamId]) {
+			acc[teamId] = [];
 		}
+		acc[teamId].push(pick);
+		return acc;
+	}, {});
 
-		lotteryData.value = picksByTeam
-		tab.value = isLotteryHappened.value ? 'draft' : 'lottery'
-	} catch (error) {
-		console.error('Error fetching draft data:', error)
-		throw error
-	} finally {
-		loading.value = false
+	for (const teamId in picksByTeam) {
+		picksByTeam[teamId].sort((a, b) => a.pick__round_number - b.pick__round_number);
 	}
+
+	lotteryData.value = picksByTeam
+	tab.value = isLotteryHappened.value ? 'draft' : 'lottery'
+	loading.value = false
 }
 
 const startLottery = async () => {

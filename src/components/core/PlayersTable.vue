@@ -278,24 +278,24 @@
 				</template>
 
 				<!-- Team -->
-				<template #item.team_name="{ item }">
-					<span v-if="item.team_name">{{ item.team_name }}</span>
+				<template #item.team.name="{ item }">
+					<span v-if="item.team.name">{{ item.team.name }}</span>
 					<span v-else class="text-grey-darken-1">Free Agent</span>
 				</template>
 
 				<!-- Salary -->
-				<template #item.salary="{ item }">
-					<span v-if="item.salary" class="font-weight-medium">
-						{{ formatCurrency(item.salary) }}
+				<template #item.contract.salary="{ item }">
+					<span v-if="item.contract.salary" class="font-weight-medium">
+						{{ formatCurrency(item.contract.salary) }}
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
 
 				<!-- Contract -->
-				<template #item.contract_duration="{ item }">
-					<span v-if="item.contract_duration" class="font-weight-medium">
-						{{ item.contract_duration }}
-						<word item="year" :count="item.contract_duration" />
+				<template #item.contract?.duration="{ item }">
+					<span v-if="item.contract?.duration" class="font-weight-medium">
+						{{ item.contract?.duration }}
+						<word item="year" :count="item.contract?.duration" />
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
@@ -395,9 +395,9 @@ const defaultHeaders = ref(props.headers && props.headers.length
 	: [
 		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
 		{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
-		{ title: 'Team', key: 'team_name', width: '150px', visible: true, sortable: true },
-		{ title: 'Salary', key: 'salary', align: 'end', width: '120px', visible: true, sortable: true },
-		{ title: 'Contract', key: 'contract_duration', align: 'end', width: '120px', visible: true, sortable: true },
+		{ title: 'Team', key: 'team.name', width: '150px', visible: true, sortable: true },
+		{ title: 'Salary', key: 'contract.salary', align: 'end', width: '120px', visible: true, sortable: true },
+		{ title: 'Contract Duration', key: 'contract.duration', align: 'end', width: '120px', visible: true, sortable: true },
 		{ title: 'Relevancy', key: 'relevancy', align: 'end', width: '120px', visible: false, hidden: true, sortable: true },
 		{ title: 'Status', key: 'status', width: '120px', sortable: false },
 	])
@@ -435,7 +435,7 @@ const customSearch = (value: any, search: string, item: any) => {
 
 // Computed filter options
 const teams = computed(() => {
-	const uniqueTeams = [...new Set(players.value.map(p => p.team_name).filter(Boolean))]
+	const uniqueTeams = [...new Set(players.value.map(p => p.team?.name).filter(Boolean))]
 	const sortedTeams = uniqueTeams.sort()
 	const specialOptions = [{ title: 'Free Agent', value: 'FREE_AGENT' }]
 
@@ -489,9 +489,9 @@ const filteredPlayers = computed(() => {
 	if (filters.value.team.length > 0) {
 		result = result.filter(p => {
 			if (filters.value.team.includes('FREE_AGENT')) {
-				return !p.team_name || filters.value.team.includes(p.team_name)
+				return !p.team.name || filters.value.team.includes(p.team.name)
 			}
-			return filters.value.team.includes(p.team_name)
+			return filters.value.team.includes(p.team.name)
 		})
 	}
 
@@ -519,8 +519,8 @@ const filteredPlayers = computed(() => {
 		result = result.filter(p => {
 			return filters.value.status.some(status => {
 				switch (status) {
-					case 'rfa': return p.is_rfa
-					case 'to': return p.is_to
+					case 'rfa': return p.contract.is_rfa
+					case 'to': return p.contract.is_to
 					case 'ir': return p.is_ir
 					default: return false
 				}
@@ -599,29 +599,23 @@ const fetchAllPlayers = async () => {
 	loading.value = true
 	error.value = null
 
-	try {
-		const response = await api.get('players/?limit=10000')
-		let raw_data = structuredClone(response.data.results)
+	const response = await api.get('players/?limit=10000')
+	let raw_data = structuredClone(response.data.results)
 
-		raw_data.forEach(player => {
-			if (player.metadata) {
-				try {
-					player.metadata = JSON.parse(JSON.stringify(structuredClone(player.metadata)).replaceAll("NaN", "null"))
-					if (typeof player.metadata === 'string') {
-						player.metadata = JSON.parse(player.metadata)
-					}
-				} catch (e) {
-					console.error('Failed to parse player metadata:', e)
+	raw_data.forEach(player => {
+		if (player.metadata) {
+			try {
+				player.metadata = JSON.parse(JSON.stringify(structuredClone(player.metadata)).replaceAll("NaN", "null"))
+				if (typeof player.metadata === 'string') {
+					player.metadata = JSON.parse(player.metadata)
 				}
+			} catch (e) {
+				console.error('Failed to parse player metadata:', e)
 			}
-		})
-		players.value = raw_data
-	} catch (err) {
-		console.error('Error fetching players:', err)
-		error.value = 'Failed to load players. Please try again later.'
-	} finally {
-		loading.value = false
-	}
+		}
+	})
+	players.value = raw_data
+	loading.value = false
 }
 
 const formatCurrency = (amount) => {

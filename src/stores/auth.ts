@@ -7,7 +7,6 @@ import type {
   User,
 } from "@/types/auth";
 import { decodeJwt } from "@/utils/jwt";
-import { showError } from "@/services/errorSnackbar";
 
 interface AuthState {
   user: null | User;
@@ -43,15 +42,10 @@ export const useAuthStore = defineStore("auth", {
 
     async login(data: LoginData): Promise<boolean> {
       const result = await this.withLoadingState(async () => {
-        try {
-          const response = await AuthService.login(data);
-          this.setTokens(response.access, response.refresh);
-          this.setUser(response.user);
-          return true;
-        } catch (error) {
-          showError("Login failed:", error);
-          return false;
-        }
+        const response = await AuthService.login(data);
+        this.setTokens(response.access, response.refresh);
+        this.setUser(response.user);
+        return true;
       });
 
       return result ?? false;
@@ -59,13 +53,8 @@ export const useAuthStore = defineStore("auth", {
 
     async register(data: RegisterData): Promise<boolean> {
       const result = await this.withLoadingState(async () => {
-        try {
-          await AuthService.register(data);
-          return true;
-        } catch (error) {
-          showError("Registration failed:", error);
-          return false;
-        }
+        await AuthService.register(data);
+        return true;
       });
 
       return result ?? false;
@@ -73,16 +62,12 @@ export const useAuthStore = defineStore("auth", {
 
     async createTeam(data: RegisterTeamData): Promise<boolean> {
       const result = await this.withLoadingState(async () => {
-        try {
-          await AuthService.createTeam(data);
-          // Fix: Properly use the response from fetchUser
-          const updatedUser = await AuthService.fetchUser(this.user?.id!);
-          this.setUser(updatedUser);
-          return true;
-        } catch (error) {
-          showError("Team creation failed:", error);
-          return false;
-        }
+        await AuthService.createTeam(data);
+        // Fix: Properly use the response from fetchUser
+        const updatedUser = await AuthService.fetchUser(this.user?.id!);
+        this.setUser(updatedUser);
+        return true;
+
       });
 
       return result ?? false;
@@ -97,11 +82,10 @@ export const useAuthStore = defineStore("auth", {
           const response = await AuthService.fetchUser(this.user.id);
           this.setUser(response);
         } catch (error) {
-          showError("Failed to fetch user data:", error);
-          // Consider logging out if user fetch fails
           if (error instanceof Error && error.message.includes("401")) {
             this.logout();
           }
+          throw error; // Re-throw to handle it in the calling context
         }
       });
     },
