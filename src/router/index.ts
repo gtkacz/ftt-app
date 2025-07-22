@@ -62,9 +62,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/501View.vue"),
   },
   {
-    path: "/team",
+    path: "/team/:id",
     name: "team",
-    component: () => import("@/views/501View.vue"),
+    component: () => import("@/views/TeamView.vue"),
+    props: true,
   },
   {
     path: "/players",

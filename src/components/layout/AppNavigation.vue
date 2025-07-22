@@ -32,7 +32,7 @@
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.routeName }" :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
+            :to="{ name: item.routeName, params: item.params || {} }" :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
             :commission_only="item.commission_only ?? false" :disabled="item.disabled ?? false"
             @click="mobile && navigationStore.toggleNavigation()" />
         </div>
@@ -71,13 +71,12 @@ const navigationGroups = [
         icon: 'dashboard',
         label: 'Dashboard',
         routeName: 'dashboard',
-        disabled: true
       },
       {
         icon: 'person_play',
         label: 'My Team',
         routeName: 'team',
-        disabled: true
+        params: { id: '2' }
       },
     ]
   },

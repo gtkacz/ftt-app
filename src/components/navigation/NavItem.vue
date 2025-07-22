@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 
 interface Props {
@@ -31,17 +31,13 @@ interface Props {
 
 const props = defineProps<Props>()
 const route = useRoute()
+const router = useRouter()
 
 const user = computed(() => localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null)
 
 const isActive = computed(() => {
-  if (typeof props.to === 'string') {
-    return route.path === props.to && route.path !== '/404'
-  }
-  if (props.to.name) {
-    return route.name === props.to.name && route.name !== '404' && props.to.name !== '404'
-  }
-  return false
+  const { href } = router.resolve(props.to)
+  return href === route.fullPath && route.name !== '404'
 })
 </script>
 
