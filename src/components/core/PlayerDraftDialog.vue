@@ -38,10 +38,14 @@
 		</v-dialog>
 
 		<!-- Draft players dialog -->
-		<v-dialog v-model="showDraftDialog" max-width="1600" scrollable persistent transition="fade-transition">
+		<v-dialog v-model="showDraftDialog" max-width="1600" scrollable transition="fade-transition">
 			<v-card class="pa-4" density="comfortable">
 				<v-card-title>
 					Draft a Player
+					<v-btn v-if="team.id === userTeamId || isStaff" variant="tonal" icon
+						@click="showDraftDialog = false">
+						<v-icon icon="smart_toy" />
+					</v-btn>
 					<v-btn variant="text" icon @click="showDraftDialog = false" class="float-right">
 						<v-icon>close</v-icon>
 					</v-btn>
@@ -95,7 +99,8 @@ const pickData = ref(null)
 
 // Draft table headers
 const draftHeaders = [
-	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
+	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
+	{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
 	{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
 ]
 
