@@ -1,5 +1,6 @@
 <template>
-  <v-container fluid class="dashboard-container">
+  <v-progress-circular v-if="loading" indeterminate color="primary" />
+  <v-container v-else fluid class="dashboard-container">
     <!-- Team Header -->
     <v-row>
       <v-col cols="12">
@@ -502,12 +503,12 @@
 
 <script setup lang="ts">
 import api from '@/api/axios';
-import { useAuthStore } from "@/stores/auth";
 import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
-const authStore = useAuthStore();
-const user = authStore.user;
-const teamId = user?.team?.id;
+const loading = ref(false);
+const route = useRoute();
+const teamId = route.params.id as string;
 
 interface Player {
   id: number

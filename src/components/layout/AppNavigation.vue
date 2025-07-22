@@ -32,7 +32,8 @@
           </div>
 
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
-            :to="{ name: item.routeName, params: item.params || {} }" :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
+            :to="{ name: item.routeName, params: item.params || {} }"
+            :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
             :commission_only="item.commission_only ?? false" :disabled="item.disabled ?? false"
             @click="mobile && navigationStore.toggleNavigation()" />
         </div>
@@ -45,12 +46,16 @@
 </template>
 
 <script setup lang="ts">
+import LogoNav from '@/components/navigation/LogoNav.vue'
+import NavItem from '@/components/navigation/NavItem.vue'
+import { useAuthStore } from "@/stores/auth"
+import { useNavigationStore } from '@/stores/navigation'
 import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
-import { useNavigationStore } from '@/stores/navigation'
-import NavItem from '@/components/navigation/NavItem.vue'
-import LogoNav from '@/components/navigation/LogoNav.vue'
 
+const authStore = useAuthStore();
+const user = authStore.user;
+const teamId = user?.team?.id;
 const version = __APP_VERSION__
 const { mobile } = useDisplay()
 const navigationStore = useNavigationStore()
@@ -71,12 +76,13 @@ const navigationGroups = [
         icon: 'dashboard',
         label: 'Dashboard',
         routeName: 'dashboard',
+        params: { id: teamId }
       },
       {
         icon: 'person_play',
         label: 'My Team',
         routeName: 'team',
-        params: { id: '2' }
+        params: { id: teamId }
       },
     ]
   },
@@ -184,11 +190,11 @@ const handleMouseLeave = () => {
   overflow: hidden;
   align-items: center;
   justify-content: center;
-  
+
   &>* {
     width: 100%;
   }
-  
+
   &.mobile {
     z-index: 1999;
     width: 240px;

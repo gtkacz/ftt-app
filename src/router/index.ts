@@ -52,9 +52,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/501View.vue"),
   },
   {
-    path: "/dashboard",
+    path: "/dashboard/:id",
     name: "dashboard",
     component: () => import("@/views/DashboardView.vue"),
+    props: true,
   },
   {
     path: "/trade",

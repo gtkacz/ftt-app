@@ -5,7 +5,7 @@
 		</div>
 
 		<v-progress-linear v-if="loading" indeterminate color="primary" />
-		<players-table v-else @player-selected="onPlayerSelected" :players="teamData.players" />
+		<players-table v-else @player-selected="onPlayerSelected" :players="teamData?.players" />
 
 		<v-dialog max-width="500" v-model="showPlayerCard">
 			<player-card :player="playerData" :pick="pick" />
