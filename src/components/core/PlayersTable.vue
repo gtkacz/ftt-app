@@ -29,38 +29,35 @@
 												<v-icon icon="sort" />
 											</v-btn>
 										</template>
-										<v-card rounded min-width="300" density="comfortable" class="pa-4">
-											<template #title class="text-h6">Sort Options</template>
-											<template #append><v-btn variant="text" icon @click="sortMenu = false"
+<v-card rounded min-width="300" density="comfortable" class="pa-4">
+	<template #title class="text-h6">Sort Options</template>
+	<template #append><v-btn variant="text" icon @click="sortMenu = false"
 													size="small"><v-icon icon="close" /></v-btn></template>
-											<v-divider />
-											<v-card-text>
-												<v-row>
-													<v-col cols="12" class="py-2">
-														<v-select rounded v-model="sortBy" :items="sortableHeaders"
-															item-title="title" item-value="key" label="Sort by"
-															density="compact" variant="outlined"
-															prepend-inner-icon="sort_by_alpha"></v-select>
-													</v-col>
-													<v-col cols="12" class="py-2">
-														<v-select rounded v-model="sortOrder" :items="sortOrderOptions"
-															label="Sort order" density="compact" variant="outlined"
-															prepend-inner-icon="sort"></v-select>
-													</v-col>
-												</v-row>
-											</v-card-text>
-											<v-card-actions>
-												<v-spacer></v-spacer>
-												<v-btn @click="resetSort" icon variant="outlined" size="small"
-													v-tooltip="'Reset to default sort'">
-													<v-icon icon="refresh" />
-												</v-btn>
-											</v-card-actions>
-										</v-card>
-									</v-menu> -->
+	<v-divider />
+	<v-card-text>
+		<v-row>
+			<v-col cols="12" class="py-2">
+				<v-select rounded v-model="sortBy" :items="sortableHeaders" item-title="title" item-value="key"
+					label="Sort by" density="compact" variant="outlined" prepend-inner-icon="sort_by_alpha"></v-select>
+			</v-col>
+			<v-col cols="12" class="py-2">
+				<v-select rounded v-model="sortOrder" :items="sortOrderOptions" label="Sort order" density="compact"
+					variant="outlined" prepend-inner-icon="sort"></v-select>
+			</v-col>
+		</v-row>
+	</v-card-text>
+	<v-card-actions>
+		<v-spacer></v-spacer>
+		<v-btn @click="resetSort" icon variant="outlined" size="small" v-tooltip="'Reset to default sort'">
+			<v-icon icon="refresh" />
+		</v-btn>
+	</v-card-actions>
+</v-card>
+</v-menu> -->
 
 									<!-- Filter button with menu -->
-									<v-menu rounded v-model="filterMenu" :close-on-content-click="false" location="bottom">
+									<v-menu rounded v-model="filterMenu" :close-on-content-click="false"
+										location="bottom">
 										<template #activator="{ props }" v-tooltip="'Filter players'">
 											<v-btn v-bind="props" icon variant="outlined" size="small"
 												:color="hasActiveFilters ? 'primary' : undefined">
@@ -71,7 +68,8 @@
 											</v-btn>
 										</template>
 										<v-card rounded min-width="500" density="comfortable" class="pa-4">
-											<template #title class="text-h6">Filters<v-divider class="my-4" /></template>
+											<template #title class="text-h6">Filters<v-divider
+													class="my-4" /></template>
 											<template #text>
 												<v-row>
 													<v-col cols="12" class="py-2">
@@ -117,6 +115,23 @@
 															label="Status" clearable density="compact"
 															variant="outlined" prepend-inner-icon="diamond_shine"
 															multiple chips closable-chips></v-select>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<label class="text-caption text-grey">Salary Range (M)</label>
+														<v-range-slider v-model="filters.salaryRange" :min="0"
+															:max="maxSalary" :step="1" thumb-label="always"
+															density="compact" class="mt-2">
+															<template #thumb-label="{ modelValue }">
+																${{ modelValue }}M
+															</template>
+														</v-range-slider>
+													</v-col>
+													<v-col cols="12" class="py-2">
+														<label class="text-caption text-grey">Contract Duration
+															(Years)</label>
+														<v-range-slider v-model="filters.durationRange" :min="0"
+															:max="maxDuration" :step="1" thumb-label="always"
+															density="compact" class="mt-2" />
 													</v-col>
 												</v-row>
 											</template>
@@ -282,19 +297,13 @@
 					<span v-else class="text-grey-darken-1">Free Agent</span>
 				</template>
 
-				<!-- Salary -->
-				<template #item.contract.salary="{ item }">
-					<span v-if="item.contract.salary" class="font-weight-medium">
-						{{ formatCurrency(item.contract.salary) }}
-					</span>
-					<span v-else class="text-grey">—</span>
-				</template>
-
-				<!-- Contract -->
-				<template #item.contract?.duration="{ item }">
-					<span v-if="item.contract?.duration" class="font-weight-medium">
-						{{ item.contract?.duration }}
-						<word item="year" :count="item.contract?.duration" />
+				<!-- Contract Info -->
+				<template #item.contract_info="{ item }">
+					<span v-if="item.contract?.salary || item.contract?.duration" class="font-weight-medium">
+						<span v-if="item.contract?.salary">{{ formatCurrency(item.contract.salary) }}</span>
+						<span v-if="item.contract?.salary && item.contract?.duration">/</span>
+						<span v-if="item.contract?.duration">{{ item.contract.duration }}yr<span
+								v-if="item.contract.duration !== 1">s</span></span>
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
@@ -386,18 +395,31 @@ const convertHeight = ref<boolean>(false)
 const draggedIndex = ref<number | null>(null)
 const sortBy = ref<string>('relevancy')
 const sortOrder = ref<'asc' | 'desc'>('desc')
-const filters = ref<{ team: any[]; realTeam: any[]; position: any[]; status: any[] }>({ team: [], realTeam: [], position: [], status: [] })
+const filters = ref<{
+	team: any[];
+	realTeam: any[];
+	position: any[];
+	status: any[];
+	salaryRange: [number, number];
+	durationRange: [number, number];
+}>({
+	team: [],
+	realTeam: [],
+	position: [],
+	status: [],
+	salaryRange: [0, 100],
+	durationRange: [0, 10]
+})
 
 // Default header configuration
 const defaultHeaders = ref(props.headers && props.headers.length
 	? props.headers
 	: [
-		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '300px', visible: true, locked: true },
+		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '150px', visible: true, locked: true },
+		{ title: 'Team', key: 'team.name', width: '150px', visible: true, sortable: true },
 		{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
 		{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
-		{ title: 'Team', key: 'team.name', width: '150px', visible: true, sortable: true },
-		{ title: 'Salary', key: 'contract.salary', align: 'end', width: '120px', visible: true, sortable: true },
-		{ title: 'Contract Duration', key: 'contract.duration', align: 'end', width: '120px', visible: true, sortable: true },
+		{ title: 'Contract', key: 'contract_info', align: 'end', width: '150px', visible: true, sortable: true },
 		{ title: 'Status', key: 'status', width: '120px', sortable: false },
 	])
 const allHeaders = ref(defaultHeaders.value)
@@ -527,6 +549,22 @@ const filteredPlayers = computed(() => {
 		})
 	}
 
+	// Apply salary range filter
+	if (filters.value.salaryRange[0] > 0 || filters.value.salaryRange[1] < maxSalary.value) {
+		result = result.filter(p => {
+			const salary = p.contract?.salary || 0
+			return salary >= filters.value.salaryRange[0] && salary <= filters.value.salaryRange[1]
+		})
+	}
+
+	// Apply duration range filter  
+	if (filters.value.durationRange[0] > 0 || filters.value.durationRange[1] < maxDuration.value) {
+		result = result.filter(p => {
+			const duration = p.contract?.duration || 0
+			return duration >= filters.value.durationRange[0] && duration <= filters.value.durationRange[1]
+		})
+	}
+
 	return result
 })
 
@@ -536,8 +574,16 @@ const sortedFilteredPlayers = computed(() => {
 
 	if (sortBy.value) {
 		result.sort((a, b) => {
-			let aVal = a[sortBy.value]
-			let bVal = b[sortBy.value]
+			let aVal, bVal
+
+			// Special handling for contract_info sorting
+			if (sortBy.value === 'contract_info') {
+				aVal = (a.contract?.duration || 0) * (a.contract?.salary || 0)
+				bVal = (b.contract?.duration || 0) * (b.contract?.salary || 0)
+			} else {
+				aVal = a[sortBy.value]
+				bVal = b[sortBy.value]
+			}
 
 			// Handle null/undefined values
 			if (aVal == null && bVal == null) return 0
@@ -563,14 +609,23 @@ const hasActiveFilters = computed(() => {
 	return filters.value.team.length > 0 ||
 		filters.value.realTeam.length > 0 ||
 		filters.value.position.length > 0 ||
-		filters.value.status.length > 0
+		filters.value.status.length > 0 ||
+		filters.value.salaryRange[0] > 0 ||
+		filters.value.salaryRange[1] < maxSalary.value ||
+		filters.value.durationRange[0] > 0 ||
+		filters.value.durationRange[1] < maxDuration.value
 })
 
 const activeFilterCount = computed(() => {
-	return filters.value.team.length +
+	let count = filters.value.team.length +
 		filters.value.realTeam.length +
 		filters.value.position.length +
 		filters.value.status.length
+
+	if (filters.value.salaryRange[0] > 0 || filters.value.salaryRange[1] < maxSalary.value) count++
+	if (filters.value.durationRange[0] > 0 || filters.value.durationRange[1] < maxDuration.value) count++
+
+	return count
 })
 
 // Pagination computed values
@@ -587,6 +642,20 @@ const paginationText = computed(() => {
 	const start = (page.value - 1) * itemsPerPage.value + 1
 	const end = Math.min(page.value * itemsPerPage.value, total)
 	return `${start}-${end} of ${total} entries`
+})
+
+const maxSalary = computed(() => {
+	const salaries = players.value
+		.map(p => p.contract?.salary)
+		.filter(Boolean)
+	return salaries.length > 0 ? Math.max(...salaries) : 100
+})
+
+const maxDuration = computed(() => {
+	const durations = players.value
+		.map(p => p.contract?.duration)
+		.filter(Boolean)
+	return durations.length > 0 ? Math.max(...durations) : 10
 })
 
 // Methods
@@ -631,7 +700,9 @@ const clearFilters = () => {
 		team: [],
 		realTeam: [],
 		position: [],
-		status: []
+		status: [],
+		salaryRange: [0, maxSalary.value],
+		durationRange: [0, maxDuration.value]
 	}
 }
 
