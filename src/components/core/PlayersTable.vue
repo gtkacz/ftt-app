@@ -665,7 +665,7 @@ const fetchAllPlayers = async () => {
 	loading.value = true
 	error.value = null
 
-	const response = await api.get('players/?limit=10000')
+	const response = await api.get('players/?limit=10000/')
 	let raw_data = structuredClone(response.data.results)
 
 	raw_data.forEach(player => {

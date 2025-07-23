@@ -43,7 +43,7 @@ const onPlayerSelected = (player: any) => {
 
 const fetchTeamData = async () => {
 	loading.value = true;
-	const response = await api.get(`/teams/${id}`)
+	const response = await api.get(`/teams/${id}/`)
 	teamData.value = response.data;
 	loading.value = false;
 }

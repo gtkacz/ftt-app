@@ -4,7 +4,7 @@
     <!-- Team Header -->
     <v-row>
       <v-col cols="12">
-        <v-card class="team-header" elevation="4">
+        <v-card class="team-header pa-4" elevation="4">
           <v-card-text>
             <div class="d-flex align-center">
               <v-avatar size="80" class="me-4">
@@ -12,7 +12,7 @@
               </v-avatar>
               <div>
                 <h1 class="text-h3 font-weight-bold text-white">{{ teamData.name }}</h1>
-                <p class="text-h6 text-grey-lighten-2">{{ teamData.owner_username }}</p>
+                <p class="text-h6 text-grey-lighten-2">@{{ teamData.owner_username }}</p>
               </div>
             </div>
           </v-card-text>
@@ -386,29 +386,17 @@
                 </v-chip>
               </div>
 
-              <v-row>
-                <v-col v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`" cols="12">
-                  <v-card variant="outlined" class="pa-3">
-                    <v-card-text class="py-2">
-                      <div class="d-flex justify-space-between align-center">
-                        <div>
-                          <v-chip
-                            :color="pick.round_number === 1 ? 'success' : pick.round_number === 2 ? 'warning' : 'info'"
-                            variant="tonal" size="small">
-                            Round {{ pick.round_number }}{{ pick.protections ? '*' : '' }}
-                          </v-chip>
-                        </div>
-                        <div class="text-body-2">
-                          <strong>From:</strong> {{ pick.original_team_name }}
-                          <div v-if="pick.protections" class="text-caption text-grey">
-                            {{ pick.protections }}
-                          </div>
-                        </div>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
+              <v-card variant="outlined" class="pa-3">
+                <v-card-text class="py-2">
+                  <v-chip-group>
+                    <v-chip v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`"
+                      :color="pick.round_number === 1 ? 'success' : pick.round_number === 2 ? 'warning' : 'info'"
+                      variant="tonal" size="small">
+                      {{ pick.original_team_name }} | Round {{ pick.round_number }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-card-text>
+              </v-card>
             </div>
             <v-alert v-if="Object.keys(draftPicks).length === 0" type="info" variant="tonal">
               No upcoming draft picks
@@ -635,7 +623,7 @@ const getValueRatingColor = (rating: string): string => {
 
 const fetchTeamData = async (): Promise<TeamData> => {
   try {
-    const response = await api.get(`/teams/${teamId}`)
+    const response = await api.get(`/teams/${teamId}/`)
     return response.data as TeamData
   } catch (error) {
     console.error('Error fetching team data:', error)

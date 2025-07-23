@@ -473,7 +473,7 @@ const fetchTeamsData = async () => {
 }
 
 const fetchDraftData = async () => {
-	const response = await api.get(`/drafts/?year=${currentDate.year()}&is_league_draft=true`)
+	const response = await api.get(`/drafts/?year=${currentDate.year()}&is_league_draft=true/`)
 	draftData.value = response.data.results[0]
 }
 
