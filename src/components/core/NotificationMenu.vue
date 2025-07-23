@@ -13,8 +13,8 @@
 			<v-card class="notification-menu">
 				<v-card-title class="d-flex align-center justify-space-between pa-4">
 					<span class="text-h6">Notifications</span>
-					<v-btn v-if="unreadCount > 0" variant="tonal" prepend-icon="check" size="small" color="primary" @click="markAllAsRead"
-						:loading="markingAllRead">
+					<v-btn v-if="unreadCount > 0" variant="tonal" prepend-icon="check" size="small" color="primary"
+						@click="markAllAsRead" :loading="markingAllRead">
 						Mark all read
 					</v-btn>
 				</v-card-title>
@@ -23,10 +23,11 @@
 
 				<div class="notification-list">
 					<v-list v-if="notifications.length > 0" density="comfortable" class="pa-0">
-						<v-list-item v-for="notification in sortedNotifications" :key="notification.id" class="pa-4" :class="[
-							'notification-item',
-							{ 'notification-unread': !notification.is_read }
-						]" @click="markAsRead(notification)">
+						<v-list-item v-for="notification in sortedNotifications" :key="notification.id" class="pa-4"
+							:class="[
+								'notification-item',
+								{ 'notification-unread': !notification.is_read }
+							]" @click="markAsRead(notification)">
 							<template #prepend>
 								<v-icon :color="getNotificationColor(notification.level)">
 									{{ getNotificationIcon(notification.level) }}
@@ -126,15 +127,18 @@ const fetchNotifications = async (): Promise<Notification[]> => {
 }
 
 const markNotificationAsRead = async (notificationId: number): Promise<void> => {
-	// TODO: Replace with actual API endpoint
-	// await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
-	console.log(`Marking notification ${notificationId} as read`)
+	await api.patch(`/notifications/${notificationId}/`)
 }
 
 const markAllNotificationsAsRead = async (): Promise<void> => {
-	// TODO: Replace with actual API endpoint
-	// await fetch('/api/notifications/mark-all-read', { method: 'POST' })
-	console.log('Marking all notifications as read')
+	const requests = notifications.value.map(n => {
+		if (!n.is_read) {
+			return markAsRead(n)
+		}
+		return Promise.resolve()
+	})
+
+	await Promise.all(requests)
 }
 
 // Methods

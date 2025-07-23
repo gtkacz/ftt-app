@@ -82,8 +82,8 @@
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name ===
 												authStore.user?.team?.name ? 'You are' :
 												nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
-													nextUnmadePick.pick.overall_pick }})</h5>
-											<countdown :value="nextUnmadePick.pick.time_to_pick" :show-progress="false"
+													nextUnmadePick?.pick.overall_pick }})</h5>
+											<countdown :value="nextUnmadePick?.pick.time_to_pick" :show-progress="false"
 												#label="{ formattedTime }" @expired="fetchAllData">
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
@@ -137,10 +137,10 @@
 									</v-row>
 
 									<v-row>
-										<v-col v-for="pick in round.picks" :key="pick.pick.id" cols="12" md="6" lg="4">
+										<v-col v-for="pick in round.picks" :key="pick?.pick.id" cols="12" md="6" lg="4">
 											<v-card link :variant="isDark ? 'elevated' : 'tonal'"
-												:color="getPickCardColor(pick.pick)" class="pa-4" v-ripple
-												:id="`pick-${pick.pick.overall_pick}`" rounded>
+												:color="getPickCardColor(pick?.pick)" class="pa-4" v-ripple
+												:id="`pick-${pick?.pick.overall_pick}`" rounded>
 												<template #title>
 													<div class="d-flex align-center justify-start ga-2">
 														<span class="font-weight-black">{{
@@ -148,13 +148,13 @@
 														<v-icon icon="attribution" size="small" variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
 														<v-icon size="small" icon="smart_toy"
-															v-if="pick.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
+															v-if="pick?.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
 													</div>
 												</template>
 												<template #append>
-													<player-draft-dialog :player="pick.pick?.player" :team="pick.team"
-														:draftable-players="getDraftablePlayers" :pick="pick.pick"
-														:disabled="!isDraftStarted || (!pick.pick.is_pick_made && !pick.pick.is_current)"
+													<player-draft-dialog :player="pick?.pick?.player" :team="pick.team"
+														:draftable-players="getDraftablePlayers" :pick="pick?.pick"
+														:disabled="!isDraftStarted || (!pick?.pick.is_pick_made && !pick?.pick.is_current)"
 														@player-selected="fetchAllData" />
 												</template>
 												<template #subtitle>
@@ -162,15 +162,15 @@
 												</template>
 												<template #text>
 													Pick
-													<h2>#{{ pick.pick.overall_pick }}</h2>
-													<countdown :value="pick.pick.time_to_pick" :show-progress="false"
-														v-if="!pick.pick.is_pick_made" #label="{ formattedTime }"
-														:frozen="!isDraftStarted || !pick.pick.is_current">
+													<h2>#{{ pick?.pick.overall_pick }}</h2>
+													<countdown :value="pick?.pick.time_to_pick" :show-progress="false"
+														v-if="!pick?.pick.is_pick_made" #label="{ formattedTime }"
+														:frozen="!isDraftStarted || !pick?.pick.is_current">
 														<span>{{ formattedTime }}</span>
 													</countdown>
 													<span v-else class="d-flex align-center ga-1 text-weight-bold">{{
-														pick.pick.player.first_name[0] }}. {{
-															pick.pick.player.last_name }}</span>
+														pick?.pick.player.first_name[0] }}. {{
+															pick?.pick.player.last_name }}</span>
 												</template>
 												<template #actions
 													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
@@ -337,7 +337,7 @@ const draftRounds = computed(() => {
 	return Object.entries(rounds)
 		.map(([roundNumber, picks]) => ({
 			roundNumber: Number(roundNumber),
-			picks: picks.sort((a, b) => a.pick.pick_number - b.pick.pick_number)
+			picks: picks.sort((a, b) => a?.pick.pick_number - b?.pick.pick_number)
 		}))
 		.sort((a, b) => a.roundNumber - b.roundNumber)
 })
@@ -376,13 +376,13 @@ const allPicksSorted = computed(() => {
 })
 
 const nextUnmadePick = computed(() => {
-	return allPicksSorted.value.find(pickData => pickData.pick.is_current)
+	return allPicksSorted.value.find(pickData => pickData?.pick.is_current)
 })
 
 const myNextUnmadePick = computed(() => {
 	if (!authStore.user) return null
 	return allPicksSorted.value.find(pickData =>
-		!pickData.pick.is_pick_made &&
+		!pickData?.pick.is_pick_made &&
 		pickData.team.owner_username === authStore.user.username
 	)
 })
@@ -397,7 +397,7 @@ watch(showRoundsUpTo, (newValue) => {
 // Watch for changes in nextUnmadePick to auto-adjust visible rounds
 watch(nextUnmadePick, (newPick) => {
 	if (newPick && draftRounds.value.length > 0) {
-		const currentRound = newPick.pick.pick__round_number
+		const currentRound = newPick?.pick.pick__round_number
 		// Ensure we show at least up to the current round
 		if (currentRound > showRoundsUpTo.value) {
 			showRoundsUpTo.value = currentRound
@@ -437,7 +437,7 @@ const collapsePastRounds = async () => {
 
 		// Collapse up to the round before the current pick, but keep at least 1 round visible
 		if (nextUnmadePick.value) {
-			const currentRound = nextUnmadePick.value.pick.pick__round_number
+			const currentRound = nextUnmadePick.value?.pick.pick__round_number
 			showRoundsFrom.value = Math.max(1, Math.min(currentRound, showRoundsUpTo.value))
 		} else {
 			showRoundsFrom.value = Math.min(showRoundsFrom.value + 1, showRoundsUpTo.value)
@@ -530,12 +530,12 @@ const startDraft = async () => {
 const navigateToPick = async (overallPick: number) => {
 	// Find the pick to determine its round
 	const targetPick = allPicksSorted.value.find(pickData =>
-		pickData.pick.overall_pick === overallPick
+		pickData?.pick.overall_pick === overallPick
 	)
 
 	if (!targetPick) return
 
-	const targetRound = targetPick.pick.pick__round_number
+	const targetRound = targetPick?.pick.pick__round_number
 
 	// Check if we need to load more rounds to show this pick
 	if (targetRound > showRoundsUpTo.value) {
@@ -588,13 +588,13 @@ const navigateToPick = async (overallPick: number) => {
 
 const goToNextPick = () => {
 	if (nextUnmadePick.value) {
-		navigateToPick(nextUnmadePick.value.pick.overall_pick)
+		navigateToPick(nextUnmadePick.value?.pick.overall_pick)
 	}
 }
 
 const goToMyNextPick = () => {
 	if (myNextUnmadePick.value) {
-		navigateToPick(myNextUnmadePick.value.pick.overall_pick)
+		navigateToPick(myNextUnmadePick.value?.pick.overall_pick)
 	}
 }
 
