@@ -22,6 +22,7 @@
     "sass": "^1.89.2",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1",
+    "vuedraggable": "^4.1.0",
     "vuetify": "^3.9.1"
   },
   "devDependencies": {

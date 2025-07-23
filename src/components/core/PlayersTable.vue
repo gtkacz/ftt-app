@@ -22,39 +22,6 @@
 							<slot name="extra-actions">
 								<v-spacer />
 								<v-col class="d-flex justify-end ga-2">
-									<!-- Sort menu -->
-									<!-- <v-menu rounded v-model="sortMenu" :close-on-content-click="false" location="bottom">
-										<template #activator="{ props }" v-tooltip="'Sort table'">
-											<v-btn v-bind="props" icon variant="outlined" size="small">
-												<v-icon icon="sort" />
-											</v-btn>
-										</template>
-<v-card rounded width="300" density="comfortable" class="pa-4">
-	<template #title class="text-h6">Sort Options</template>
-	<template #append><v-btn variant="text" icon @click="sortMenu = false"
-													size="small"><v-icon icon="close" /></v-btn></template>
-	<v-divider />
-	<v-card-text>
-		<v-row>
-			<v-col cols="12" class="py-2">
-				<v-select rounded v-model="sortBy" :items="sortableHeaders" item-title="title" item-value="key"
-					label="Sort by" density="compact" variant="outlined" prepend-inner-icon="sort_by_alpha"></v-select>
-			</v-col>
-			<v-col cols="12" class="py-2">
-				<v-select rounded v-model="sortOrder" :items="sortOrderOptions" label="Sort order" density="compact"
-					variant="outlined" prepend-inner-icon="sort"></v-select>
-			</v-col>
-		</v-row>
-	</v-card-text>
-	<v-card-actions>
-		<v-spacer></v-spacer>
-		<v-btn @click="resetSort" icon variant="outlined" size="small" v-tooltip="'Reset to default sort'">
-			<v-icon icon="refresh" />
-		</v-btn>
-	</v-card-actions>
-</v-card>
-</v-menu> -->
-
 									<!-- Filter button with menu -->
 									<v-menu rounded v-model="filterMenu" :close-on-content-click="false"
 										location="bottom">
@@ -466,11 +433,6 @@ const activeHeaders = computed(() => {
 	return allHeaders.value.filter(h => h.visible && !h.meta && !h.hidden)
 })
 
-// Computed sortable headers (includes hidden columns)
-const sortableHeaders = computed(() => {
-	return allHeaders.value.filter(h => h.sortable && !h.meta)
-})
-
 // Custom search function to include first name
 const customSearch = (value: any, search: string, item: any) => {
 	// if no search, show everything
@@ -528,8 +490,8 @@ const positions = computed(() => {
 })
 
 const statuses = [
-	{ title: 'Restricted Free Agent', value: 'rfa' },
-	{ title: 'Team Option', value: 'to' },
+	{ title: 'Restricted Free Agent', value: 'contract.rfa' },
+	{ title: 'Team Option', value: 'contract.to' },
 	{ title: 'Injured Reserve', value: 'ir' }
 ]
 

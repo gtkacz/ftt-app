@@ -94,18 +94,19 @@
 												}}</span>
 										</div>
 									</div>
+									<DraftQueue v-if="authStore.user?.team?.id" :draftable-players-raw="getDraftablePlayers" :team-id="authStore.user?.team?.id" :draft-id="draftData?.id" />
 									<div class="d-flex flex-column flex-lg-row ga-2 justify-center align-center">
 										<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
-											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn">
+											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn" rounded>
 											Go to Next Pick
 										</v-btn>
 										<v-btn color="secondary" variant="tonal" prepend-icon="resume"
-											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn">
+											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn" rounded>
 											Go to My Next Pick
 										</v-btn>
 										<!-- <v-btn color="warning" variant="tonal" prepend-icon="compress"
 											@click="collapsePastRounds"
-											:disabled="!hasPastRoundsToCollapse || loadingMoreRounds" class="pick-btn"
+											:disabled="!hasPastRoundsToCollapse || loadingMoreRounds" class="pick-btn" rounded
 											v-tooltip="'Collapse past rounds'">
 											Collapse Past Rounds
 										</v-btn> -->
@@ -125,7 +126,7 @@
 												@click="loadCollapsedRounds" :loading="loadingMoreRounds"
 												:disabled="loadingMoreRounds" class="round-btn mb-4"
 												v-if="collapsedRoundsCount > 0 && index === 0"
-												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`">
+												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`" rounded>
 												Load Past Rounds
 											</v-btn>
 											<labeled-divider>
@@ -197,13 +198,13 @@
 										<v-col>
 											<labeled-divider>
 												<div class="d-flex ga-2">
-													<v-btn size="small" variant="tonal" color="primary"
+													<v-btn rounded size="small" variant="tonal" color="primary"
 														@click="loadNextRound" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds"
 														v-tooltip="`Load Round ${nextRoundNumber}`" class="round-btn">
 														Load Next Round
 													</v-btn>
-													<v-btn size="small" variant="tonal" color="info"
+													<v-btn rounded size="small" variant="tonal" color="info"
 														@click="loadAllRounds" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`"
 														class="round-btn">
@@ -249,6 +250,7 @@ import api from '@/api/axios';
 import PlayerDraftDialog from '@/components/core/PlayerDraftDialog.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
+import DraftQueue from '@/components/core/DraftQueue.vue';
 import moment from 'moment';
 import momentTz from 'moment-timezone';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -471,7 +473,7 @@ const fetchTeamsData = async () => {
 }
 
 const fetchDraftData = async () => {
-	const response = await api.get(`/drafts/?year=${currentDate.year()}`)
+	const response = await api.get(`/drafts/?year=${currentDate.year()}&is_league_draft=true`)
 	draftData.value = response.data.results[0]
 }
 

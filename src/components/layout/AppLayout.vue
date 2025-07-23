@@ -1,5 +1,11 @@
 <template>
   <div class="app-layout">
+    <!-- Development Mode Warning -->
+    <v-snackbar v-if="isDev" color="warning" v-model="isDev" timeout="5000" location="top" multi-line>
+      <v-icon icon="warning" class="mr-2" size="large" />
+      <span>App is running in dev mode</span>
+    </v-snackbar>
+
     <!-- Main Navigation (apenas quando autenticado) -->
     <AppNavigation v-if="isAuthenticated && isApproved && hasTeam" />
 
@@ -18,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import AppNavigation from '@/components/layout/AppNavigation.vue';
 import AppTopBar from '@/components/layout/AppTopBar.vue';
@@ -28,8 +34,7 @@ const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isApproved = computed(() => authStore.isApproved);
 const hasTeam = computed(() => !!authStore.user.team);
-// Log wheter app is running in development mode
-const isDev = import.meta.env.DEV;
+const isDev = ref(import.meta.env.DEV);
 </script>
 
 <style lang="scss" scoped>

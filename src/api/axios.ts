@@ -8,7 +8,7 @@ const api = axios.create({
     "Content-Type": "application/json",
     "bypass-tunnel-reminder": true,
   },
-  timeout: 10000,
+  timeout: 100000,
 });
 
 api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
