@@ -68,7 +68,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
 import api from '@/api/axios';
 
 const authStore = useAuthStore();

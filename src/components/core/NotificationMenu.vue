@@ -56,9 +56,9 @@
 		</v-menu>
 
 		<!-- Live Notification Snackbar -->
-		<v-snackbar v-model="snackbarOpen" :timeout="5000" location="top" color="primary" variant="elevated">
+		<v-snackbar v-model="snackbarOpen" multi-line :timeout="5000" location="top" :color="liveNotification ? getNotificationColor(liveNotification.level) : 'white'" variant="elevated">
 			<div class="d-flex align-center">
-				<v-icon :color="liveNotification ? getNotificationColor(liveNotification.level) : 'white'" class="mr-3">
+				<v-icon class="mr-3" size="large">
 					{{ liveNotification ? getNotificationIcon(liveNotification.level) : 'notifications' }}
 				</v-icon>
 				<span class="text-body-2">

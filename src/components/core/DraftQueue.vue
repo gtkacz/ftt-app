@@ -1,143 +1,147 @@
 <template>
-	<v-menu v-model="menuOpen" :close-on-content-click="false" location="bottom start" transition="fade-transition"
-		max-width="800" max-height="600">
-		<template #activator="{ props }">
-			<v-btn v-bind="props" variant="outlined" prepend-icon="queue"
-				:color="queuePlayers.length > 0 ? 'primary' : undefined" rounded>
-				<v-badge :content="queuePlayers.length" :model-value="queuePlayers.length > 0" color="success">
-					Draft Queue
-				</v-badge>
-			</v-btn>
-		</template>
+	<div class="centered-menu">
+		<v-menu v-model="menuOpen" :close-on-content-click="false" attach transition="fade-transition" max-width="800"
+			max-height="600">
+			<template #activator="{ props }">
+				<v-btn v-bind="props" variant="outlined" prepend-icon="queue"
+					:color="queuePlayers.length > 0 ? 'primary' : undefined" rounded>
+					<v-badge :content="queuePlayers.length" :model-value="queuePlayers.length > 0" color="success">
+						Draft Queue
+					</v-badge>
+				</v-btn>
+			</template>
 
-		<v-card rounded width="800" density="comfortable" v-if="menuOpen">
-			<!-- Loading state -->
-			<v-progress-linear v-if="loading" indeterminate />
+			<v-card rounded="lg" density="comfortable" v-if="menuOpen" class="responsive-card">
+				<!-- Loading state -->
+				<v-progress-linear v-if="loading" indeterminate />
 
-			<!-- Queue Management View -->
-			<template v-if="!showPlayerTable">
-				<v-card-title class="d-flex align-center justify-space-between pa-6" rounded>
-					<p class="d-flex align-center ga-1">
-						<span>Draft Queue</span>
-						<v-icon icon="help" variant="outlined" filled="false" size="x-small" v-tooltip="'Players in your draft queue will be autopicked for you if they are available at the time of your next pick'" />
-					</p>
-					<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
-						{{ queuePlayers.length }} player{{ queuePlayers.length !== 1 ? 's' : '' }}
-					</v-chip>
-				</v-card-title>
+				<!-- Queue Management View -->
+				<template v-if="!showPlayerTable">
+					<v-card-title class="d-flex align-center justify-space-between pa-6" rounded>
+						<p class="d-flex align-center ga-1">
+							<span>Draft Queue</span>
+							<v-icon icon="help" variant="outlined" filled="false" size="x-small"
+								v-tooltip="'Players in your draft queue will be autopicked for you if they are available at the time of your next pick'" />
+						</p>
+						<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
+							{{ queuePlayers.length }} player{{ queuePlayers.length !== 1 ? 's' : '' }}
+						</v-chip>
+					</v-card-title>
 
-				<v-divider />
+					<v-divider />
 
-				<v-card-text class="pa-0" style="max-height: 400px; overflow-y: auto;">
-					<!-- Empty state -->
-					<div v-if="queuePlayers.length === 0" class="text-center pa-8">
-						<v-icon size="64" color="grey-lighten-1" class="mb-4">queue</v-icon>
-						<div class="text-h6 text-grey-darken-1 mb-2">No players in queue</div>
-						<div class="text-body-2 text-grey">Add players to your draft queue to get started</div>
-					</div>
+					<v-card-text class="pa-0" style="max-height: 400px; overflow-y: auto;">
+						<!-- Empty state -->
+						<div v-if="queuePlayers.length === 0" class="text-center pa-8">
+							<v-icon size="64" color="grey-lighten-1" class="mb-4">queue</v-icon>
+							<div class="text-h6 text-grey-darken-1 mb-2">No players in queue</div>
+							<div class="text-body-2 text-grey">Add players to your draft queue to get started</div>
+						</div>
 
-					<!-- Queue list -->
-					<v-list v-else density="comfortable">
-						<draggable v-model="queuePlayers" tag="div" item-key="id" :animation="200" ghost-class="ghost"
-							chosen-class="chosen" drag-class="drag" handle=".drag-handle" @start="isDragging = true"
-							@end="isDragging = false">
-							<template #item="{ element: player, index }">
-								<v-list-item :key="player.id" class="queue-item" :class="{ 'dragging': isDragging }">
-									<template #prepend>
-										<div class="d-flex align-center ga-2">
-											<v-icon class="drag-handle" style="cursor: move;">drag_handle</v-icon>
-											<v-chip size="x-small" variant="outlined">{{ index + 1 }}</v-chip>
-										</div>
-									</template>
-
-									<div class="d-flex align-center">
-										<v-avatar size="32" class="mr-3">
-											<v-img :src="player.photo || '/placeholder-player.png'"
-												:alt="`${player.first_name} ${player.last_name}`" cover>
-												<template #error>
-													<v-icon size="32">account</v-icon>
-												</template>
-											</v-img>
-										</v-avatar>
-										<div>
-											<div class="font-weight-medium">
-												{{ player.last_name }}, {{ player.first_name }}
+						<!-- Queue list -->
+						<v-list v-else density="comfortable">
+							<draggable v-model="queuePlayers" tag="div" item-key="id" :animation="200"
+								ghost-class="ghost" chosen-class="chosen" drag-class="drag" handle=".drag-handle"
+								@start="isDragging = true" @end="isDragging = false">
+								<template #item="{ element: player, index }">
+									<v-list-item :key="player.id" class="queue-item"
+										:class="{ 'dragging': isDragging }">
+										<template #prepend>
+											<div class="d-flex align-center ga-2">
+												<v-icon class="drag-handle" style="cursor: move;">drag_handle</v-icon>
+												<v-chip size="x-small" variant="outlined">{{ index + 1 }}</v-chip>
 											</div>
-											<div class="text-caption text-grey d-flex align-center ga-1">
-												<span v-if="player.primary_position">{{ player.primary_position
-												}}</span>
-												<span v-if="player.team?.name">• {{ player.team.name }}</span>
+										</template>
+
+										<div class="d-flex align-center">
+											<v-avatar size="32" class="mr-3">
+												<v-img :src="player.photo || '/placeholder-player.png'"
+													:alt="`${player.first_name} ${player.last_name}`" cover>
+													<template #error>
+														<v-icon size="32">account</v-icon>
+													</template>
+												</v-img>
+											</v-avatar>
+											<div>
+												<div class="font-weight-medium">
+													{{ player.last_name }}, {{ player.first_name }}
+												</div>
+												<div class="text-caption text-grey d-flex align-center ga-1">
+													<span v-if="player.primary_position">{{ player.primary_position
+													}}</span>
+													<span v-if="player.team?.name">• {{ player.team.name }}</span>
+												</div>
 											</div>
 										</div>
-									</div>
 
-									<template #append>
-										<v-btn icon size="small" variant="text" color="error"
-											@click="removeFromQueue(index)" v-tooltip="'Remove from queue'">
-											<v-icon size="18">close</v-icon>
-										</v-btn>
-									</template>
-								</v-list-item>
+										<template #append>
+											<v-btn icon size="small" variant="text" color="error"
+												@click="removeFromQueue(index)" v-tooltip="'Remove from queue'">
+												<v-icon size="18">close</v-icon>
+											</v-btn>
+										</template>
+									</v-list-item>
+								</template>
+							</draggable>
+						</v-list>
+
+						<!-- Add player button -->
+						<div class="pa-4 border-t">
+							<v-btn @click="showPlayerTable = true" prepend-icon="add" variant="outlined" rounded>
+								Add Player
+							</v-btn>
+						</div>
+					</v-card-text>
+
+					<v-divider />
+
+					<v-card-actions class="justify-space-between pa-4">
+						<v-btn @click="discardChanges" icon variant="text" color="grey" class="action-btn"
+							:disabled="!hasChanges" v-tooltip="'Discard Changes'">
+							<v-icon>undo</v-icon>
+						</v-btn>
+						<div class="d-flex ga-2">
+							<v-btn @click="clearQueue" icon color="error" class="action-btn"
+								:disabled="queuePlayers.length === 0" v-tooltip="'Clear Queue'" v-confirm>
+								<v-icon>delete</v-icon>
+							</v-btn>
+							<v-btn @click="saveQueue" icon color="success" variant="tonal" :loading="saving"
+								class="action-btn" :disabled="queuePlayers.length === 0 || !hasChanges"
+								v-tooltip="'Save Queue'" v-confirm>
+								<v-icon>save</v-icon>
+							</v-btn>
+						</div>
+					</v-card-actions>
+				</template>
+
+				<!-- Player Selection Table View -->
+				<template v-else>
+					<v-card-title class="d-flex align-center justify-space-between">
+						<div class="d-flex align-center ga-2">
+							<v-btn @click="showPlayerTable = false" icon size="small" variant="text">
+								<v-icon>arrow_back</v-icon>
+							</v-btn>
+							<span>Add Player to Queue</span>
+						</div>
+						<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
+							{{ queuePlayers.length }} in queue
+						</v-chip>
+					</v-card-title>
+
+					<v-divider />
+
+					<div class="player-table-container" style="height: 500px; overflow: hidden;">
+						<players-table :players="filteredDraftablePlayers" :headers="tableHeaders"
+							@player-selected="addToQueue">
+							<template #extra-actions>
+								<span />
 							</template>
-						</draggable>
-					</v-list>
-
-					<!-- Add player button -->
-					<div class="pa-4 border-t">
-						<v-btn @click="showPlayerTable = true" prepend-icon="add" variant="outlined" rounded>
-							Add Player
-						</v-btn>
+						</players-table>
 					</div>
-				</v-card-text>
-
-				<v-divider />
-
-				<v-card-actions class="justify-space-between">
-					<v-btn @click="discardChanges" icon variant="text" color="grey" class="action-btn"
-						:disabled="!hasChanges" v-tooltip="'Discard Changes'">
-						<v-icon>undo</v-icon>
-					</v-btn>
-					<div class="d-flex ga-2">
-						<v-btn @click="clearQueue" icon color="error" class="action-btn"
-							:disabled="queuePlayers.length === 0" v-tooltip="'Clear Queue'" v-confirm>
-							<v-icon>delete</v-icon>
-						</v-btn>
-						<v-btn @click="saveQueue" icon color="success" variant="tonal" :loading="saving"
-							class="action-btn" :disabled="queuePlayers.length === 0 || !hasChanges"
-							v-tooltip="'Save Queue'" v-confirm>
-							<v-icon>save</v-icon>
-						</v-btn>
-					</div>
-				</v-card-actions>
-			</template>
-
-			<!-- Player Selection Table View -->
-			<template v-else>
-				<v-card-title class="d-flex align-center justify-space-between">
-					<div class="d-flex align-center ga-2">
-						<v-btn @click="showPlayerTable = false" icon size="small" variant="text">
-							<v-icon>arrow_back</v-icon>
-						</v-btn>
-						<span>Add Player to Queue</span>
-					</div>
-					<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
-						{{ queuePlayers.length }} in queue
-					</v-chip>
-				</v-card-title>
-
-				<v-divider />
-
-				<div style="height: 500px; overflow: hidden;">
-					<players-table :players="filteredDraftablePlayers" :headers="tableHeaders"
-						@player-selected="addToQueue">
-						<template #extra-actions>
-							<span />
-						</template>
-					</players-table>
-				</div>
-			</template>
-		</v-card>
-	</v-menu>
+				</template>
+			</v-card>
+		</v-menu>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -327,9 +331,73 @@ onMounted(() => {
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-:deep(.v-menu > .v-overlay__content) {
+// Center the menu on screen
+.centered-menu :deep(.v-overlay__content) {
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
 	max-height: 90vh;
-	overflow: hidden;
+}
+
+// Responsive card styles
+.responsive-card {
+	width: 800px;
+	max-width: 95vw;
+	max-height: 90vh;
+
+	@media (max-width: 960px) {
+		width: 90vw;
+		max-width: 600px;
+	}
+
+	@media (max-width: 600px) {
+		width: 95vw !important;
+		max-width: none;
+		max-height: 95vh !important;
+		height: 95vh !important;
+
+		// Adjust internal spacing for mobile
+		:deep(.v-card-title) {
+			padding: 16px 16px 12px 16px;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+
+			.v-chip {
+				align-self: flex-end;
+			}
+		}
+
+		:deep(.v-card-actions) {
+			padding: 12px 16px;
+			flex-direction: column;
+			gap: 12px;
+
+			.d-flex {
+				width: 100%;
+				justify-content: center;
+			}
+		}
+
+		// Adjust player table view for mobile
+		.player-table-container {
+			height: 400px;
+		}
+	}
+
+	@media (max-width: 480px) {
+		width: 98vw;
+		max-height: 80vh;
+
+		:deep(.v-card-text) {
+			max-height: 300px;
+		}
+
+		.player-table-container {
+			height: 350px;
+		}
+	}
 }
 
 // Custom scrollbar for queue list
