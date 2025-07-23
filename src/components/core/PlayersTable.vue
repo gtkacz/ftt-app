@@ -34,7 +34,7 @@
 												</v-badge>
 											</v-btn>
 										</template>
-										<v-card rounded width="500" density="comfortable" class="pa-4">
+										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
 											<template #title class="text-h6">Filters<v-divider
 													class="my-4" /></template>
 											<template #text>
@@ -154,7 +154,7 @@
 												<v-icon icon="view_column" />
 											</v-btn>
 										</template>
-										<v-card rounded width="500" density="comfortable" class="pa-4">
+										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
 											<template #title>Manage Columns<v-divider class="my-4" /></template>
 											<template #text>
 												<v-list>
@@ -193,7 +193,7 @@
 												<v-icon icon="settings" />
 											</v-btn>
 										</template>
-										<v-card rounded width="500" density="comfortable" class="pa-4">
+										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
 											<v-card-title>Display Settings</v-card-title>
 											<v-divider />
 											<v-card-text>

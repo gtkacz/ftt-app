@@ -21,7 +21,7 @@
       <v-container fluid class="fill-height">
         <v-row align="center" justify="center">
           <v-col cols="18" sm="12" md="9" lg="6">
-            <v-card rounded="xl" class="pa-8 text-on-secondary" variant="tonal" color="primary">
+            <v-card rounded="xl" class="pa-8 text-on-secondary" variant="flat">
               <v-form @submit.prevent="handleSignup" v-model="formValid">
                 <v-text-field rounded v-model="username" label="Username" variant="outlined"
                   append-inner-icon="account_box" :rules="[rules.required]" class="mb-3" color="secondary" />
