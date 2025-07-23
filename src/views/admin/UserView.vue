@@ -788,7 +788,7 @@ const fetchAllUsers = async () => {
 	error.value = null
 
 	try {
-		const response = await api.get('users/?limit=10000/')
+		const response = await api.get('users/?limit=10000')
 		users.value = response.data.results || response.data
 	} catch (err) {
 		console.error('Error fetching users:', err)
