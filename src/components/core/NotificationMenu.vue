@@ -127,7 +127,7 @@ const fetchNotifications = async (): Promise<Notification[]> => {
 }
 
 const markNotificationAsRead = async (notificationId: number): Promise<void> => {
-	await api.patch(`/notifications/${notificationId}/`)
+	await api.patch(`/notifications/${notificationId}/`, { is_read: true })
 }
 
 const markAllNotificationsAsRead = async (): Promise<void> => {
