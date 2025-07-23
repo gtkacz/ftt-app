@@ -23,7 +23,7 @@
     <!-- Overview Cards -->
     <v-row class="my-4">
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -40,7 +40,7 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -57,7 +57,7 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -74,7 +74,7 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -92,7 +92,7 @@
     <v-row>
       <!-- Position Breakdown with Cap Percentages -->
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">sports_basketball</v-icon>
             Position Breakdown
@@ -139,7 +139,7 @@
 
       <!-- Top Contributors -->
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">star</v-icon>
             Top Contributors
@@ -191,7 +191,7 @@
     <!-- Contract Analysis -->
     <v-row class="mt-4">
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">contract</v-icon>
             Contract Status
@@ -199,7 +199,7 @@
           <v-card-text>
             <v-row class="mb-3">
               <v-col cols="6">
-                <v-card variant="outlined">
+                <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h4 text-success">{{ contractStats.rosterReturning.toFixed(1) }}%</div>
                     <div class="text-caption">Roster Returning</div>
@@ -207,7 +207,7 @@
                 </v-card>
               </v-col>
               <v-col cols="6">
-                <v-card variant="outlined">
+                <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h4 text-error">{{ contractStats.rosterExpiring.toFixed(1) }}%</div>
                     <div class="text-caption">Roster Expiring</div>
@@ -268,7 +268,7 @@
 
       <!-- Expiring Players List -->
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">calendar_clock</v-icon>
             Expiring Contracts
@@ -321,7 +321,7 @@
     <!-- Future Projections -->
     <v-row class="mt-4">
       <v-col cols="12">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">event_upcoming</v-icon>
             Future Projections
@@ -329,7 +329,7 @@
           <v-card-text>
             <v-row>
               <v-col v-for="season in futureSeasons" :key="season.year" cols="12" sm="6" md="4">
-                <v-card variant="outlined" class="h-100">
+                <v-card variant="outlined" class="h-100 pa-3">
                   <v-card-title class="text-h6">{{ season.year }} Season</v-card-title>
                   <v-card-text>
                     <v-list density="compact">
@@ -372,7 +372,7 @@
     <!-- Draft Capital and Team Metrics -->
     <v-row class="mt-4">
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">child_care</v-icon>
             Draft Capital
@@ -388,7 +388,7 @@
 
               <v-row>
                 <v-col v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`" cols="12">
-                  <v-card variant="outlined">
+                  <v-card variant="outlined" class="pa-3">
                     <v-card-text class="py-2">
                       <div class="d-flex justify-space-between align-center">
                         <div>
@@ -419,7 +419,7 @@
 
       <!-- Advanced Team Metrics -->
       <v-col cols="12" lg="6">
-        <v-card elevation="3">
+        <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">analytics</v-icon>
             Advanced Metrics
@@ -427,7 +427,7 @@
           <v-card-text>
             <v-row>
               <v-col cols="6">
-                <v-card variant="outlined">
+                <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h5">{{ efficiencyStats.salaryCapUtilization.toFixed(1) }}%</div>
                     <div class="text-caption">Cap Utilization</div>
@@ -440,7 +440,7 @@
               </v-col>
 
               <v-col cols="6">
-                <v-card variant="outlined">
+                <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h5">{{ efficiencyStats.rosterUtilization.toFixed(1) }}%</div>
                     <div class="text-caption">Roster Utilization</div>

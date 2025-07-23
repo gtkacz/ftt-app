@@ -1,9 +1,9 @@
 <template>
   <div class="app-layout">
     <!-- Development Mode Warning -->
-    <v-snackbar v-if="isDev" color="warning" v-model="isDev" timeout="5000" location="top" multi-line>
-      <v-icon icon="warning" class="mr-2" size="large" />
-      <span>App is running in dev mode</span>
+    <v-snackbar v-if="isDev" color="info" variant="tonal" v-model="isDev" timeout="5000" location="top" multi-line>
+      <v-icon icon="construction" class="mr-2" size="large" />
+      <span class="text-weight-bold">App is running in dev mode</span>
     </v-snackbar>
 
     <!-- Main Navigation (apenas quando autenticado) -->
@@ -17,9 +17,6 @@
     <main class="main-content" :class="{ 'full-width': !isAuthenticated }">
       <router-view />
     </main>
-
-    <!-- Notification Overlay -->
-    <NotificationOverlay />
   </div>
 </template>
 
@@ -28,7 +25,6 @@ import { computed, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import AppNavigation from '@/components/layout/AppNavigation.vue';
 import AppTopBar from '@/components/layout/AppTopBar.vue';
-import NotificationOverlay from '@/components/overlays/NotificationOverlay.vue';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);

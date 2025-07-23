@@ -17,7 +17,10 @@
 			<!-- Queue Management View -->
 			<template v-if="!showPlayerTable">
 				<v-card-title class="d-flex align-center justify-space-between pa-6" rounded>
-					<span>Draft Queue</span>
+					<p class="d-flex align-center ga-1">
+						<span>Draft Queue</span>
+						<v-icon icon="help" variant="outlined" filled="false" size="x-small" v-tooltip="'Players in your draft queue will be autopicked for you if they are available at the time of your next pick'" />
+					</p>
 					<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
 						{{ queuePlayers.length }} player{{ queuePlayers.length !== 1 ? 's' : '' }}
 					</v-chip>

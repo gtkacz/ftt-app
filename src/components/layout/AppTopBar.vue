@@ -10,11 +10,7 @@
         <theme-changer />
 
         <!-- Notifications -->
-        <v-btn icon variant="text" @click="toggleNotifications" class="action-btn" disabled>
-          <v-icon icon="notifications" />
-          <v-badge v-if="notificationCount > 0" :content="notificationCount" color="secondary"
-            class="notification-badge" />
-        </v-btn>
+        <notification-menu />
 
         <!-- User Profile Menu -->
         <v-menu offset-y>
@@ -49,16 +45,13 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
-import { useNavigationStore } from '@/stores/navigation'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import NotificationMenu from '@/components/core/NotificationMenu.vue'
 
 const router = useRouter()
-const navigationStore = useNavigationStore()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
-
-const notificationCount = computed(() => 0) // Mock notification count
 
 const initials = computed(() => {
   const name = user.value ? user.value.first_name + ' ' + user.value.last_name : '';
@@ -71,10 +64,6 @@ const initials = computed(() => {
   }
   return (splitted[0][0] + splitted[splitted.length - 1][0]).toUpperCase()
 })
-
-const toggleNotifications = () => {
-  navigationStore.toggleNotifications()
-}
 
 const navigateToProfile = () => {
   router.push({ name: 'profile' })
@@ -129,11 +118,5 @@ const handleLogout = () => {
   &:hover {
     background-color: rgba(var(--v-theme-secondary), 0.1);
   }
-}
-
-.notification-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
 }
 </style>
