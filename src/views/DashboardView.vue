@@ -29,9 +29,15 @@
               <div>
                 <v-card-subtitle class="pa-0">Total Players</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ teamData.total_players }}</v-card-title>
-                <v-chip color="success" variant="tonal" size="small">
-                  {{ teamData.available_players }} slots available
-                </v-chip>
+                <v-chip-group base-color="success" column>
+                  <v-chip variant="tonal" size="small">
+                    {{ teamData.available_players }} slots available
+                  </v-chip>
+                  <v-chip variant="tonal" size="small">
+                    <span v-if="MIN_PLAYERS > teamData.total_players">{{ MIN_PLAYERS - teamData.total_players }} players
+                      to minimum</span>
+                  </v-chip>
+                </v-chip-group>
               </div>
               <v-icon color="primary" size="40">group</v-icon>
             </div>
@@ -84,6 +90,69 @@
               </div>
               <v-icon color="orange" size="40">chart_data</v-icon>
             </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Lineup Projections -->
+    <v-row class="my-4">
+      <v-col cols="12">
+        <v-card elevation="3" class="pa-3">
+          <v-card-title>
+            <v-icon class="me-2">groups</v-icon>
+            Lineup Projections
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col v-for="(lineup, index) in lineupProjections" :key="index" cols="12" md="4">
+                <v-card variant="outlined" class="h-100">
+                  <v-card-title class="text-h6 pb-2">
+                    {{ lineup.name }}
+                    <v-spacer></v-spacer>
+                    <v-chip color="primary" variant="tonal" size="small">
+                      {{ lineup.totalFpts.toFixed(1) }} FPTS
+                    </v-chip>
+                  </v-card-title>
+                  <v-card-text class="pt-0">
+                    <v-list density="compact" class="pa-0">
+                      <v-list-subheader class="px-0 text-caption">Guards</v-list-subheader>
+                      <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
+                        <v-list-item-title class="text-body-2">
+                          {{ guard.first_name }} {{ guard.last_name }}
+                        </v-list-item-title>
+                        <template v-slot:append>
+                          <span class="text-caption">{{ guard.fpts.toFixed(1) }}</span>
+                        </template>
+                      </v-list-item>
+
+                      <v-list-subheader class="px-0 text-caption mt-2">Forwards</v-list-subheader>
+                      <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
+                        <v-list-item-title class="text-body-2">
+                          {{ forward.first_name }} {{ forward.last_name }}
+                        </v-list-item-title>
+                        <template v-slot:append>
+                          <span class="text-caption">{{ forward.fpts.toFixed(1) }}</span>
+                        </template>
+                      </v-list-item>
+
+                      <v-list-subheader class="px-0 text-caption mt-2">Center</v-list-subheader>
+                      <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
+                        <v-list-item-title class="text-body-2">
+                          {{ lineup.center.first_name }} {{ lineup.center.last_name }}
+                        </v-list-item-title>
+                        <template v-slot:append>
+                          <span class="text-caption">{{ lineup.center.fpts.toFixed(1) }}</span>
+                        </template>
+                      </v-list-item>
+                      <v-list-item v-else class="px-0 py-1">
+                        <v-list-item-title class="text-body-2 text-grey">No center available</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -388,10 +457,9 @@
 
               <v-card variant="outlined" class="pa-3">
                 <v-card-text class="py-2">
-                  <v-chip-group>
-                    <v-chip v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`"
-                      :color="pick.round_number === 1 ? 'success' : pick.round_number === 2 ? 'warning' : 'info'"
-                      variant="tonal" size="small">
+                  <v-chip-group base-color="info" column>
+                    <v-chip v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`" variant="tonal"
+                      size="small">
                       {{ pick.original_team_name }} | Round {{ pick.round_number }}
                     </v-chip>
                   </v-chip-group>
@@ -806,6 +874,72 @@ const teamMetrics = computed(() => {
     avgExperience,
     valueRating
   }
+})
+
+const lineupProjections = computed(() => {
+  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const numLineups = Math.floor(MAX_PLAYERS / 5)
+  const lineups = []
+
+  // Organize players by position (including secondary positions)
+  const playersByPosition = {
+    G: activePlayers.filter(p => p.primary_position === 'G' || p.secondary_position === 'G')
+      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
+      .sort((a, b) => b.fpts - a.fpts),
+    F: activePlayers.filter(p => p.primary_position === 'F' || p.secondary_position === 'F')
+      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
+      .sort((a, b) => b.fpts - a.fpts),
+    C: activePlayers.filter(p => p.primary_position === 'C' || p.secondary_position === 'C')
+      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
+      .sort((a, b) => b.fpts - a.fpts)
+  }
+
+  const usedPlayers = new Set()
+
+  for (let i = 0; i < numLineups; i++) {
+    const lineup = {
+      name: i === 0 ? 'Starting Lineup' : `${i === 1 ? '2nd' : i === 2 ? '3rd' : `${i + 1}th`} Unit`,
+      guards: [],
+      forwards: [],
+      center: null,
+      totalFpts: 0
+    }
+
+    // Select 2 guards
+    for (const guard of playersByPosition.G) {
+      if (!usedPlayers.has(guard.id) && lineup.guards.length < 2) {
+        lineup.guards.push(guard)
+        usedPlayers.add(guard.id)
+      }
+    }
+
+    // Select 2 forwards
+    for (const forward of playersByPosition.F) {
+      if (!usedPlayers.has(forward.id) && lineup.forwards.length < 2) {
+        lineup.forwards.push(forward)
+        usedPlayers.add(forward.id)
+      }
+    }
+
+    // Select 1 center
+    for (const center of playersByPosition.C) {
+      if (!usedPlayers.has(center.id) && !lineup.center) {
+        lineup.center = center
+        usedPlayers.add(center.id)
+        break
+      }
+    }
+
+    lineup.totalFpts = [
+      ...lineup.guards,
+      ...lineup.forwards,
+      ...(lineup.center ? [lineup.center] : [])
+    ].reduce((sum, p) => sum + p.fpts, 0)
+
+    lineups.push(lineup)
+  }
+
+  return lineups
 })
 
 onMounted(async () => {
