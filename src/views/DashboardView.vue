@@ -8,13 +8,60 @@
           <v-card-text>
             <div class="d-flex align-center">
               <v-avatar size="80" class="me-4">
-                <v-img :src="teamData.avatar || defaultAvatar" alt="Team Avatar"></v-img>
+                <v-img :src="simulatedTeamData.avatar || defaultAvatar" alt="Team Avatar"></v-img>
               </v-avatar>
               <div>
-                <h1 class="text-h3 font-weight-bold text-white">{{ teamData.name }}</h1>
-                <p class="text-h6 text-grey-lighten-2">@{{ teamData.owner_username }}</p>
+                <h1 class="text-h3 font-weight-bold text-white">{{ simulatedTeamData.name }}</h1>
+                <p class="text-h6 text-grey-lighten-2">@{{ simulatedTeamData.owner_username }}</p>
               </div>
             </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Add Player Simulation -->
+    <v-row class="my-4">
+      <v-col cols="12">
+        <v-card elevation="3" class="pa-3">
+          <v-card-title>
+            <v-icon class="me-2">person_add</v-icon>
+            Add Player Simulation
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col cols="6" md="3">
+                <v-autocomplete rounded :items="availableFreeAgents"
+                  :item-title="(item) => `${item.first_name} ${item.last_name} (${item.primary_position}) - $${item.contract.salary}M`"
+                  :item-value="(item) => item" label="Select Player" variant="outlined" clearable
+                  @update:model-value="(player) => player && addSimulatedPlayer(player)">
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props">
+                      <template v-slot:prepend>
+                        <v-chip :color="getPositionColor(item.raw.primary_position)" size="small">
+                          {{ item.raw.primary_position }}
+                        </v-chip>
+                      </template>
+                      <template v-slot:append>
+                        <span class="text-caption">${{ item.raw.contract.salary }}M</span>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="6">
+                <div v-if="simulatedPlayers.length > 0">
+                  <v-card-text class="pa-0 mb-2">Simulated Additions:</v-card-text>
+                  <v-chip-group column>
+                    <v-chip v-for="player in simulatedPlayers" :key="player.id" closable
+                      :color="getPositionColor(player.primary_position)" variant="tonal"
+                      @click:close="removeSimulatedPlayer(player.id)">
+                      {{ player.first_name }} {{ player.last_name }} (${{ player.contract.salary }}M)
+                    </v-chip>
+                  </v-chip-group>
+                </div>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -23,21 +70,20 @@
     <!-- Overview Cards -->
     <v-row class="my-4">
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3">
+        <v-card elevation="3" class="stat-card pa-3" max-height="150">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
                 <v-card-subtitle class="pa-0">Total Players</v-card-subtitle>
-                <v-card-title class="pa-0 text-h4">{{ teamData.total_players }}</v-card-title>
-                <v-chip-group base-color="success" column>
-                  <v-chip variant="tonal" size="small">
-                    {{ teamData.available_players }} slots available
-                  </v-chip>
-                  <v-chip variant="tonal" size="small">
-                    <span v-if="MIN_PLAYERS > teamData.total_players">{{ MIN_PLAYERS - teamData.total_players }} players
-                      to minimum</span>
-                  </v-chip>
-                </v-chip-group>
+                <v-card-title class="pa-0 text-h4">{{ simulatedTeamData.total_players }}</v-card-title>
+                <v-chip variant="tonal" size="small" color="info">
+                  {{ simulatedTeamData.available_players }} slots available
+                </v-chip>
+                <v-chip v-if="MIN_PLAYERS > simulatedTeamData.total_players" variant="tonal" size="small" color="warning" class="ml-3">
+                  <span>{{ MIN_PLAYERS -
+                    simulatedTeamData.total_players }} players
+                    to minimum</span>
+                </v-chip>
               </div>
               <v-icon color="primary" size="40">group</v-icon>
             </div>
@@ -46,14 +92,15 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3">
+        <v-card elevation="3" class="stat-card pa-3" max-height="150">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
                 <v-card-subtitle class="pa-0">Total Salary</v-card-subtitle>
-                <v-card-title class="pa-0 text-h4">${{ teamData.total_salary }}M</v-card-title>
-                <v-chip :color="teamData.available_salary > 0 ? 'success' : 'error'" variant="tonal" size="small">
-                  ${{ teamData.available_salary }}M available
+                <v-card-title class="pa-0 text-h4">${{ simulatedTeamData.total_salary }}M</v-card-title>
+                <v-chip :color="simulatedTeamData.available_salary > 0 ? 'success' : 'error'" variant="tonal"
+                  size="small">
+                  ${{ simulatedTeamData.available_salary }}M available
                 </v-chip>
               </div>
               <v-icon color="green" size="40">attach_money</v-icon>
@@ -63,7 +110,7 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3">
+        <v-card elevation="3" class="stat-card pa-3" max-height="150">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -80,7 +127,7 @@
       </v-col>
 
       <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3">
+        <v-card elevation="3" class="stat-card pa-3" max-height="150">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -116,37 +163,31 @@
                   </v-card-title>
                   <v-card-text class="pt-0">
                     <v-list density="compact" class="pa-0">
-                      <v-list-subheader class="px-0 text-caption">Guards</v-list-subheader>
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ guard.first_name }} {{ guard.last_name }}
+                          {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small" :color="getPositionColor('G')">G</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ guard.fpts.toFixed(1) }}</span>
                         </template>
                       </v-list-item>
 
-                      <v-list-subheader class="px-0 text-caption mt-2">Forwards</v-list-subheader>
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ forward.first_name }} {{ forward.last_name }}
+                          {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small" :color="getPositionColor('F')">F</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ forward.fpts.toFixed(1) }}</span>
                         </template>
                       </v-list-item>
 
-                      <v-list-subheader class="px-0 text-caption mt-2">Center</v-list-subheader>
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ lineup.center.first_name }} {{ lineup.center.last_name }}
+                          {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small" :color="getPositionColor('C')">C</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ lineup.center.fpts.toFixed(1) }}</span>
                         </template>
-                      </v-list-item>
-                      <v-list-item v-else class="px-0 py-1">
-                        <v-list-item-title class="text-body-2 text-grey">No center available</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-card-text>
@@ -197,7 +238,7 @@
                   </v-col>
                 </v-row>
 
-                <v-progress-linear :model-value="(position.count / teamData.total_players) * 100"
+                <v-progress-linear :model-value="(position.count / simulatedTeamData.total_players) * 100"
                   :color="position.color" height="6" class="mt-2 rounded">
                 </v-progress-linear>
               </v-col>
@@ -292,7 +333,7 @@
                 <span>Expiring {{ currentYear }}:</span>
                 <v-chip color="error" variant="tonal" size="small">{{ contractStats.expiring2025 }} players</v-chip>
               </div>
-              <v-progress-linear :model-value="(contractStats.expiring2025 / teamData.total_players) * 100"
+              <v-progress-linear :model-value="(contractStats.expiring2025 / simulatedTeamData.total_players) * 100"
                 color="error" height="4">
               </v-progress-linear>
             </div>
@@ -302,7 +343,7 @@
                 <span>Expiring {{ currentYear + 1 }}:</span>
                 <v-chip color="warning" variant="tonal" size="small">{{ contractStats.expiring2026 }} players</v-chip>
               </div>
-              <v-progress-linear :model-value="(contractStats.expiring2026 / teamData.total_players) * 100"
+              <v-progress-linear :model-value="(contractStats.expiring2026 / simulatedTeamData.total_players) * 100"
                 color="warning" height="4">
               </v-progress-linear>
             </div>
@@ -312,8 +353,8 @@
                 <span>Long-term (3+ years):</span>
                 <v-chip color="success" variant="tonal" size="small">{{ contractStats.longTerm }} players</v-chip>
               </div>
-              <v-progress-linear :model-value="(contractStats.longTerm / teamData.total_players) * 100" color="success"
-                height="4">
+              <v-progress-linear :model-value="(contractStats.longTerm / simulatedTeamData.total_players) * 100"
+                color="success" height="4">
               </v-progress-linear>
             </div>
 
@@ -611,22 +652,44 @@ interface TeamData {
 }
 
 const SALARY_CAP = 130
-const MIN_PLAYERS = 12
+const MIN_PLAYERS = 13
 const MAX_PLAYERS = 15
 
 const teamData = ref<TeamData>({
-  id: 2,
-  name: "The Meme Team",
-  owner_username: "gtkacz",
-  total_salary: 80.5,
-  total_players: 5,
-  available_salary: 49.5,
-  available_players: 10,
-  can_bid: true,
+  id: 0,
+  name: '',
+  owner_username: '',
+  total_salary: 0,
+  total_players: 0,
+  available_salary: SALARY_CAP,
+  available_players: MAX_PLAYERS,
+  can_bid: false,
   avatar: null,
   players: [],
   current_picks: []
 })
+
+const freeAgents = ref<Player[]>([])
+const simulatedPlayers = ref<Player[]>([])
+
+const availableFreeAgents = computed(() => {
+  const addedPlayerIds = simulatedPlayers.value.map(p => Math.abs(p.id))
+  return freeAgents.value.filter(agent => !addedPlayerIds.includes(agent.id))
+})
+
+const allPlayers = computed(() => [
+  ...teamData.value.players,
+  ...simulatedPlayers.value
+])
+
+const simulatedTeamData = computed(() => ({
+  ...teamData.value,
+  players: allPlayers.value,
+  total_players: allPlayers.value.length,
+  total_salary: allPlayers.value.reduce((sum, p) => sum + p.contract.salary, 0),
+  available_salary: SALARY_CAP - allPlayers.value.reduce((sum, p) => sum + p.contract.salary, 0),
+  available_players: MAX_PLAYERS - allPlayers.value.length
+}))
 
 const defaultAvatar = "https://raw.githubusercontent.com/gtkacz/ftt-app/refs/heads/main/src/assets/logo.png"
 const currentYear = new Date().getFullYear()
@@ -701,19 +764,19 @@ const fetchTeamData = async (): Promise<TeamData> => {
 
 // Computed properties
 const currentStats = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
   const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
   return {
     totalFantasyPoints,
     avgFantasyPoints: totalFantasyPoints / Math.max(activePlayers.length, 1),
-    avgSalary: teamData.value.total_salary / Math.max(activePlayers.length, 1),
-    irPlayers: teamData.value.players.filter(p => p.is_ir).length
+    avgSalary: simulatedTeamData.value.total_salary / Math.max(activePlayers.length, 1),
+    irPlayers: simulatedTeamData.value.players.filter(p => p.is_ir).length
   }
 })
 
 const positionStats = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
   const positions = ['G', 'F', 'C']
 
   return positions.map(pos => {
@@ -728,14 +791,14 @@ const positionStats = computed(() => {
       avgSalary: totalSalary / Math.max(posPlayers.length, 1),
       totalFantasyPoints,
       efficiency: totalFantasyPoints / Math.max(totalSalary, 1),
-      capPercentage: ((totalSalary / teamData.value.total_salary) * 100).toFixed(1),
+      capPercentage: ((totalSalary / simulatedTeamData.value.total_salary) * 100).toFixed(1),
       color: getPositionColor(pos)
     }
   })
 })
 
 const contractStats = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
 
   const expiring2025 = activePlayers.filter(p =>
     p.contract.start_year + p.contract.duration - 1 === currentYear
@@ -764,7 +827,7 @@ const contractStats = computed(() => {
 })
 
 const expiringPlayers = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
 
   return {
     thisYear: activePlayers.filter(p =>
@@ -777,7 +840,7 @@ const expiringPlayers = computed(() => {
 })
 
 const topContributors = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
   const playersWithFpts = activePlayers.map(p => ({
     ...p,
     fpts: getFantasyPoints(p.metadata)
@@ -810,13 +873,13 @@ const futureSeasons = computed(() => {
   const seasons = []
 
   for (let year = currentYear + 1; year <= currentYear + 3; year++) {
-    const playersUnderContract = teamData.value.players.filter(p =>
+    const playersUnderContract = simulatedTeamData.value.players.filter(p =>
       !p.is_ir &&
       p.contract.start_year + p.contract.duration - 1 >= year
     )
 
     const salaryCommitted = playersUnderContract.reduce((sum, p) => sum + p.contract.salary, 0)
-    const picks = teamData.value.current_picks.filter(pick =>
+    const picks = simulatedTeamData.value.current_picks.filter(pick =>
       pick.draft_year === year && !pick.is_from_league_draft
     ).length
 
@@ -834,7 +897,7 @@ const futureSeasons = computed(() => {
 
 const draftPicks = computed(() => {
   const picks: Record<string, Pick[]> = {}
-  const filteredPicks = teamData.value.current_picks.filter(pick => !pick.is_from_league_draft)
+  const filteredPicks = simulatedTeamData.value.current_picks.filter(pick => !pick.is_from_league_draft)
 
   filteredPicks.forEach(pick => {
     const year = pick.draft_year.toString()
@@ -846,18 +909,18 @@ const draftPicks = computed(() => {
 })
 
 const efficiencyStats = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
   const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
   return {
-    fptsPerMillion: totalFantasyPoints / Math.max(teamData.value.total_salary, 1),
-    salaryCapUtilization: (teamData.value.total_salary / SALARY_CAP) * 100,
+    fptsPerMillion: totalFantasyPoints / Math.max(simulatedTeamData.value.total_salary, 1),
+    salaryCapUtilization: (simulatedTeamData.value.total_salary / SALARY_CAP) * 100,
     rosterUtilization: (activePlayers.length / MAX_PLAYERS) * 100
   }
 })
 
 const teamMetrics = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
 
   const avgAge = activePlayers.reduce((sum, p) => sum + getPlayerAge(p.metadata), 0) / Math.max(activePlayers.length, 1)
   const avgExperience = activePlayers.reduce((sum, p) => sum + getPlayerExperience(p.metadata), 0) / Math.max(activePlayers.length, 1)
@@ -877,7 +940,7 @@ const teamMetrics = computed(() => {
 })
 
 const lineupProjections = computed(() => {
-  const activePlayers = teamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
   const numLineups = Math.floor(MAX_PLAYERS / 5)
   const lineups = []
 
@@ -942,11 +1005,73 @@ const lineupProjections = computed(() => {
   return lineups
 })
 
+const addSimulatedPlayer = (player: Player) => {
+  // Create a copy with a temporary negative ID to avoid conflicts
+  const simulatedPlayer = {
+    ...player,
+    id: -Math.abs(player.id) - simulatedPlayers.value.length
+  }
+  simulatedPlayers.value.push(simulatedPlayer)
+}
+
+const removeSimulatedPlayer = (playerId: number) => {
+  simulatedPlayers.value = simulatedPlayers.value.filter(p => p.id !== playerId)
+}
+
+const isSimulatedPlayer = (playerId: number) => {
+  return playerId < 0
+}
+
+const fetchFreeAgents = async (): Promise<Player[]> => {
+  const response = await api.get('players/?limit=10000')
+  let raw_data = structuredClone(response.data.results)
+
+  raw_data.forEach(player => {
+    if (player.metadata) {
+      try {
+        player.metadata = JSON.parse(JSON.stringify(structuredClone(player.metadata)).replaceAll("NaN", "null"))
+        if (typeof player.metadata === 'string') {
+          player.metadata = JSON.parse(player.metadata)
+        }
+      } catch (e) {
+        console.error('Failed to parse player metadata:', e)
+      }
+    }
+  })
+
+  const players = raw_data.filter(player => {
+    return !player.contract || Object.keys(player.contract).length === 0
+      || (player.contract && player.contract.team !== teamId)
+  }) as Player[]
+
+  // For players with no contract, set a default contract structure
+  players.forEach(player => {
+    if (!player.contract || Object.keys(player.contract).length === 0) {
+      player.contract = {
+        id: -1,
+        player: player.id,
+        team: 0,
+        start_year: currentYear,
+        duration: 1,
+        salary: 3.5,
+        is_rfa: false,
+        is_to: false
+      }
+    }
+    player.is_ir = false
+    player.metadata = player.metadata || '{}'
+  })
+
+  return players;
+}
+
+// Update onMounted
 onMounted(async () => {
   try {
     teamData.value = await fetchTeamData()
+    freeAgents.value = await fetchFreeAgents()
   } catch (error) {
-    console.error('Failed to fetch team data:', error)
+    console.error('Failed to fetch data:', error)
   }
 })
 </script>
