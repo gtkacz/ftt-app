@@ -56,7 +56,7 @@
 		</v-menu>
 
 		<!-- Live Notification Snackbar -->
-		<v-snackbar v-model="snackbarOpen" multi-line :timeout="5000" location="top"
+		<v-snackbar v-model="snackbarOpen" multi-line :timeout="5000" location="top" timer="primary"
 			:color="liveNotification ? getNotificationColor(liveNotification.level) : 'white'" variant="elevated">
 			<div class="d-flex align-center">
 				<v-icon class="mr-3" size="large">
@@ -71,22 +71,18 @@
 				<v-btn icon="close" size="small" @click="snackbarOpen = false"></v-btn>
 			</template>
 		</v-snackbar>
-		<v-snackbar-queue v-model="notificationQueue" :timeout="4000" location="bottom right" variant="elevated">
-			<!-- <template #default="{ notification }">
-				<div class="notification-content">
-					<v-icon :icon="getNotificationIcon(notification.level)" class="mr-2" />
-					<div>
-						<div class="font-weight-medium">{{ notification.message }}</div>
-						<div class="text-caption text-medium-emphasis">
-							{{ formatNotificationTime(notification.created_at) }}
-						</div>
-					</div>
+		<v-snackbar-queue v-model="notificationQueue" multi-line :timeout="5000" location="top" variant="elevated"
+			timer="primary" color="info" close-on-content-click>
+			<template #text="{ item }">
+				<div class="d-flex align-center">
+					<v-icon class="mr-3" size="large">
+						{{ getNotificationIcon(getNotificationFromMessage(item.text).level) }}
+					</v-icon>
+					<span class="text-body-2">
+						{{ item.text }}
+					</span>
 				</div>
 			</template>
-
-			<template #actions="{ notification }">
-				<v-btn text="Close" variant="text" @click="dismissNotification(notification.id)" />
-			</template> -->
 		</v-snackbar-queue>
 	</div>
 </template>
@@ -123,12 +119,12 @@ const unreadCount = computed(() =>
 )
 
 const recentUnreadNotifications = computed(() => {
-  const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
-  
-  return notifications.value.filter(notification => {
-    const createdDate = new Date(notification.created_at)
-    return !notification.is_read && createdDate >= sevenDaysAgo
-  }).sort((a, b) => b.priority - a.priority) // Sort by priority, highest first
+	const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+
+	return notifications.value.filter(notification => {
+		const createdDate = new Date(notification.created_at)
+		return !notification.is_read && createdDate >= sevenDaysAgo
+	}).sort((a, b) => b.priority - a.priority) // Sort by priority, highest first
 })
 
 const sortedNotifications = computed(() => {
@@ -191,8 +187,12 @@ const loadNotifications = async () => {
 	}
 
 	notifications.value = newNotifications
-	notificationQueue.value = [...recentUnreadNotifications.value]
+	notificationQueue.value = [...recentUnreadNotifications.value.flatMap(n => n.message)]
 	previousNotificationIds = new Set(newNotifications.map(n => n.id))
+}
+
+const getNotificationFromMessage = (message: string): Notification | null => {
+	return notifications.value.find(n => n.message === message) || null
 }
 
 const markAsRead = async (notification: Notification) => {
@@ -246,10 +246,10 @@ const formatDate = (dateString: string): string => {
 }
 
 const formatNotificationTime = (dateString: string) => {
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(dateString))
+	return new Intl.DateTimeFormat('en-US', {
+		dateStyle: 'medium',
+		timeStyle: 'short'
+	}).format(new Date(dateString))
 }
 
 // Lifecycle

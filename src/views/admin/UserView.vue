@@ -1,6 +1,6 @@
 <template>
 	<v-container fluid class="pa-0">
-		<v-card class="pa-4 bg-surface-variant" elevation="10">
+		<v-card class="pa-4 bg-surface-variant" variant="flat">
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4"></v-progress-linear>
 

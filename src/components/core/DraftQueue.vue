@@ -44,8 +44,8 @@
 								Add Player
 							</v-btn>
 							<!-- Toggle queue on and off -->
-							<v-switch class="ml-4" label="Enable Autopick" ripple
-								:disabled="queuePlayers.length === 0" inset color="primary" v-model="queueEnabled" @update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact" hide-details />
+							<v-checkbox class="ml-4" label="Enable Autopick" ripple
+								:disabled="queuePlayers.length === 0" color="primary" v-model="queueEnabled" @update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact" hide-details />
 						</div>
 
 						<!-- Queue list -->
