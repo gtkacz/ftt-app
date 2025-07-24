@@ -33,7 +33,7 @@
               <v-col cols="6" md="3">
                 <v-autocomplete rounded :items="availableFreeAgents"
                   :item-title="(item) => `${item.first_name} ${item.last_name} (${item.primary_position}) - $${item.contract.salary}M`"
-                  :item-value="(item) => item" label="Select Player" variant="outlined" clearable
+                  :item-value="(item) => item" label="Select Player" variant="outlined" clearable clear-on-select autocomplete="off"
                   @update:model-value="(player) => player && addSimulatedPlayer(player)">
                   <template v-slot:item="{ props, item }">
                     <v-list-item v-bind="props">
@@ -52,13 +52,21 @@
               <v-col cols="12" md="6">
                 <div v-if="simulatedPlayers.length > 0">
                   <v-card-text class="pa-0 mb-2">Simulated Additions:</v-card-text>
-                  <v-chip-group column>
+                  <div class="d-flex flex-wrap align-center gap-2">
                     <v-chip v-for="player in simulatedPlayers" :key="player.id" closable
                       :color="getPositionColor(player.primary_position)" variant="tonal"
                       @click:close="removeSimulatedPlayer(player.id)">
-                      {{ player.first_name }} {{ player.last_name }} (${{ player.contract.salary }}M)
+                      <v-avatar size="24" class="mr-3">
+                        <v-img :src="player.photo || '/placeholder-player.png'"
+                          :alt="`${player.first_name} ${player.last_name}`" cover>
+                          <template #error>
+                            <v-icon size="24">account</v-icon>
+                          </template>
+                        </v-img>
+                      </v-avatar>
+                      {{ player.first_name[0] }}. {{ player.last_name }} (${{ player.contract.salary }}M)
                     </v-chip>
-                  </v-chip-group>
+                  </div>
                 </div>
               </v-col>
             </v-row>
@@ -79,7 +87,8 @@
                 <v-chip variant="tonal" size="small" color="info">
                   {{ simulatedTeamData.available_players }} slots available
                 </v-chip>
-                <v-chip v-if="MIN_PLAYERS > simulatedTeamData.total_players" variant="tonal" size="small" color="warning" class="ml-3">
+                <v-chip v-if="MIN_PLAYERS > simulatedTeamData.total_players" variant="tonal" size="small"
+                  color="warning" class="ml-3">
                   <span>{{ MIN_PLAYERS -
                     simulatedTeamData.total_players }} players
                     to minimum</span>
@@ -165,7 +174,8 @@
                     <v-list density="compact" class="pa-0">
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small" :color="getPositionColor('G')">G</v-chip>
+                          {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small"
+                            :color="getPositionColor('G')">G</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ guard.fpts.toFixed(1) }}</span>
@@ -174,7 +184,8 @@
 
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small" :color="getPositionColor('F')">F</v-chip>
+                          {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small"
+                            :color="getPositionColor('F')">F</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ forward.fpts.toFixed(1) }}</span>
@@ -183,7 +194,8 @@
 
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small" :color="getPositionColor('C')">C</v-chip>
+                          {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small"
+                            :color="getPositionColor('C')">C</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ lineup.center.fpts.toFixed(1) }}</span>
@@ -1059,7 +1071,6 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
       }
     }
     player.is_ir = false
-    player.metadata = player.metadata || '{}'
   })
 
   return players;
