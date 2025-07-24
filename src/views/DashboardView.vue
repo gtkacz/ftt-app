@@ -180,7 +180,8 @@
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small"
-                            :color="getPositionColor('G')">G</v-chip>
+                            :color="getPositionColor('G')">G</v-chip><v-chip class="ml-2" v-if="guard.secondary_position" size="x-small"
+                            :color="getPositionColor(guard.secondary_position)">{{ guard.secondary_position }}</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ guard.fpts.toFixed(1) }}</span>
@@ -190,7 +191,8 @@
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small"
-                            :color="getPositionColor('F')">F</v-chip>
+                            :color="getPositionColor('F')">F</v-chip><v-chip class="ml-2" v-if="forward.secondary_position" size="x-small"
+                            :color="getPositionColor(forward.secondary_position)">{{ forward.secondary_position }}</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ forward.fpts.toFixed(1) }}</span>
@@ -200,7 +202,8 @@
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small"
-                            :color="getPositionColor('C')">C</v-chip>
+                            :color="getPositionColor('C')">C</v-chip><v-chip class="ml-2" v-if="lineup?.center.secondary_position" size="x-small"
+                            :color="getPositionColor(lineup?.center.secondary_position)">{{ lineup?.center.secondary_position }}</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ lineup.center.fpts.toFixed(1) }}</span>
@@ -737,7 +740,8 @@ const getFantasyPoints = (metadata: string | object): number => {
       parsed = JSON.parse(metadata)
     }
     return Number(parsed.fpts) || 0
-  } catch {
+  } catch (e) {
+    // console.error('Error parsing fantasy points:', metadata)
     return 0
   }
 }
@@ -1069,11 +1073,12 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
       try {
         player.metadata = JSON.parse(JSON.stringify(structuredClone(player.metadata)).replaceAll("NaN", "null"))
         if (typeof player.metadata === 'string') {
-          player.metadata = JSON.parse(player.metadata)
+          player.metadata = JSON.parse(player.metadata.replaceAll("NaN", "null"))
         }
       } catch (e) {
         console.error('Failed to parse player metadata:', e)
       }
+      if (player.first_name === 'Naz') {console.warn('Naz metadata:', player.metadata)}
     }
   })
 
@@ -1104,12 +1109,8 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
 
 // Update onMounted
 onMounted(async () => {
-  try {
-    teamData.value = await fetchTeamData()
-    freeAgents.value = await fetchFreeAgents()
-  } catch (error) {
-    console.error('Failed to fetch data:', error)
-  }
+  teamData.value = await fetchTeamData()
+  freeAgents.value = await fetchFreeAgents()
 })
 </script>
 

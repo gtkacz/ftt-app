@@ -38,8 +38,18 @@
 							<div class="text-body-2 text-grey">Add players to your draft queue to get started</div>
 						</div>
 
+						<!-- Control buttons -->
+						<div class="pa-4 border-t d-flex align-center justify-space-between">
+							<v-btn @click="showPlayerTable = true" prepend-icon="add" variant="outlined" rounded>
+								Add Player
+							</v-btn>
+							<!-- Toggle queue on and off -->
+							<v-switch class="ml-4" label="Enable Autopick" ripple
+								:disabled="queuePlayers.length === 0" inset color="primary" v-model="queueEnabled" @update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact" hide-details />
+						</div>
+
 						<!-- Queue list -->
-						<v-list v-else density="comfortable">
+						<v-list v-if="queuePlayers.length > 0" density="comfortable">
 							<draggable v-model="queuePlayers" tag="div" item-key="id" :animation="200"
 								ghost-class="ghost" chosen-class="chosen" drag-class="drag" handle=".drag-handle"
 								@start="isDragging = true" @end="isDragging = false">
@@ -84,13 +94,6 @@
 								</template>
 							</draggable>
 						</v-list>
-
-						<!-- Add player button -->
-						<div class="pa-4 border-t">
-							<v-btn @click="showPlayerTable = true" prepend-icon="add" variant="outlined" rounded>
-								Add Player
-							</v-btn>
-						</div>
 					</v-card-text>
 
 					<v-divider />
@@ -165,6 +168,8 @@ const emit = defineEmits<{
 
 // State
 const menuOpen = ref<boolean>(false)
+const queueEnabled = ref<boolean>(false)
+const queueToggleLoading = ref<boolean>(false)
 const showPlayerTable = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const saving = ref<boolean>(false)
@@ -209,12 +214,29 @@ const fetchExistingQueue = async () => {
 		queuePlayers.value = [...response.data.results[0].queue_items]
 		originalQueue.value = [...response.data.results[0].queue_items]
 		queueId.value = response.data.results[0].id
+		queueEnabled.value = response.data.results[0].autopick_enabled
 	}
 	else {
 		const newQueue = await api.post(`drafts/${props.draftId}/queues/`, { queue_items: [], autopick_enabled: false, team: props.teamId, draft: props.draftId })
 		queueId.value = newQueue.data.id
 	}
 	loading.value = false
+}
+
+const toggleQueue = async (enabled: boolean) => {
+	if (!queueId.value) return
+
+	queueToggleLoading.value = true
+	try {
+		await api.patch(`drafts/${props.draftId}/queues/${queueId.value}/`, { autopick_enabled: enabled })
+		queueEnabled.value = enabled
+	}
+	catch (err) {
+		error.value = 'Failed to update queue status'
+	}
+	finally {
+		queueToggleLoading.value = false
+	}
 }
 
 const addToQueue = (player: any) => {
