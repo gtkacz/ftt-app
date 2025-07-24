@@ -32,18 +32,23 @@
             <v-row>
               <v-col cols="6" md="3">
                 <v-autocomplete rounded :items="availableFreeAgents"
-                  :item-title="(item) => `${item.first_name} ${item.last_name} (${item.primary_position}) - $${item.contract.salary}M`"
-                  :item-value="(item) => item" label="Select Player" variant="outlined" clearable clear-on-select autocomplete="off"
+                  :item-title="(item) => item.header ? item.header : `${item.first_name} ${item.last_name} (${item.primary_position}) - $${item.contract?.salary}M`"
+                  :item-value="(item) => item.header || item.divider ? null : item" label="Select Player"
+                  variant="outlined" clearable clear-on-select autocomplete="off"
                   @update:model-value="(player) => player && addSimulatedPlayer(player)">
                   <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props">
+                    <v-list-subheader v-if="item.raw.header" :key="item.raw.header">
+                      {{ item.raw.header }}
+                    </v-list-subheader>
+                    <v-divider v-else-if="item.raw.divider" :key="'divider'"></v-divider>
+                    <v-list-item v-else v-bind="props">
                       <template v-slot:prepend>
                         <v-chip :color="getPositionColor(item.raw.primary_position)" size="small">
                           {{ item.raw.primary_position }}
                         </v-chip>
                       </template>
                       <template v-slot:append>
-                        <span class="text-caption">${{ item.raw.contract.salary }}M</span>
+                        <span class="text-caption">${{ item.raw.contract?.salary }}M</span>
                       </template>
                     </v-list-item>
                   </template>
@@ -64,7 +69,7 @@
                           </template>
                         </v-img>
                       </v-avatar>
-                      {{ player.first_name[0] }}. {{ player.last_name }} (${{ player.contract.salary }}M)
+                      {{ player.first_name[0] }}. {{ player.last_name }} (${{ player.contract?.salary }}M)
                     </v-chip>
                   </div>
                 </div>
@@ -402,7 +407,7 @@
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.thisYear" :key="player.id">
                       <v-list-item-title>{{ player.first_name }} {{ player.last_name }}</v-list-item-title>
-                      <v-list-item-subtitle>${{ player.contract.salary }}M</v-list-item-subtitle>
+                      <v-list-item-subtitle>${{ player.contract?.salary }}M</v-list-item-subtitle>
                       <template v-slot:append>
                         <v-chip size="small" :color="getPositionColor(player.primary_position)">
                           {{ player.primary_position }}
@@ -421,7 +426,7 @@
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.nextYear" :key="player.id">
                       <v-list-item-title>{{ player.first_name }} {{ player.last_name }}</v-list-item-title>
-                      <v-list-item-subtitle>${{ player.contract.salary }}M</v-list-item-subtitle>
+                      <v-list-item-subtitle>${{ player.contract?.salary }}M</v-list-item-subtitle>
                       <template v-slot:append>
                         <v-chip size="small" :color="getPositionColor(player.primary_position)">
                           {{ player.primary_position }}
@@ -686,7 +691,25 @@ const simulatedPlayers = ref<Player[]>([])
 
 const availableFreeAgents = computed(() => {
   const addedPlayerIds = simulatedPlayers.value.map(p => Math.abs(p.id))
-  return freeAgents.value.filter(agent => !addedPlayerIds.includes(agent.id))
+  const available = freeAgents.value.filter(agent => !addedPlayerIds.includes(agent.id))
+
+  const freeAgentsOnly = available.filter(player => !player.contract || player.contract?.team === 0)
+  const otherTeamPlayers = available.filter(player => player.contract && player.contract?.team !== 0)
+
+  const result = []
+
+  if (freeAgentsOnly.length > 0) {
+    result.push({ header: 'Free Agents' })
+    result.push(...freeAgentsOnly)
+  }
+
+  if (otherTeamPlayers.length > 0) {
+    if (result.length > 0) result.push({ divider: true })
+    result.push({ header: "Other Team's Players" })
+    result.push(...otherTeamPlayers)
+  }
+
+  return result
 })
 
 const allPlayers = computed(() => [
@@ -698,8 +721,8 @@ const simulatedTeamData = computed(() => ({
   ...teamData.value,
   players: allPlayers.value,
   total_players: allPlayers.value.length,
-  total_salary: allPlayers.value.reduce((sum, p) => sum + p.contract.salary, 0),
-  available_salary: SALARY_CAP - allPlayers.value.reduce((sum, p) => sum + p.contract.salary, 0),
+  total_salary: allPlayers.value.reduce((sum, p) => sum + p.contract?.salary, 0),
+  available_salary: SALARY_CAP - allPlayers.value.reduce((sum, p) => sum + p.contract?.salary, 0),
   available_players: MAX_PLAYERS - allPlayers.value.length
 }))
 
@@ -707,9 +730,12 @@ const defaultAvatar = "https://raw.githubusercontent.com/gtkacz/ftt-app/refs/hea
 const currentYear = new Date().getFullYear()
 
 // Helper functions
-const getFantasyPoints = (metadata: string): number => {
+const getFantasyPoints = (metadata: string | object): number => {
   try {
-    const parsed = JSON.parse(metadata)
+    let parsed = metadata
+    if (typeof metadata === 'string') {
+      parsed = JSON.parse(metadata)
+    }
     return Number(parsed.fpts) || 0
   } catch {
     return 0
@@ -793,7 +819,7 @@ const positionStats = computed(() => {
 
   return positions.map(pos => {
     const posPlayers = activePlayers.filter(p => p.primary_position === pos)
-    const totalSalary = posPlayers.reduce((sum, p) => sum + p.contract.salary, 0)
+    const totalSalary = posPlayers.reduce((sum, p) => sum + p.contract?.salary, 0)
     const totalFantasyPoints = posPlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
     return {
@@ -890,7 +916,7 @@ const futureSeasons = computed(() => {
       p.contract.start_year + p.contract.duration - 1 >= year
     )
 
-    const salaryCommitted = playersUnderContract.reduce((sum, p) => sum + p.contract.salary, 0)
+    const salaryCommitted = playersUnderContract.reduce((sum, p) => sum + p.contract?.salary, 0)
     const picks = simulatedTeamData.value.current_picks.filter(pick =>
       pick.draft_year === year && !pick.is_from_league_draft
     ).length
