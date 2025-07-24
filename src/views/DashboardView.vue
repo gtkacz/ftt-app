@@ -287,6 +287,10 @@
                     {{ position.totalFantasyPoints.toFixed(1) }}
                   </v-col>
                   <v-col cols="3">
+                    <strong>Avg FPTS:</strong><br>
+                    {{ position.avgFantasyPoints.toFixed(1) }}
+                  </v-col>
+                  <v-col cols="3">
                     <strong>Efficiency:</strong><br>
                     {{ position.efficiency.toFixed(1) }}
                   </v-col>
@@ -443,7 +447,15 @@
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.thisYear" :key="player.id">
-                      <v-list-item-title>{{ player.first_name }} {{ player.last_name }}</v-list-item-title>
+                      <v-list-item-title>
+                        {{ player.first_name }} {{ player.last_name }}
+                        <v-chip v-if="player.contract.is_rfa" color="info" variant="tonal" size="x-small" class="ml-2">
+                          RFA
+                        </v-chip>
+                        <v-chip v-if="player.contract.is_to" color="purple" variant="tonal" size="x-small" class="ml-2">
+                          TO
+                        </v-chip>
+                      </v-list-item-title>
                       <v-list-item-subtitle>${{ player.contract?.salary }}M</v-list-item-subtitle>
                       <template v-slot:append>
                         <v-chip size="small" :color="getPositionColor(player.primary_position)">
@@ -462,7 +474,15 @@
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.nextYear" :key="player.id">
-                      <v-list-item-title>{{ player.first_name }} {{ player.last_name }}</v-list-item-title>
+                      <v-list-item-title>
+                        {{ player.first_name }} {{ player.last_name }}
+                        <v-chip v-if="player.contract.is_rfa" color="info" variant="tonal" size="x-small" class="ml-2">
+                          RFA
+                        </v-chip>
+                        <v-chip v-if="player.contract.is_to" color="purple" variant="tonal" size="x-small" class="ml-2">
+                          TO
+                        </v-chip>
+                      </v-list-item-title>
                       <v-list-item-subtitle>${{ player.contract?.salary }}M</v-list-item-subtitle>
                       <template v-slot:append>
                         <v-chip size="small" :color="getPositionColor(player.primary_position)">
@@ -657,7 +677,7 @@ import api from '@/api/axios';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-const loading = ref(false);
+const loading = ref(true);
 const route = useRoute();
 const teamId = route.params.id as string;
 
@@ -830,11 +850,14 @@ const getValueRatingColor = (rating: string): string => {
 
 const fetchTeamData = async (): Promise<TeamData> => {
   try {
+    loading.value = true
     const response = await api.get(`/teams/${teamId}/`)
     return response.data as TeamData
   } catch (error) {
     console.error('Error fetching team data:', error)
     throw error
+  } finally {
+    loading.value = false
   }
 }
 
@@ -856,7 +879,10 @@ const positionStats = computed(() => {
   const positions = ['G', 'F', 'C']
 
   return positions.map(pos => {
-    const posPlayers = activePlayers.filter(p => p.primary_position === pos)
+    // Include players where pos matches primary OR secondary position
+    const posPlayers = activePlayers.filter(p =>
+      p.primary_position === pos || p.secondary_position === pos
+    )
     const totalSalary = posPlayers.reduce((sum, p) => sum + p.contract?.salary, 0)
     const totalFantasyPoints = posPlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
@@ -865,6 +891,7 @@ const positionStats = computed(() => {
       count: posPlayers.length,
       totalSalary,
       avgSalary: totalSalary / Math.max(posPlayers.length, 1),
+      avgFantasyPoints: totalFantasyPoints / Math.max(posPlayers.length, 1),
       totalFantasyPoints,
       efficiency: totalFantasyPoints / Math.max(totalSalary, 1),
       capPercentage: ((totalSalary / simulatedTeamData.value.total_salary) * 100).toFixed(1),
@@ -1016,21 +1043,18 @@ const teamMetrics = computed(() => {
 
 const lineupProjections = computed(() => {
   const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
-  const numLineups = Math.floor(MAX_PLAYERS / 5)
+  const numLineups = Math.min(3, Math.ceil(activePlayers.length / 5))
   const lineups = []
 
-  // Organize players by position (including secondary positions)
-  const playersByPosition = {
-    G: activePlayers.filter(p => p.primary_position === 'G' || p.secondary_position === 'G')
-      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
-      .sort((a, b) => b.fpts - a.fpts),
-    F: activePlayers.filter(p => p.primary_position === 'F' || p.secondary_position === 'F')
-      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
-      .sort((a, b) => b.fpts - a.fpts),
-    C: activePlayers.filter(p => p.primary_position === 'C' || p.secondary_position === 'C')
-      .map(p => ({ ...p, fpts: getFantasyPoints(p.metadata) }))
-      .sort((a, b) => b.fpts - a.fpts)
-  }
+  // Create player pool with all eligible positions and FPTS
+  const playerPool = activePlayers.map(p => {
+    const fpts = getFantasyPoints(p.metadata)
+    const positions = [p.primary_position]
+    if (p.secondary_position) {
+      positions.push(p.secondary_position)
+    }
+    return { ...p, fpts, eligiblePositions: positions }
+  }).sort((a, b) => b.fpts - a.fpts) // Sort by FPTS descending
 
   const usedPlayers = new Set()
 
@@ -1043,31 +1067,29 @@ const lineupProjections = computed(() => {
       totalFpts: 0
     }
 
-    // Select 2 guards
-    for (const guard of playersByPosition.G) {
-      if (!usedPlayers.has(guard.id) && lineup.guards.length < 2) {
-        lineup.guards.push(guard)
-        usedPlayers.add(guard.id)
+    const availablePlayers = playerPool.filter(p => !usedPlayers.has(p.id))
+    const neededPositions = ['G', 'G', 'F', 'F', 'C'] // 2G, 2F, 1C
+
+    // Greedy assignment: for each needed position, find the highest FPTS available player
+    for (const neededPos of neededPositions) {
+      const bestPlayer = availablePlayers.find(p =>
+        !usedPlayers.has(p.id) && p.eligiblePositions.includes(neededPos)
+      )
+
+      if (bestPlayer) {
+        usedPlayers.add(bestPlayer.id)
+
+        if (neededPos === 'G' && lineup.guards.length < 2) {
+          lineup.guards.push(bestPlayer)
+        } else if (neededPos === 'F' && lineup.forwards.length < 2) {
+          lineup.forwards.push(bestPlayer)
+        } else if (neededPos === 'C' && !lineup.center) {
+          lineup.center = bestPlayer
+        }
       }
     }
 
-    // Select 2 forwards
-    for (const forward of playersByPosition.F) {
-      if (!usedPlayers.has(forward.id) && lineup.forwards.length < 2) {
-        lineup.forwards.push(forward)
-        usedPlayers.add(forward.id)
-      }
-    }
-
-    // Select 1 center
-    for (const center of playersByPosition.C) {
-      if (!usedPlayers.has(center.id) && !lineup.center) {
-        lineup.center = center
-        usedPlayers.add(center.id)
-        break
-      }
-    }
-
+    // Calculate total FPTS
     lineup.totalFpts = [
       ...lineup.guards,
       ...lineup.forwards,
