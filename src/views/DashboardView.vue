@@ -180,8 +180,10 @@
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small"
-                            :color="getPositionColor('G')">G</v-chip><v-chip class="ml-2" v-if="guard.secondary_position" size="x-small"
-                            :color="getPositionColor(guard.secondary_position)">{{ guard.secondary_position }}</v-chip>
+                            :color="getPositionColor('G')">G</v-chip>
+                          <!-- <v-chip class="ml-2" v-if="guard.secondary_position" size="small"
+                            :color="getPositionColor(guard.secondary_position)">{{ guard.secondary_position }}</v-chip> -->
+                          <v-chip v-if="guard.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ guard.fpts.toFixed(1) }}</span>
@@ -191,8 +193,10 @@
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small"
-                            :color="getPositionColor('F')">F</v-chip><v-chip class="ml-2" v-if="forward.secondary_position" size="x-small"
-                            :color="getPositionColor(forward.secondary_position)">{{ forward.secondary_position }}</v-chip>
+                            :color="getPositionColor('F')">F</v-chip>
+                          <!-- <v-chip class="ml-2" v-if="forward.secondary_position" size="small"
+                            :color="getPositionColor(forward.primary_position)">{{ forward.primary_position }}</v-chip> -->
+                          <v-chip v-if="forward.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ forward.fpts.toFixed(1) }}</span>
@@ -202,8 +206,10 @@
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
                           {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small"
-                            :color="getPositionColor('C')">C</v-chip><v-chip class="ml-2" v-if="lineup?.center.secondary_position" size="x-small"
-                            :color="getPositionColor(lineup?.center.secondary_position)">{{ lineup?.center.secondary_position }}</v-chip>
+                            :color="getPositionColor('C')">C</v-chip>
+                          <!-- <v-chip class="ml-2" v-if="lineup?.center.secondary_position" size="small"
+                            :color="getPositionColor(lineup?.center.primary_position)">{{ lineup?.center.primary_position }}</v-chip> -->
+                          <v-chip v-if="lineup.center.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
                           <span class="text-caption">{{ lineup.center.fpts.toFixed(1) }}</span>
@@ -214,6 +220,34 @@
                 </v-card>
               </v-col>
             </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Players on IR -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="pa-3" elevation="3" v-if="currentStats.irPlayers">
+          <v-card-title>
+            <v-icon class="me-2">healing</v-icon>
+            Players on IR
+          </v-card-title>
+          <v-card-text>
+            <v-card variant="outlined">
+              <v-card-text class="d-flex flex-wrap gap-2">
+                <v-chip v-for="player in simulatedTeamData.players.filter(p => p.is_ir)" :key="player.id"
+                  :color="getPositionColor(player.primary_position)"><v-avatar size="24" class="mr-3">
+                    <v-img :src="player.photo || '/placeholder-player.png'"
+                      :alt="`${player.first_name} ${player.last_name}`" cover>
+                      <template #error>
+                        <v-icon size="24">account</v-icon>
+                      </template>
+                    </v-img>
+                  </v-avatar>{{ player.first_name }} {{ player.last_name
+                  }}</v-chip>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -806,7 +840,7 @@ const fetchTeamData = async (): Promise<TeamData> => {
 
 // Computed properties
 const currentStats = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
   const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
   return {
@@ -818,7 +852,7 @@ const currentStats = computed(() => {
 })
 
 const positionStats = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
   const positions = ['G', 'F', 'C']
 
   return positions.map(pos => {
@@ -840,7 +874,7 @@ const positionStats = computed(() => {
 })
 
 const contractStats = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
 
   const expiring2025 = activePlayers.filter(p =>
     p.contract.start_year + p.contract.duration - 1 === currentYear
@@ -869,7 +903,7 @@ const contractStats = computed(() => {
 })
 
 const expiringPlayers = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
 
   return {
     thisYear: activePlayers.filter(p =>
@@ -882,7 +916,7 @@ const expiringPlayers = computed(() => {
 })
 
 const topContributors = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
   const playersWithFpts = activePlayers.map(p => ({
     ...p,
     fpts: getFantasyPoints(p.metadata)
@@ -916,7 +950,6 @@ const futureSeasons = computed(() => {
 
   for (let year = currentYear + 1; year <= currentYear + 3; year++) {
     const playersUnderContract = simulatedTeamData.value.players.filter(p =>
-      !p.is_ir &&
       p.contract.start_year + p.contract.duration - 1 >= year
     )
 
@@ -951,7 +984,7 @@ const draftPicks = computed(() => {
 })
 
 const efficiencyStats = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
   const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
 
   return {
@@ -962,7 +995,7 @@ const efficiencyStats = computed(() => {
 })
 
 const teamMetrics = computed(() => {
-  const activePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const activePlayers = simulatedTeamData.value.players
 
   const avgAge = activePlayers.reduce((sum, p) => sum + getPlayerAge(p.metadata), 0) / Math.max(activePlayers.length, 1)
   const avgExperience = activePlayers.reduce((sum, p) => sum + getPlayerExperience(p.metadata), 0) / Math.max(activePlayers.length, 1)
@@ -1078,7 +1111,7 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
       } catch (e) {
         console.error('Failed to parse player metadata:', e)
       }
-      if (player.first_name === 'Naz') {console.warn('Naz metadata:', player.metadata)}
+      if (player.first_name === 'Naz') { console.warn('Naz metadata:', player.metadata) }
     }
   })
 

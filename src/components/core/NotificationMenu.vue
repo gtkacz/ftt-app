@@ -188,6 +188,7 @@ const loadNotifications = async () => {
 
 	notifications.value = newNotifications
 	notificationQueue.value = [...recentUnreadNotifications.value.flatMap(n => n.message)]
+	notificationQueue.value.reverse()
 	previousNotificationIds = new Set(newNotifications.map(n => n.id))
 }
 
