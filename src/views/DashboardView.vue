@@ -175,17 +175,16 @@
                       {{ lineup.totalFpts.toFixed(1) }} Total FPTS
                     </v-chip>
                     <v-chip color="secondary" variant="tonal" size="small" class="ml-2">
-                      {{ (lineup.totalFpts / (lineup.guards.length + lineup.forwards.length + (lineup.center ? 1 : 0))).toFixed(1) }} Average FPTS
+                      {{ (lineup.totalFpts / (lineup.guards.length + lineup.forwards.length + (lineup.center ? 1 :
+                      0))).toFixed(1) }} Average FPTS
                     </v-chip>
                   </v-card-title>
                   <v-card-text class="pt-0">
                     <v-list density="compact" class="pa-0">
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ guard.first_name }} {{ guard.last_name }} <v-chip size="small"
-                            :color="getPositionColor('G')">G</v-chip>
-                          <!-- <v-chip class="ml-2" v-if="guard.secondary_position" size="small"
-                            :color="getPositionColor(guard.secondary_position)">{{ guard.secondary_position }}</v-chip> -->
+                          <v-chip size="small" class="mr-2"
+                            :color="getPositionColor('G')">G</v-chip>{{ guard.first_name }} {{ guard.last_name }}
                           <v-chip v-if="guard.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -195,10 +194,8 @@
 
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ forward.first_name }} {{ forward.last_name }} <v-chip size="small"
-                            :color="getPositionColor('F')">F</v-chip>
-                          <!-- <v-chip class="ml-2" v-if="forward.secondary_position" size="small"
-                            :color="getPositionColor(forward.primary_position)">{{ forward.primary_position }}</v-chip> -->
+                          <v-chip size="small" class="mr-2"
+                            :color="getPositionColor('F')">F</v-chip>{{ forward.first_name }} {{ forward.last_name }}
                           <v-chip v-if="forward.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -208,10 +205,8 @@
 
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          {{ lineup.center.first_name }} {{ lineup.center.last_name }} <v-chip size="small"
-                            :color="getPositionColor('C')">C</v-chip>
-                          <!-- <v-chip class="ml-2" v-if="lineup?.center.secondary_position" size="small"
-                            :color="getPositionColor(lineup?.center.primary_position)">{{ lineup?.center.primary_position }}</v-chip> -->
+                          <v-chip size="small" class="mr-2"
+                            :color="getPositionColor('C')">C</v-chip>{{ lineup.center.first_name }} {{ lineup.center.last_name }}
                           <v-chip v-if="lineup.center.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -301,6 +296,17 @@
               </v-col>
             </v-row>
           </v-card-text>
+          <v-card-actions>
+            <v-divider />
+            <!-- Show how many players have more than one position -->
+            <v-card-text class="text-subtitle-2 text-center">
+              <span v-if="teamData.players.some(player => !!player.secondary_position)">
+                {{teamData.players.filter(player => !!player.secondary_position).length}} players have multiple
+                positions
+              </span>
+              <span v-else>No players with multiple positions</span>
+            </v-card-text>
+          </v-card-actions>
         </v-card>
       </v-col>
 
@@ -1067,9 +1073,34 @@ const lineupProjections = computed(() => {
     }
 
     const availablePlayers = playerPool.filter(p => !usedPlayers.has(p.id))
-    const neededPositions = ['G', 'G', 'F', 'F', 'C'] // 2G, 2F, 1C
 
-    // Greedy assignment: for each needed position, find the highest FPTS available player
+    // Determine position assignment order based on scarcity (availability ratio)
+    const positionCounts = {
+      'G': availablePlayers.filter(p => p.eligiblePositions.includes('G')).length,
+      'F': availablePlayers.filter(p => p.eligiblePositions.includes('F')).length,
+      'C': availablePlayers.filter(p => p.eligiblePositions.includes('C')).length
+    }
+
+    // Create positions sorted by scarcity (fewest available players per needed slot first)
+    const positionOrder = [
+      { pos: 'C', needed: 1 },
+      { pos: 'F', needed: 2 },
+      { pos: 'G', needed: 2 }
+    ].sort((a, b) => {
+      const aRatio = positionCounts[a.pos] / a.needed
+      const bRatio = positionCounts[b.pos] / b.needed
+      return aRatio - bRatio // Scarcest positions first
+    })
+
+    // Build neededPositions array in scarcity order
+    const neededPositions = []
+    for (const { pos, needed } of positionOrder) {
+      for (let j = 0; j < needed; j++) {
+        neededPositions.push(pos)
+      }
+    }
+
+    // Assignment prioritizing completion: fill scarce positions first
     for (const neededPos of neededPositions) {
       const bestPlayer = availablePlayers.find(p =>
         !usedPlayers.has(p.id) && p.eligiblePositions.includes(neededPos)
