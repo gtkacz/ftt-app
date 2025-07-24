@@ -79,14 +79,21 @@
 															chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
+														<v-select rounded v-model="filters.multiPosition"
+															:items="[{ title: 'All players', value: false }, { title: 'Multi-position only', value: true }]"
+															label="Position requirement" density="compact"
+															variant="outlined" prepend-inner-icon="sports_kabaddi" />
+													</v-col>
+													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.status" :items="statuses"
 															label="Status" clearable density="compact"
 															variant="outlined" prepend-inner-icon="diamond_shine"
 															multiple chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<v-text-field rounded readonly variant="outlined" density="compact"
-															prepend-inner-icon="payments" label="Salary Range"
+														<v-text-field rounded readonly variant="outlined"
+															density="compact" prepend-inner-icon="payments"
+															label="Salary Range"
 															:model-value="`$${filters.salaryRange[0]}M - $${filters.salaryRange[1]}M`"
 															@click="showSalaryFilter = !showSalaryFilter"
 															:append-inner-icon="showSalaryFilter ? 'expand_less' : 'expand_more'"
@@ -108,8 +115,9 @@
 														</v-expand-transition>
 													</v-col>
 													<v-col cols="12" class="py-2">
-														<v-text-field readonly rounded variant="outlined" density="compact"
-															prepend-inner-icon="schedule" label="Contract Duration"
+														<v-text-field readonly rounded variant="outlined"
+															density="compact" prepend-inner-icon="schedule"
+															label="Contract Duration"
 															:model-value="`${filters.durationRange[0]} - ${filters.durationRange[1]} years`"
 															@click="showDurationFilter = !showDurationFilter"
 															:append-inner-icon="showDurationFilter ? 'expand_less' : 'expand_more'"
@@ -312,14 +320,14 @@
 				<!-- Status badges -->
 				<template #item.status="{ item }">
 					<v-chip-group column>
-						<v-chip v-if="item.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'">
-							RFA
+						<v-chip v-if="item.contract?.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'">
+							Restricted Free Agent
 						</v-chip>
-						<v-chip v-if="item.is_to" size="x-small" v-tooltip="'Team Option'">
-							TO
+						<v-chip v-if="item.contract?.is_to" size="x-small" v-tooltip="'Team Option'">
+							Team Option
 						</v-chip>
 						<v-chip v-if="item.is_ir" size="x-small" v-tooltip="'Injured Reserve'">
-							IR
+							Injured Reserve
 						</v-chip>
 					</v-chip-group>
 				</template>
@@ -388,7 +396,6 @@ const page = ref<number>(1)
 const settingsMenu = ref<boolean>(false)
 const columnMenu = ref<boolean>(false)
 const filterMenu = ref<boolean>(false)
-const sortMenu = ref<boolean>(false)
 const showHeight = ref<boolean>(false)
 const showWeight = ref<boolean>(false)
 const showSalaryFilter = ref<boolean>(false)
@@ -403,6 +410,7 @@ const filters = ref<{
 	realTeam: any[];
 	position: any[];
 	status: any[];
+	multiPosition: boolean;
 	salaryRange: [number, number];
 	durationRange: [number, number];
 }>({
@@ -410,6 +418,7 @@ const filters = ref<{
 	realTeam: [],
 	position: [],
 	status: [],
+	multiPosition: false,
 	salaryRange: [0, 100],
 	durationRange: [0, 10]
 })
@@ -490,8 +499,8 @@ const positions = computed(() => {
 })
 
 const statuses = [
-	{ title: 'Restricted Free Agent', value: 'contract.rfa' },
-	{ title: 'Team Option', value: 'contract.to' },
+	{ title: 'Restricted Free Agent', value: 'rfa' },
+	{ title: 'Team Option', value: 'to' },
 	{ title: 'Injured Reserve', value: 'ir' }
 ]
 
@@ -531,6 +540,11 @@ const filteredPlayers = computed(() => {
 			return filters.value.position.includes(p.primary_position) ||
 				filters.value.position.includes(p.secondary_position)
 		})
+	}
+
+	// Apply multi-position filter
+	if (filters.value.multiPosition) {
+		result = result.filter(p => p.secondary_position)
 	}
 
 	// Apply status filters
@@ -608,6 +622,7 @@ const hasActiveFilters = computed(() => {
 		filters.value.realTeam.length > 0 ||
 		filters.value.position.length > 0 ||
 		filters.value.status.length > 0 ||
+		filters.value.multiPosition ||  // Add this line
 		filters.value.salaryRange[0] > 0 ||
 		filters.value.salaryRange[1] < maxSalary.value ||
 		filters.value.durationRange[0] > 0 ||
@@ -618,7 +633,8 @@ const activeFilterCount = computed(() => {
 	let count = filters.value.team.length +
 		filters.value.realTeam.length +
 		filters.value.position.length +
-		filters.value.status.length
+		filters.value.status.length +
+		(filters.value.multiPosition ? 1 : 0)  // Add this line
 
 	if (filters.value.salaryRange[0] > 0 || filters.value.salaryRange[1] < maxSalary.value) count++
 	if (filters.value.durationRange[0] > 0 || filters.value.durationRange[1] < maxDuration.value) count++
@@ -699,14 +715,10 @@ const clearFilters = () => {
 		realTeam: [],
 		position: [],
 		status: [],
+		multiPosition: false,  // Add this line
 		salaryRange: [0, maxSalary.value],
 		durationRange: [0, maxDuration.value]
 	}
-}
-
-const resetSort = () => {
-	sortBy.value = 'relevancy'
-	sortOrder.value = 'desc'
 }
 
 // Column management
@@ -791,6 +803,10 @@ watch(() => props.players, newList => {
 		players.value = newList
 		loading.value = false
 	}
+})
+
+watch(search, () => {
+	page.value = 1
 })
 
 onMounted(() => {
