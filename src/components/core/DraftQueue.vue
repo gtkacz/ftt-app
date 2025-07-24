@@ -45,7 +45,9 @@
 							</v-btn>
 							<!-- Toggle queue on and off -->
 							<v-checkbox class="ml-4" label="Enable Autopick From Queue" ripple
-								:disabled="queuePlayers.length === 0" color="primary" v-model="queueEnabled" @update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact" hide-details />
+								:disabled="queuePlayers.length === 0" color="primary" v-model="queueEnabled"
+								@update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact"
+								hide-details />
 						</div>
 
 						<!-- Queue list -->
@@ -59,7 +61,7 @@
 										<template #prepend>
 											<div class="d-flex align-center ga-2">
 												<v-icon class="drag-handle" style="cursor: move;">drag_handle</v-icon>
-												<v-chip size="x-small" variant="outlined">{{ index + 1 }}</v-chip>
+												<span class="text-caption mr-2">#{{ index + 1 }}</span>
 											</div>
 										</template>
 
@@ -72,14 +74,21 @@
 													</template>
 												</v-img>
 											</v-avatar>
-											<div>
-												<div class="font-weight-medium">
-													{{ player.last_name }}, {{ player.first_name }}
+											<div class="d-flex flex-column flex-grow-1">
+												<div class="font-weight-medium d-flex align-center ga-1">
+													{{ player.first_name }} {{ player.last_name }}
+													<nba-team-icon :team="player?.real_team?.abbreviation" size="16" />
 												</div>
-												<div class="text-caption text-grey d-flex align-center ga-1">
-													<span v-if="player.primary_position">{{ player.primary_position
-													}}</span>
-													<span v-if="player.team?.name">• {{ player.team.name }}</span>
+												<div class="d-flex align-center ga-1">
+													<span class="text-caption mr-2">{{ JSON.parse(player.metadata)?.fpts.toFixed(1) }} FP/G</span>
+													<v-chip size="x-small"
+														:color="getPositionColor(player.primary_position)"
+														v-if="player.primary_position">{{ player.primary_position
+														}}</v-chip>
+													<v-chip size="x-small"
+														:color="getPositionColor(player.secondary_position)"
+														v-if="player.secondary_position">{{ player.secondary_position
+														}}</v-chip>
 												</div>
 											</div>
 										</div>
@@ -152,6 +161,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 import api from '@/api/axios'
 import PlayersTable from '@/components/core/PlayersTable.vue'
+import NbaTeamIcon from './NBATeamIcon.vue'
 
 // Props
 const props = defineProps<{
@@ -286,6 +296,15 @@ const discardChanges = () => {
 	showPlayerTable.value = false
 	// menuOpen.value = false
 	emit('queue-updated', [...queuePlayers.value])
+}
+
+const getPositionColor = (position: string): string => {
+	switch (position) {
+		case 'G': return 'blue'
+		case 'F': return 'green'
+		case 'C': return 'red'
+		default: return 'grey'
+	}
 }
 
 // Watchers

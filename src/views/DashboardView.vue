@@ -172,7 +172,10 @@
                     {{ lineup.name }}
                     <v-spacer></v-spacer>
                     <v-chip color="primary" variant="tonal" size="small">
-                      {{ lineup.totalFpts.toFixed(1) }} FPTS
+                      {{ lineup.totalFpts.toFixed(1) }} Total FPTS
+                    </v-chip>
+                    <v-chip color="secondary" variant="tonal" size="small" class="ml-2">
+                      {{ (lineup.totalFpts / (lineup.guards.length + lineup.forwards.length + (lineup.center ? 1 : 0))).toFixed(1) }} Average FPTS
                     </v-chip>
                   </v-card-title>
                   <v-card-text class="pt-0">
@@ -289,10 +292,6 @@
                   <v-col cols="3">
                     <strong>Avg FPTS:</strong><br>
                     {{ position.avgFantasyPoints.toFixed(1) }}
-                  </v-col>
-                  <v-col cols="3">
-                    <strong>Efficiency:</strong><br>
-                    {{ position.efficiency.toFixed(1) }}
                   </v-col>
                 </v-row>
 
@@ -795,7 +794,7 @@ const getFantasyPoints = (metadata: string | object): number => {
     }
     return Number(parsed.fpts) || 0
   } catch (e) {
-    // console.error('Error parsing fantasy points:', metadata)
+    console.error('Error parsing fantasy points:', metadata)
     return 0
   }
 }
@@ -1115,10 +1114,6 @@ const removeSimulatedPlayer = (playerId: number) => {
   simulatedPlayers.value = simulatedPlayers.value.filter(p => p.id !== playerId)
 }
 
-const isSimulatedPlayer = (playerId: number) => {
-  return playerId < 0
-}
-
 const fetchFreeAgents = async (): Promise<Player[]> => {
   const response = await api.get('players/?limit=10000')
   let raw_data = structuredClone(response.data.results)
@@ -1130,10 +1125,12 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
         if (typeof player.metadata === 'string') {
           player.metadata = JSON.parse(player.metadata.replaceAll("NaN", "null"))
         }
+        if (typeof player.metadata === 'string') {
+          player.metadata = JSON.parse(player.metadata.replaceAll("NaN", "null"))
+        }
       } catch (e) {
         console.error('Failed to parse player metadata:', e)
       }
-      if (player.first_name === 'Naz') { console.warn('Naz metadata:', player.metadata) }
     }
   })
 
