@@ -289,15 +289,15 @@
 
 				<!-- Position -->
 				<template #item.primary_position="{ item }">
-					<v-chip-group v-if="item.primary_position" column>
-						<v-chip v-tooltip="getPositionTooltip(item.primary_position)">
+					<div class="d-flex align-center gap-1" v-if="item.primary_position" column>
+						<v-chip variant="tonal" :color="getPositionColor(item.primary_position)" v-tooltip="getPositionTooltip(item.primary_position)">
 							{{ item.primary_position }}
 						</v-chip>
-						<v-chip v-if="item.secondary_position" v-tooltip="getPositionTooltip(item.secondary_position)">
+						<v-chip v-if="item.secondary_position" variant="tonal" :color="getPositionColor(item.secondary_position)" v-tooltip="getPositionTooltip(item.secondary_position)">
 							{{ item.secondary_position }}
 						</v-chip>
 						<span v-if="!item.primary_position && !item.secondary_position" class="text-grey">—</span>
-					</v-chip-group>
+					</div>
 				</template>
 
 				<!-- Team -->
@@ -795,6 +795,15 @@ const removeNBAFilter = (value) => {
 const getSeasonFromYear = (year) => {
 	if (!year) return 'Unknown'
 	return `${year}-${String(Number(year) + 1).slice(-2)}`
+}
+
+const getPositionColor = (position: string): string => {
+  switch (position) {
+    case 'G': return 'blue'
+    case 'F': return 'green'
+    case 'C': return 'red'
+    default: return 'grey'
+  }
 }
 
 // Watchers

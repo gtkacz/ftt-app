@@ -76,7 +76,7 @@
 							<v-container fluid>
 								<!-- Navigation buttons for draft -->
 								<v-container fluid class="ga-8 d-flex flex-column align-center justify-center"
-									v-if="isDraftStarted">
+									v-if="isDraftStarted && !draftData?.is_completed">
 									<div>
 										<div class="d-flex justify-center flex-column align-center text-center">
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name ===
@@ -88,20 +88,23 @@
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
 											<span class="text-caption"
-												v-if="nextUnmadePick?.team?.name !== authStore.user?.team?.name">Picks
+												v-if="nextUnmadePick?.team?.name !== authStore.user?.team?.name && myNextUnmadePick">Picks
 												until you: {{
 													myNextUnmadePick?.pick.overall_pick - nextUnmadePick?.pick.overall_pick
 												}}</span>
 										</div>
 									</div>
-									<DraftQueue v-if="authStore.user?.team?.id" :draftable-players-raw="getDraftablePlayers" :team-id="authStore.user?.team?.id" :draft-id="draftData?.id" />
+									<DraftQueue v-if="authStore.user?.team?.id"
+										:draftable-players-raw="getDraftablePlayers" :team-id="authStore.user?.team?.id"
+										:draft-id="draftData?.id" />
 									<div class="d-flex flex-column flex-lg-row ga-2 justify-center align-center">
 										<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
 											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn" rounded>
 											Go to Next Pick
 										</v-btn>
 										<v-btn color="secondary" variant="tonal" prepend-icon="resume"
-											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn" rounded>
+											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn"
+											rounded>
 											Go to My Next Pick
 										</v-btn>
 										<!-- <v-btn color="warning" variant="tonal" prepend-icon="compress"
@@ -118,6 +121,12 @@
 										</v-btn>
 									</div>
 								</v-container>
+								<v-container v-if="draftData?.is_completed" class="text-center">
+									<h3 class="text-h3">The {{ currentDate.year() }} {{ draftData?.is_league_draft ?
+										'league' : '' }} draft
+										has been completed.</h3>
+									<p class="text-caption">You can still view the draft results below.</p>
+								</v-container>
 								<!-- Collapsed rounds section - shows divider for collapsed rounds with load button -->
 								<v-container v-for="(round, index) in visibleRounds" :key="round.roundNumber">
 									<v-row align="center" class="my-4 w-100">
@@ -126,7 +135,8 @@
 												@click="loadCollapsedRounds" :loading="loadingMoreRounds"
 												:disabled="loadingMoreRounds" class="round-btn mb-4"
 												v-if="collapsedRoundsCount > 0 && index === 0"
-												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`" rounded>
+												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`"
+												rounded>
 												Load Past Rounds
 											</v-btn>
 											<labeled-divider>
@@ -392,7 +402,7 @@ watch(showRoundsUpTo, (newValue) => {
 		showRoundsFrom.value = Math.max(1, newValue - 1)
 		hasSetInitialRoundsFrom.value = true
 	}
-})
+}, { immediate: true })
 
 // Watch for changes in nextUnmadePick to auto-adjust visible rounds
 watch(nextUnmadePick, (newPick) => {
@@ -425,6 +435,7 @@ const loadAllRounds = async () => {
 		// Simulate loading delay for better UX
 		await new Promise(resolve => setTimeout(resolve, 800))
 
+		showRoundsFrom.value = 0
 		showRoundsUpTo.value = draftRounds.value.length
 		loadingMoreRounds.value = false
 	}
@@ -475,6 +486,10 @@ const fetchTeamsData = async () => {
 const fetchDraftData = async () => {
 	const response = await api.get(`/drafts/?year=${currentDate.year()}&is_league_draft=true`)
 	draftData.value = response.data.results[0]
+	if (draftData.value?.is_completed) {
+		// loadAllRounds()
+		showRoundsFrom.value = 0
+	}
 }
 
 const fetchLotteryData = async () => {

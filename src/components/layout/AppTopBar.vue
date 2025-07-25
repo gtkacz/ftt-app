@@ -23,6 +23,15 @@
           </template>
 
           <v-list>
+            <v-list-item>
+              <v-list-item-title class="text-caption ma-0">
+                <p class="d-flex align-center flex-column flex-wrap">
+                  Logged in as:
+                  <span class="font-weight-bold">{{ user?.first_name }} {{ user?.last_name }}</span>
+                </p>
+              </v-list-item-title>
+            </v-list-item>
+            <v-divider />
             <v-list-item @click="navigateToProfile">
               <template #prepend>
                 <v-icon icon="person" />
