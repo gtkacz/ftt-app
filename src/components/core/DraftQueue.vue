@@ -278,7 +278,6 @@ const saveQueue = async () => {
 
 	const payload = {
 		player_ids: queuePlayers.value.map(player => player.id),
-		autopick_enabled: true,
 	}
 
 	await api.post(`drafts/queues/${queueId.value}/reorder/`, payload)
