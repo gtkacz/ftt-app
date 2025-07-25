@@ -812,9 +812,9 @@ const allPlayers = computed(() => [
 const simulatedTeamData = computed(() => ({
   ...teamData.value,
   players: allPlayers.value,
-  total_players: allPlayers.value.length,
-  total_salary: allPlayers.value.reduce((sum, p) => sum + p.contract?.salary, 0),
-  available_salary: SALARY_CAP - allPlayers.value.reduce((sum, p) => sum + p.contract?.salary, 0),
+  total_players: allPlayers.value.reduce((count, p) => count + (p.is_ir ? 0 : 1), 0),
+  total_salary: allPlayers.value.reduce((sum, p) => sum + (p.is_ir ? 0 : p.contract?.salary), 0),
+  available_salary: SALARY_CAP - allPlayers.value.reduce((sum, p) => sum + (p.is_ir ? 0 : p.contract?.salary), 0),
   available_players: MAX_PLAYERS - allPlayers.value.length
 }))
 
@@ -975,7 +975,7 @@ const teamRankings = computed(() => {
 
   return {
     totalPlayers: getRank(currentTeam.total_players, teams.map(t => t.total_players)),
-    totalSalary: getRank(currentTeam.total_salary, teams.map(t => t.total_salary)),
+    totalSalary: getRank(currentTeam.total_salary, teams.map(t => t.total_salary), false),
     totalFantasyPoints: getRank(currentTeam.totalFantasyPoints, teams.map(t => t.totalFantasyPoints)),
     avgFantasyPoints: getRank(currentTeam.avgFantasyPoints, teams.map(t => t.avgFantasyPoints)),
     fptsPerMillion: getRank(currentTeam.fptsPerMillion, teams.map(t => t.fptsPerMillion)),
