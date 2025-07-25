@@ -89,15 +89,16 @@
               <div>
                 <v-card-subtitle class="pa-0">Total Players</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ simulatedTeamData.total_players }}</v-card-title>
-                <v-chip variant="tonal" size="small" color="info">
-                  {{ simulatedTeamData.available_players }} slots available
-                </v-chip>
-                <v-chip v-if="MIN_PLAYERS > simulatedTeamData.total_players" variant="tonal" size="small"
-                  color="warning" class="ml-3">
-                  <span>{{ MIN_PLAYERS -
-                    simulatedTeamData.total_players }} players
-                    to minimum</span>
-                </v-chip>
+                <div class="d-flex gap-1 flex-wrap">
+                  <v-chip variant="tonal" size="small" color="info">
+                    {{ simulatedTeamData.available_players }} slots available
+                  </v-chip>
+                  <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
+                    League Avg: {{ leagueStats.averages.totalPlayers.toFixed(1) }} | #{{ teamRankings.totalPlayers }} of
+                    {{
+                      leagueStats.teams.length }}
+                  </v-chip>
+                </div>
               </div>
               <v-icon color="primary" size="40">group</v-icon>
             </div>
@@ -112,10 +113,17 @@
               <div>
                 <v-card-subtitle class="pa-0">Total Salary</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">${{ simulatedTeamData.total_salary }}M</v-card-title>
-                <v-chip :color="simulatedTeamData.available_salary > 0 ? 'success' : 'error'" variant="tonal"
-                  size="small">
-                  ${{ simulatedTeamData.available_salary }}M available
-                </v-chip>
+                <div class="d-flex gap-1 flex-wrap">
+                  <v-chip :color="simulatedTeamData.available_salary > 0 ? 'success' : 'error'" variant="tonal"
+                    size="small">
+                    ${{ simulatedTeamData.available_salary }}M available
+                  </v-chip>
+                  <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
+                    League Avg: {{ leagueStats.averages?.totalSalary.toFixed(1) }} | #{{ teamRankings?.totalSalary }} of
+                    {{
+                      leagueStats.teams.length }}
+                  </v-chip>
+                </div>
               </div>
               <v-icon color="green" size="40">attach_money</v-icon>
             </div>
@@ -130,9 +138,16 @@
               <div>
                 <v-card-subtitle class="pa-0">Total Fantasy Points</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ currentStats.totalFantasyPoints.toFixed(1) }}</v-card-title>
-                <v-chip color="info" variant="tonal" size="small">
-                  {{ currentStats.avgFantasyPoints.toFixed(1) }} avg
-                </v-chip>
+                <div class="d-flex gap-1 flex-wrap">
+                  <v-chip color="info" variant="tonal" size="small">
+                    {{ currentStats.avgFantasyPoints.toFixed(1) }} avg
+                  </v-chip>
+                  <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
+                    League Avg: {{ leagueStats.averages?.avgFantasyPoints.toFixed(1) }} | #{{
+                      teamRankings?.avgFantasyPoints
+                    }} of {{ leagueStats.teams.length }}
+                  </v-chip>
+                </div>
               </div>
               <v-icon color="purple" size="40">trophy</v-icon>
             </div>
@@ -145,9 +160,15 @@
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <v-card-subtitle class="pa-0">Team Efficiency</v-card-subtitle>
+                <v-card-subtitle class="pa-0">Team Efficiency (FPTS per $M)</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ efficiencyStats.fptsPerMillion.toFixed(1) }}</v-card-title>
-                <v-chip color="orange" variant="tonal" size="small">FPTS per $M</v-chip>
+                <div class="d-flex gap-1 flex-wrap">
+                  <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
+                    League Avg: {{ leagueStats.averages?.fptsPerMillion.toFixed(1) }} | #{{ teamRankings?.fptsPerMillion
+                    }}
+                    of {{ leagueStats.teams.length }}
+                  </v-chip>
+                </div>
               </div>
               <v-icon color="orange" size="40">chart_data</v-icon>
             </div>
@@ -174,17 +195,24 @@
                     <v-chip color="primary" variant="tonal" size="small">
                       {{ lineup.totalFpts.toFixed(1) }} Total FPTS
                     </v-chip>
-                    <v-chip color="secondary" variant="tonal" size="small" class="ml-2">
-                      {{ (lineup.totalFpts / (lineup.guards.length + lineup.forwards.length + (lineup.center ? 1 :
-                      0))).toFixed(1) }} Average FPTS
+                    <v-chip v-if="leagueStats && index === 0" variant="tonal" size="small" color="secondary"
+                      class="ml-2">
+                      Best Lineup Avg: {{ leagueStats.averages?.bestLineupFpts.toFixed(1) }} | #{{
+                        teamRankings?.bestLineupFpts }} of {{ leagueStats.teams.length }}
+                    </v-chip>
+                    <v-chip v-if="leagueStats && index === 1" variant="tonal" size="small" color="secondary"
+                      class="ml-2">
+                      All Lineups Avg: {{ leagueStats.averages?.avgLineupFpts.toFixed(1) }} | #{{
+                        teamRankings?.avgLineupFpts }} of {{ leagueStats.teams.length }}
                     </v-chip>
                   </v-card-title>
                   <v-card-text class="pt-0">
                     <v-list density="compact" class="pa-0">
                       <v-list-item v-for="guard in lineup.guards" :key="guard.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          <v-chip size="small" class="mr-2"
-                            :color="getPositionColor('G')">G</v-chip>{{ guard.first_name }} {{ guard.last_name }}
+                          <v-chip size="small" class="mr-2" :color="getPositionColor('G')">G</v-chip>{{ guard.first_name
+                          }}
+                          {{ guard.last_name }}
                           <v-chip v-if="guard.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -194,8 +222,9 @@
 
                       <v-list-item v-for="forward in lineup.forwards" :key="forward.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          <v-chip size="small" class="mr-2"
-                            :color="getPositionColor('F')">F</v-chip>{{ forward.first_name }} {{ forward.last_name }}
+                          <v-chip size="small" class="mr-2" :color="getPositionColor('F')">F</v-chip>{{
+                            forward.first_name
+                          }} {{ forward.last_name }}
                           <v-chip v-if="forward.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -205,8 +234,8 @@
 
                       <v-list-item v-if="lineup.center" :key="lineup.center.id" class="px-0 py-1">
                         <v-list-item-title class="text-body-2">
-                          <v-chip size="small" class="mr-2"
-                            :color="getPositionColor('C')">C</v-chip>{{ lineup.center.first_name }} {{ lineup.center.last_name }}
+                          <v-chip size="small" class="mr-2" :color="getPositionColor('C')">C</v-chip>{{
+                            lineup.center.first_name }} {{ lineup.center.last_name }}
                           <v-chip v-if="lineup.center.is_ir" class="ml-2" size="small" color="danger">IR</v-chip>
                         </v-list-item-title>
                         <template v-slot:append>
@@ -750,6 +779,7 @@ const teamData = ref<TeamData>({
 
 const freeAgents = ref<Player[]>([])
 const simulatedPlayers = ref<Player[]>([])
+const leagueTeams = ref<TeamData[]>([])
 
 const availableFreeAgents = computed(() => {
   const addedPlayerIds = simulatedPlayers.value.map(p => Math.abs(p.id))
@@ -866,7 +896,97 @@ const fetchTeamData = async (): Promise<TeamData> => {
   }
 }
 
+const fetchLeagueData = async (): Promise<TeamData[]> => {
+  try {
+    const response = await api.get('/teams/')
+    return response.data.results as TeamData[]
+  } catch (error) {
+    console.error('Error fetching league data:', error)
+    return []
+  }
+}
+
 // Computed properties
+const leagueStats = computed(() => {
+  loading.value = true
+  if (leagueTeams.value.length === 0) return null
+  
+  const teams = leagueTeams.value.map(team => {
+    const activePlayers = team.players.filter(p => !p.is_ir)
+    const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
+    const avgAge = activePlayers.reduce((sum, p) => sum + getPlayerAge(p.metadata), 0) / Math.max(activePlayers.length, 1)
+    const avgExperience = activePlayers.reduce((sum, p) => sum + getPlayerExperience(p.metadata), 0) / Math.max(activePlayers.length, 1)
+    
+    // Calculate lineup projections for each team
+    const teamLineups = calculateTeamLineups(activePlayers)
+    const bestLineupFpts = teamLineups.length > 0 ? Math.max(...teamLineups.map(l => l.totalFpts)) : 0
+    const avgLineupFpts = teamLineups.length > 0 ? teamLineups.reduce((sum, l) => sum + l.totalFpts, 0) / teamLineups.length : 0
+    loading.value = false
+
+    return {
+      ...team,
+      totalFantasyPoints,
+      avgFantasyPoints: totalFantasyPoints / Math.max(activePlayers.length, 1),
+      fptsPerMillion: totalFantasyPoints / Math.max(team.total_salary, 1),
+      salaryCapUtilization: (team.total_salary / SALARY_CAP) * 100,
+      rosterUtilization: (activePlayers.length / MAX_PLAYERS) * 100,
+      avgAge,
+      avgExperience,
+      bestLineupFpts,
+      avgLineupFpts
+    }
+  })
+
+  const averages = {
+    totalPlayers: teams.reduce((sum, t) => sum + t.total_players, 0) / teams.length,
+    totalSalary: teams.reduce((sum, t) => sum + t.total_salary, 0) / teams.length,
+    availableSalary: teams.reduce((sum, t) => sum + t.available_salary, 0) / teams.length,
+    totalFantasyPoints: teams.reduce((sum, t) => sum + t.totalFantasyPoints, 0) / teams.length,
+    avgFantasyPoints: teams.reduce((sum, t) => sum + t.avgFantasyPoints, 0) / teams.length,
+    fptsPerMillion: teams.reduce((sum, t) => sum + t.fptsPerMillion, 0) / teams.length,
+    salaryCapUtilization: teams.reduce((sum, t) => sum + t.salaryCapUtilization, 0) / teams.length,
+    rosterUtilization: teams.reduce((sum, t) => sum + t.rosterUtilization, 0) / teams.length,
+    avgAge: teams.reduce((sum, t) => sum + t.avgAge, 0) / teams.length,
+    avgExperience: teams.reduce((sum, t) => sum + t.avgExperience, 0) / teams.length,
+    bestLineupFpts: teams.reduce((sum, t) => sum + t.bestLineupFpts, 0) / teams.length,
+    avgLineupFpts: teams.reduce((sum, t) => sum + t.avgLineupFpts, 0) / teams.length
+  }
+
+  return { teams, averages }
+})
+
+const teamRankings = computed(() => {
+  if (!leagueStats.value) return null
+
+  const { teams } = leagueStats.value
+  const currentTeam = teams.find(t => t.id === parseInt(teamId))
+  if (!currentTeam) return null
+
+  const getRank = (value: number, values: number[], higherIsBetter = true) => {
+    const sorted = [...values].sort((a, b) => higherIsBetter ? b - a : a - b)
+    return sorted.indexOf(value) + 1
+  }
+
+  // Calculate current team lineup stats using same method as league teams
+  const currentActivePlayers = simulatedTeamData.value.players.filter(p => !p.is_ir)
+  const currentTeamLineups = calculateTeamLineups(currentActivePlayers)
+  const bestCurrentLineup = currentTeamLineups.length > 0 ? Math.max(...currentTeamLineups.map(l => l.totalFpts)) : 0
+  const avgCurrentLineup = currentTeamLineups.length > 0 ? currentTeamLineups.reduce((sum, l) => sum + l.totalFpts, 0) / currentTeamLineups.length : 0
+
+  return {
+    totalPlayers: getRank(currentTeam.total_players, teams.map(t => t.total_players)),
+    totalSalary: getRank(currentTeam.total_salary, teams.map(t => t.total_salary)),
+    totalFantasyPoints: getRank(currentTeam.totalFantasyPoints, teams.map(t => t.totalFantasyPoints)),
+    avgFantasyPoints: getRank(currentTeam.avgFantasyPoints, teams.map(t => t.avgFantasyPoints)),
+    fptsPerMillion: getRank(currentTeam.fptsPerMillion, teams.map(t => t.fptsPerMillion)),
+    salaryCapUtilization: getRank(currentTeam.salaryCapUtilization, teams.map(t => t.salaryCapUtilization), false),
+    avgAge: getRank(currentTeam.avgAge, teams.map(t => t.avgAge), false),
+    avgExperience: getRank(currentTeam.avgExperience, teams.map(t => t.avgExperience)),
+    bestLineupFpts: getRank(bestCurrentLineup, teams.map(t => t.bestLineupFpts)),
+    avgLineupFpts: getRank(avgCurrentLineup, teams.map(t => t.avgLineupFpts))
+  }
+})
+
 const currentStats = computed(() => {
   const activePlayers = simulatedTeamData.value.players
   const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
@@ -1132,6 +1252,42 @@ const lineupProjections = computed(() => {
   return lineups
 })
 
+const calculateTeamLineups = (players: any[]) => {
+  // Simplified version of lineup calculation for league comparison
+  const playersWithFpts = players.map(p => ({
+    ...p,
+    fpts: getFantasyPoints(p.metadata),
+    eligiblePositions: [p.primary_position, ...(p.secondary_position ? [p.secondary_position] : [])]
+  })).sort((a, b) => b.fpts - a.fpts)
+
+  const lineups = []
+  const usedPlayers = new Set()
+
+  for (let i = 0; i < Math.min(3, Math.ceil(players.length / 5)); i++) {
+    const availablePlayers = playersWithFpts.filter(p => !usedPlayers.has(p.id))
+    let totalFpts = 0
+    let playerCount = 0
+
+    // Simple best available lineup construction
+    for (const pos of ['C', 'F', 'F', 'G', 'G']) {
+      const bestPlayer = availablePlayers.find(p =>
+        !usedPlayers.has(p.id) && p.eligiblePositions.includes(pos)
+      )
+      if (bestPlayer) {
+        usedPlayers.add(bestPlayer.id)
+        totalFpts += bestPlayer.fpts
+        playerCount++
+      }
+    }
+
+    if (playerCount > 0) {
+      lineups.push({ totalFpts, playerCount })
+    }
+  }
+
+  return lineups
+}
+
 const addSimulatedPlayer = (player: Player) => {
   // Create a copy with a temporary negative ID to avoid conflicts
   const simulatedPlayer = {
@@ -1190,10 +1346,23 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
   return players;
 }
 
-// Update onMounted
 onMounted(async () => {
-  teamData.value = await fetchTeamData()
-  freeAgents.value = await fetchFreeAgents()
+  loading.value = true
+  try {
+    const [team, league, agents] = await Promise.all([
+      fetchTeamData(),
+      fetchLeagueData(),
+      fetchFreeAgents()
+    ])
+    teamData.value = team
+    leagueTeams.value = league
+    freeAgents.value = agents
+  } catch (error) {
+    console.error('Error fetching initial data:', error)
+    throw error
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
