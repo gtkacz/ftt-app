@@ -322,17 +322,17 @@
 
 				<!-- Status badges -->
 				<template #item.status="{ item }">
-					<v-chip-group column>
-						<v-chip v-if="item.contract?.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'">
+					<div class="d-flex flex-wrap gap-1">
+						<v-chip v-if="item.contract?.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'" color="warning">
 							Restricted Free Agent
 						</v-chip>
-						<v-chip v-if="item.contract?.is_to" size="x-small" v-tooltip="'Team Option'">
+						<v-chip v-if="item.contract?.is_to" size="x-small" v-tooltip="'Team Option'" color="info">
 							Team Option
 						</v-chip>
-						<v-chip v-if="item.is_ir" size="x-small" v-tooltip="'Injured Reserve'">
+						<v-chip v-if="item.is_ir" size="x-small" v-tooltip="'Injured Reserve'" color="danger">
 							Injured Reserve
 						</v-chip>
-					</v-chip-group>
+					</div>
 				</template>
 
 				<!-- Pagination footer -->
@@ -430,12 +430,12 @@ const filters = ref<{
 const defaultHeaders = ref(props.headers && props.headers.length
 	? props.headers
 	: [
-		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '150px', visible: true, locked: true },
-		{ title: 'Team', key: 'team.name', width: '150px', visible: true, sortable: true },
-		{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
-		{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
-		{ title: 'Contract', key: 'contract_info', align: 'end', width: '150px', visible: true, sortable: true },
-		{ title: 'Status', key: 'status', width: '120px', sortable: false },
+		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
+		{ title: 'Team', key: 'team.name', width: '75px', visible: true, sortable: true },
+		{ title: 'FP/G', key: 'relevancy', width: '60px', visible: true, sortable: true },
+		{ title: 'Position', key: 'primary_position', width: '60px', visible: true, sortable: true },
+		{ title: 'Contract', key: 'contract_info', width: '75px', visible: true, sortable: true },
+		{ title: 'Status', key: 'status', width: '30px', visible: true, sortable: false },
 	])
 const allHeaders = ref(defaultHeaders.value)
 const editableHeaders = ref([...allHeaders.value])

@@ -32,10 +32,10 @@ const pick = ref(null);
 
 const tableHeaders = [
 	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
-	{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
-	{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
-	{ title: 'Contract', key: 'contract_info', align: 'end', width: '150px', visible: true, sortable: true },
-	{ title: 'Status', key: 'status', width: '120px', visible: true, sortable: false },
+	{ title: 'FP/G', key: 'relevancy', align: 'start', width: '60px', visible: true, sortable: true },
+	{ title: 'Position', key: 'primary_position', width: '60px', visible: true, sortable: true },
+	{ title: 'Contract', key: 'contract_info', align: 'start', width: '75px', visible: true, sortable: true },
+	{ title: 'Status', key: 'status', width: '60px', visible: true, sortable: false },
 ]
 const onPlayerSelected = (player: any) => {
 	playerData.value = player
