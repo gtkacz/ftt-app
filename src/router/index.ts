@@ -212,7 +212,9 @@ router.beforeEach(async (to, from, next) => {
         if (
           authStore.user?.is_approved &&
           !!authStore.user?.team &&
-          ["create-team", "approval", "login", "signup"].includes(to.name?.toString() || "")
+          ["create-team", "approval", "login", "signup"].includes(
+            to.name?.toString() || ""
+          )
         ) {
           next("/");
           return;

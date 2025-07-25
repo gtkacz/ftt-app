@@ -15,8 +15,10 @@
             <v-text-field rounded v-model="username" label="Username" variant="outlined" append-inner-icon="account_box"
               :rules="[rules.required]" class="mb-3" color="secondary" />
 
-            <v-text-field rounded v-model="password" label="Password" :type="showPassword ? 'text' : 'password'" variant="outlined"
-              :append-inner-icon="showPassword ? 'visibility' : 'visibility_off'" :rules="[rules.required]" class="mb-6" color="secondary" @click:append-inner="showPassword = !showPassword" />
+            <v-text-field rounded v-model="password" label="Password" :type="showPassword ? 'text' : 'password'"
+              variant="outlined" :append-inner-icon="showPassword ? 'visibility' : 'visibility_off'"
+              :rules="[rules.required]" class="mb-6" color="secondary"
+              @click:append-inner="showPassword = !showPassword" />
 
             <v-btn type="submit" block size="large" :loading="authStore.isLoading"
               :disabled="!formValid || authStore.isLoading" color="secondary" rounded="xl" class="mb-4">

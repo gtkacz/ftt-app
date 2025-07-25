@@ -23,8 +23,8 @@ const playerData = ref(null);
 const pick = ref(null);
 
 const onPlayerSelected = (player: any) => {
-	playerData.value = player
-	showPlayerCard.value = true
+  playerData.value = player
+  showPlayerCard.value = true
 }
 </script>
 

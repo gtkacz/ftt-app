@@ -80,7 +80,8 @@
 													<nba-team-icon :team="player?.real_team?.abbreviation" size="16" />
 												</div>
 												<div class="d-flex align-center ga-1">
-													<span class="text-caption mr-2">{{ JSON.parse(player.metadata)?.fpts.toFixed(1) }} FP/G</span>
+													<span class="text-caption mr-2">{{
+														JSON.parse(player.metadata)?.fpts.toFixed(1) }} FP/G</span>
 													<v-chip size="x-small"
 														:color="getPositionColor(player.primary_position)"
 														v-if="player.primary_position">{{ player.primary_position

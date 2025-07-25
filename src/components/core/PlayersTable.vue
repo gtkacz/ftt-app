@@ -290,10 +290,13 @@
 				<!-- Position -->
 				<template #item.primary_position="{ item }">
 					<div class="d-flex align-center gap-1" v-if="item.primary_position" column>
-						<v-chip variant="tonal" :color="getPositionColor(item.primary_position)" v-tooltip="getPositionTooltip(item.primary_position)">
+						<v-chip variant="tonal" :color="getPositionColor(item.primary_position)"
+							v-tooltip="getPositionTooltip(item.primary_position)">
 							{{ item.primary_position }}
 						</v-chip>
-						<v-chip v-if="item.secondary_position" variant="tonal" :color="getPositionColor(item.secondary_position)" v-tooltip="getPositionTooltip(item.secondary_position)">
+						<v-chip v-if="item.secondary_position" variant="tonal"
+							:color="getPositionColor(item.secondary_position)"
+							v-tooltip="getPositionTooltip(item.secondary_position)">
 							{{ item.secondary_position }}
 						</v-chip>
 						<span v-if="!item.primary_position && !item.secondary_position" class="text-grey">—</span>
@@ -798,12 +801,12 @@ const getSeasonFromYear = (year) => {
 }
 
 const getPositionColor = (position: string): string => {
-  switch (position) {
-    case 'G': return 'blue'
-    case 'F': return 'green'
-    case 'C': return 'red'
-    default: return 'grey'
-  }
+	switch (position) {
+		case 'G': return 'blue'
+		case 'F': return 'green'
+		case 'C': return 'red'
+		default: return 'grey'
+	}
 }
 
 // Watchers

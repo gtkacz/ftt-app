@@ -910,13 +910,13 @@ const fetchLeagueData = async (): Promise<TeamData[]> => {
 const leagueStats = computed(() => {
   loading.value = true
   if (leagueTeams.value.length === 0) return null
-  
+
   const teams = leagueTeams.value.map(team => {
     const activePlayers = team.players.filter(p => !p.is_ir)
     const totalFantasyPoints = activePlayers.reduce((sum, p) => sum + getFantasyPoints(p.metadata), 0)
     const avgAge = activePlayers.reduce((sum, p) => sum + getPlayerAge(p.metadata), 0) / Math.max(activePlayers.length, 1)
     const avgExperience = activePlayers.reduce((sum, p) => sum + getPlayerExperience(p.metadata), 0) / Math.max(activePlayers.length, 1)
-    
+
     // Calculate lineup projections for each team
     const teamLineups = calculateTeamLineups(activePlayers)
     const bestLineupFpts = teamLineups.length > 0 ? Math.max(...teamLineups.map(l => l.totalFpts)) : 0

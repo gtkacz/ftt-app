@@ -67,7 +67,6 @@ export const useAuthStore = defineStore("auth", {
         const updatedUser = await AuthService.fetchUser(this.user?.id!);
         this.setUser(updatedUser);
         return true;
-
       });
 
       return result ?? false;
