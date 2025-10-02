@@ -58,9 +58,12 @@ const routes: RouteRecordRaw[] = [
     props: true,
   },
   {
-    path: "/trade",
-    name: "trade",
-    component: () => import("@/views/501View.vue"),
+    path: "/trades/create",
+    name: "trade-create",
+    component: () => import("@/views/TradeCreateView.vue"),
+    meta: {
+      title: "Create Trade - Fantasy Trash Talk",
+    },
   },
   {
     path: "/team/:id",
@@ -81,7 +84,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/trades",
     name: "trades",
-    component: () => import("@/views/501View.vue"),
+    component: () => import("@/views/TradesView.vue"),
+    meta: {
+      title: "Trade Center - Fantasy Trash Talk",
+    },
+  },
+  {
+    path: "/trades/:id",
+    name: "trade-detail",
+    component: () => import("@/views/TradeDetailView.vue"),
+    props: true,
+    meta: {
+      title: "Trade Details - Fantasy Trash Talk",
+    },
   },
   {
     path: "/commission",
