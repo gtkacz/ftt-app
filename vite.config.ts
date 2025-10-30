@@ -17,10 +17,47 @@ export default defineConfig({
       autoImport: true,
     }),
     viteCompression(),
-    VitePWA(),
+    VitePWA({
+      registerType: "autoUpdate",
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/ftt-backend-api\.(tkacz\.dev\.br|loca\.lt)\/api\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
+      manifest: {
+        name: "Fantasy Trash Talk",
+        short_name: "FTT",
+        description: "Fantasy Basketball League Management",
+        theme_color: "#1976d2",
+        icons: [
+          {
+            src: "/ftt-app/vite.svg",
+            sizes: "192x192",
+            type: "image/svg+xml",
+          },
+        ],
+      },
+    }),
   ],
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    __BUILD_TIME__: JSON.stringify(process.env.VITE_BUILD_TIME || Date.now()),
   },
   resolve: {
     alias: {
