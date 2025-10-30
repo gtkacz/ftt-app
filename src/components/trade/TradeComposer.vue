@@ -204,21 +204,14 @@
     </v-dialog>
 
     <!-- Pick Selector Dialog -->
-    <v-dialog v-model="pickSelectorDialog" max-width="800">
-      <v-card>
-        <v-card-title>Select Draft Pick</v-card-title>
-        <v-divider />
-        <v-card-text>
-          <!-- Pick list would go here -->
-          <div class="text-caption text-medium-emphasis text-center pa-4">
-            Pick selector implementation pending
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="pickSelectorDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
+    <v-dialog v-model="pickSelectorDialog" max-width="900" scrollable>
+      <PickSelector
+        v-if="selectedAssetTeam"
+        :team-id="selectedAssetTeam"
+        :all-teams="allTeams"
+        @close="pickSelectorDialog = false"
+        @pick-selected="onPickSelected"
+      />
     </v-dialog>
   </v-container>
 </template>
@@ -227,11 +220,12 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
-import type { Team, TradeAsset } from '@/types/trade';
+import type { Team, TradeAsset, Pick, Player } from '@/types/trade';
 import TeamSelector from './TeamSelector.vue';
 import TradeAssetCard from './TradeAssetCard.vue';
 import TradeValidationDisplay from './TradeValidationDisplay.vue';
 import PlayersTable from '@/components/core/PlayersTable.vue';
+import PickSelector from './PickSelector.vue';
 import api from '@/api/axios';
 
 interface Props {
@@ -360,16 +354,62 @@ function onPlayerSelected(player: any) {
     return;
   }
 
-  // Set the correct giving/receiving teams
+  // Set the correct giving/receiving teams and enrich with player data
   const asset = {
     asset_type: 'player' as const,
     giving_team: givingTeam || otherTeamId,
     receiving_team: receivingTeam || otherTeamId,
     player: player.id,
+    player_detail: {
+      id: player.id,
+      first_name: player.first_name,
+      last_name: player.last_name,
+      full_name: `${player.first_name} ${player.last_name}`,
+      position: player.primary_position || 'N/A',
+      nba_team: player.real_team?.abbreviation || 'FA',
+      photo_url: player.photo,
+    } as Player,
   };
+
+  // Add contract data if available
+  if (player.contract) {
+    (asset.player_detail as any).contract = player.contract;
+  }
 
   tradeStore.addAssetToDraft(asset);
   playerSelectorDialog.value = false;
+  debouncedValidation();
+}
+
+function onPickSelected(pick: Pick) {
+  if (!selectedAssetTeam.value) return;
+
+  const givingTeam = selectedAssetType.value === 'giving' ? selectedAssetTeam.value : null;
+  const receivingTeam = selectedAssetType.value === 'receiving' ? selectedAssetTeam.value : null;
+
+  // Find the other team in the trade
+  const otherTeamId = tradeStore.draftTrade.teams.find(t => t !== selectedAssetTeam.value);
+
+  if (!otherTeamId) {
+    console.error('No other team found in trade');
+    return;
+  }
+
+  // Set the correct giving/receiving teams and enrich with pick data
+  const asset = {
+    asset_type: 'pick' as const,
+    giving_team: givingTeam || otherTeamId,
+    receiving_team: receivingTeam || otherTeamId,
+    pick: pick.id,
+    pick_detail: pick,
+    pick_protection_type: pick.protection_type || 'none',
+    pick_protection_range_start: pick.protection_range_start,
+    pick_protection_range_end: pick.protection_range_end,
+    pick_rollover_year: pick.rollover_year,
+  };
+
+  tradeStore.addAssetToDraft(asset);
+  pickSelectorDialog.value = false;
   debouncedValidation();
 }
 

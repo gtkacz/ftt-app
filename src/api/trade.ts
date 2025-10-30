@@ -10,6 +10,9 @@ import type {
   ValidateTradeData,
   TradeValidationResponse,
   TradeListFilters,
+  TradeTimelineEvent,
+  CommissionerApprovalData,
+  CommissionerVetoData,
 } from '@/types/trade';
 
 export class TradeService {
@@ -125,14 +128,25 @@ export class TradeService {
     return response.data;
   }
 
-  // Commissioner Actions
-  static async approveTrade(id: number, notes?: string): Promise<Trade> {
-    const response = await api.post<Trade>(`/trades/${id}/approve/`, { notes });
+  // Timeline
+  static async getTimeline(id: number): Promise<TradeTimelineEvent[]> {
+    const response = await api.get<TradeTimelineEvent[]>(`/trades/${id}/timeline/`);
     return response.data;
   }
 
-  static async vetoTrade(id: number, reason?: string): Promise<Trade> {
-    const response = await api.post<Trade>(`/trades/${id}/veto/`, { reason });
+  // Commissioner Actions
+  static async listPendingApproval(): Promise<{ results: Trade[]; count: number }> {
+    const response = await api.get<{ results: Trade[]; count: number }>('/trades/pending-approval/');
+    return response.data;
+  }
+
+  static async approveTrade(id: number, data?: CommissionerApprovalData): Promise<Trade> {
+    const response = await api.post<Trade>(`/trades/${id}/approve/`, data || {});
+    return response.data;
+  }
+
+  static async vetoTrade(id: number, data: CommissionerVetoData): Promise<Trade> {
+    const response = await api.post<Trade>(`/trades/${id}/veto/`, data);
     return response.data;
   }
 }

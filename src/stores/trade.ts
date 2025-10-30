@@ -216,9 +216,15 @@ export const useTradeStore = defineStore('trade', {
 
       this.isValidating = true;
       try {
+        // Strip client-side enrichment fields for validation
+        const assetsForValidation = this.draftTrade.assets.map(asset => {
+          const { player_detail, pick_detail, ...cleanAsset } = asset;
+          return cleanAsset;
+        });
+
         this.validationResult = await TradeService.validateTrade({
           teams: this.draftTrade.teams,
-          assets: this.draftTrade.assets,
+          assets: assetsForValidation,
         });
       } catch (error) {
         console.error('Validation failed:', error);
@@ -244,14 +250,26 @@ export const useTradeStore = defineStore('trade', {
           status: 'draft',
         };
 
+        console.log('[Trade Store] Creating draft trade with data:', tradeData);
         const trade = await TradeService.createTrade(tradeData);
+        console.log('[Trade Store] Trade created, received:', trade);
 
-        // Add all assets
+        // Add all assets, stripping client-side enrichment
         for (const asset of this.draftTrade.assets) {
-          await TradeService.addAsset({ ...asset, trade: trade.id });
+          const { player_detail, pick_detail, ...cleanAsset } = asset;
+          await TradeService.addAsset({ ...cleanAsset, trade: trade.id });
         }
 
         this.currentTrade = await TradeService.getTrade(trade.id);
+        console.log('[Trade Store] Trade reloaded, current status:', this.currentTrade?.status);
+
+        // DEFENSIVE CHECK: Verify status is still draft
+        if (this.currentTrade?.status !== 'draft') {
+          console.error('[Trade Store] WARNING: Backend returned wrong status!');
+          console.error('[Trade Store] Expected: draft, Received:', this.currentTrade?.status);
+          console.error('[Trade Store] This is a BACKEND BUG - check your trade creation endpoint');
+        }
+
         return this.currentTrade;
       } catch (error) {
         console.error('Failed to save draft trade:', error);
@@ -267,11 +285,21 @@ export const useTradeStore = defineStore('trade', {
       if (!id) {
         // If no existing trade, create and propose
         const trade = await this.saveDraftTrade();
+        console.log('[Trade Store] Attempting to propose trade ID:', trade.id, 'with status:', trade.status);
+
+        // Defensive check: warn if status is not draft
+        if (trade.status !== 'draft') {
+          console.error('[Trade Store] ERROR: Cannot propose trade with status:', trade.status);
+          console.error('[Trade Store] Backend should have returned status "draft" but returned:', trade.status);
+          throw new Error(`Backend error: Trade status is "${trade.status}" instead of "draft". Check backend trade creation endpoint.`);
+        }
+
         return await TradeService.proposeTrade(trade.id);
       }
 
       this.isLoading = true;
       try {
+        console.log('[Trade Store] Proposing existing trade ID:', id);
         this.currentTrade = await TradeService.proposeTrade(id);
         await this.loadTrades();
         return this.currentTrade;
@@ -342,6 +370,67 @@ export const useTradeStore = defineStore('trade', {
         throw error;
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    // Load trade timeline
+    async loadTimeline(tradeId: number) {
+      this.isLoading = true;
+      try {
+        const timeline = await TradeService.getTimeline(tradeId);
+        if (this.currentTrade) {
+          this.currentTrade.timeline = timeline;
+        }
+        return timeline;
+      } catch (error) {
+        console.error('Failed to load timeline:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // Commissioner approve trade
+    async approveTrade(tradeId: number, notes?: string) {
+      this.isLoading = true;
+      try {
+        this.currentTrade = await TradeService.approveTrade(tradeId, { notes });
+        await this.loadTrades();
+        return this.currentTrade;
+      } catch (error) {
+        console.error('Failed to approve trade:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // Commissioner veto trade
+    async vetoTrade(tradeId: number, reason: string) {
+      this.isLoading = true;
+      try {
+        this.currentTrade = await TradeService.vetoTrade(tradeId, { reason });
+        await this.loadTrades();
+        return this.currentTrade;
+      } catch (error) {
+        console.error('Failed to veto trade:', error);
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // Load pending approval trades for commissioners
+    async loadPendingApproval() {
+      this.isLoadingTrades = true;
+      try {
+        const response = await TradeService.listPendingApproval();
+        return response;
+      } catch (error) {
+        console.error('Failed to load pending approval trades:', error);
+        throw error;
+      } finally {
+        this.isLoadingTrades = false;
       }
     },
 

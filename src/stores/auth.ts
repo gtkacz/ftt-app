@@ -171,6 +171,12 @@ export const useAuthStore = defineStore("auth", {
     isStaff(): boolean {
       return this.user?.is_staff || false;
     },
+    isSuperuser(): boolean {
+      return this.user?.is_superuser || false;
+    },
+    isCommissioner(): boolean {
+      return this.user?.is_staff || this.user?.is_superuser || false;
+    },
     isApproved(): boolean {
       return this.user?.is_approved || false;
     },

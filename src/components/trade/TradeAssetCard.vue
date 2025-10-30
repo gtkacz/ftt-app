@@ -30,7 +30,7 @@
           <div v-if="asset.asset_type === 'player' && playerData">
             <div class="d-flex align-center">
               <div class="text-subtitle-2 font-weight-bold">
-                {{ playerData.full_name }}
+                {{ getPlayerFullName(playerData) }}
               </div>
               <v-chip
                 v-if="contractData?.is_rfa && (contractData?.years_remaining || 0) <= 0"
@@ -42,7 +42,7 @@
               </v-chip>
             </div>
             <div class="text-caption text-medium-emphasis">
-              {{ playerData.position }} • {{ playerData.nba_team }}
+              {{ getPlayerPosition(playerData) }} • {{ getPlayerTeam(playerData) }}
             </div>
             <div v-if="contractData" class="text-caption">
               {{ formatCurrency(contractData.salary) }} • {{ contractData.duration }}yr
@@ -150,21 +150,72 @@ const iconSize = computed(() => {
 
 const playerData = computed(() => {
   if (props.asset.asset_type === 'player') {
-    // Backend returns player_detail for the nested object
-    return (props.asset as any).player_detail || null;
+    // DEBUG: Log the asset structure
+    console.log('[TradeAssetCard] Player asset:', props.asset);
+
+    // Backend can return either player_detail (client enrichment) or player (full object)
+    const playerDetail = (props.asset as any).player_detail;
+    const player = props.asset.player;
+
+    console.log('[TradeAssetCard] player_detail:', playerDetail);
+    console.log('[TradeAssetCard] player:', player);
+
+    // If player_detail exists, use it
+    if (playerDetail) {
+      // Check if it's a contract object with nested player
+      if ('salary' in playerDetail && playerDetail.player) {
+        console.log('[TradeAssetCard] Using contract.player from player_detail');
+        return playerDetail.player;
+      }
+      console.log('[TradeAssetCard] Using player_detail directly');
+      return playerDetail;
+    }
+
+    // If player is an object (not just an ID)
+    if (player && typeof player === 'object') {
+      // Check if it's a contract object with nested player
+      if ('salary' in player && player.player) {
+        console.log('[TradeAssetCard] Using contract.player from player');
+        return player.player;
+      }
+      console.log('[TradeAssetCard] Using player directly');
+      return player;
+    }
+
+    console.log('[TradeAssetCard] No player data found');
+    return null;
   }
   return null;
 });
 
 const contractData = computed(() => {
-  // Contract info is nested in player_detail
-  return playerData.value?.contract || null;
+  if (props.asset.asset_type === 'player') {
+    // First check if player has contract
+    const contract = playerData.value?.contract;
+
+    // If player is actually a contract object (backend might return contract directly)
+    if (!contract && playerData.value && 'salary' in playerData.value) {
+      return playerData.value as any;
+    }
+
+    return contract || null;
+  }
+  return null;
 });
 
 const pickData = computed(() => {
   if (props.asset.asset_type === 'pick') {
-    // Backend returns pick_detail for the nested object
-    return (props.asset as any).pick_detail || null;
+    // Backend can return either pick_detail (client enrichment) or pick (full object)
+    const pickDetail = (props.asset as any).pick_detail;
+    const pick = props.asset.pick;
+
+    // If pick_detail exists, use it
+    if (pickDetail) return pickDetail;
+
+    // If pick is an object (not just an ID), use it
+    if (pick && typeof pick === 'object') return pick;
+
+    return null;
   }
   return null;
 });

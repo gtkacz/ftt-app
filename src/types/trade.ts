@@ -21,6 +21,17 @@ export type PickProtectionType =
   | 'swap_worst'
   | 'doesnt_convey';
 
+export type TradeTimelineEventType =
+  | 'created'
+  | 'proposed'
+  | 'team_accepted'
+  | 'team_rejected'
+  | 'team_countered'
+  | 'cancelled'
+  | 'commissioner_approved'
+  | 'commissioner_vetoed'
+  | 'completed';
+
 export interface Team {
   id: number;
   name: string;
@@ -96,6 +107,18 @@ export interface TradeOffer {
   responded_at?: string;
 }
 
+export interface TradeTimelineEvent {
+  id: number;
+  trade: number;
+  event_type: TradeTimelineEventType;
+  actor_team?: Team | number;
+  actor_user?: number;
+  actor_username?: string;
+  timestamp: string;
+  message?: string;
+  metadata?: Record<string, any>;
+}
+
 export interface Trade {
   id: number;
   proposing_team: Team | number;
@@ -107,8 +130,11 @@ export interface Trade {
   completed_at?: string;
   approved_at?: string;
   approved_by?: number;
+  approved_by_username?: string;
+  veto_reason?: string;
   assets?: TradeAsset[];
   offers?: TradeOffer[];
+  timeline?: TradeTimelineEvent[];
 }
 
 export interface TeamImpact {
@@ -141,7 +167,7 @@ export interface CreateTradeData {
 }
 
 export interface CreateTradeAssetData {
-  trade: number;
+  trade?: number;  // Optional for draft trades
   asset_type: AssetType;
   giving_team: number;
   receiving_team: number;
@@ -152,6 +178,9 @@ export interface CreateTradeAssetData {
   pick_protection_range_end?: number;
   pick_swap_target?: number;
   pick_rollover_year?: number;
+  // Client-side enrichment for display
+  player_detail?: Player;
+  pick_detail?: Pick;
 }
 
 export interface RespondToTradeOfferData {
@@ -170,6 +199,14 @@ export interface TradeListFilters {
   page_size?: number;
 }
 
+export interface CommissionerApprovalData {
+  notes?: string;
+}
+
+export interface CommissionerVetoData {
+  reason: string;
+}
+
 export interface TradeNotification {
   id: number;
   type: 'trade_proposed' | 'trade_accepted' | 'trade_rejected' | 'trade_countered' | 'trade_completed' | 'trade_approved' | 'trade_vetoed';
@@ -177,4 +214,11 @@ export interface TradeNotification {
   message: string;
   created_at: string;
   read: boolean;
+}
+
+export interface TradeParticipant {
+  team: Team;
+  status: 'pending' | 'accepted' | 'rejected';
+  responded_at?: string;
+  is_proposer: boolean;
 }

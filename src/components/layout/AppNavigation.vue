@@ -110,6 +110,7 @@ const navigationGroups = [
         // icon: 'handshake',
         label: 'Trades',
         routeName: 'trades',
+        disabled: true
       },
     ]
   },

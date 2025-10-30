@@ -284,9 +284,10 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
-import type { Trade, TradeAsset, TradeOffer, TradeOfferStatus } from '@/types/trade';
+import type { Trade, TradeAsset, TradeOffer, TradeOfferStatus, Team } from '@/types/trade';
 import TradeAssetCard from './TradeAssetCard.vue';
 import moment from 'moment';
+import api from '@/api/axios';
 
 interface Props {
   tradeId: number;
@@ -299,6 +300,7 @@ const authStore = useAuthStore();
 
 const isResponding = ref(false);
 const responseMessage = ref('');
+const allTeams = ref<Team[]>([]);
 
 const trade = computed(() => tradeStore.currentTrade);
 
@@ -307,7 +309,8 @@ const proposingTeamName = computed(() => {
   if (typeof trade.value.proposing_team === 'object') {
     return trade.value.proposing_team.name;
   }
-  return `Team ${trade.value.proposing_team}`;
+  const team = allTeams.value.find(t => t.id === trade.value.proposing_team);
+  return team?.name || `Team ${trade.value.proposing_team}`;
 });
 
 const teamIds = computed(() => {
@@ -402,11 +405,16 @@ function isProposingTeam(teamId: number): boolean {
 
 function getTeamName(teamId: number): string {
   if (!trade.value) return `Team ${teamId}`;
-  const team = trade.value.teams.find(t => {
+  // Try to find in trade.teams first (might be full objects)
+  const teamInTrade = trade.value.teams.find(t => {
     const id = typeof t === 'object' ? t.id : t;
     return id === teamId;
   });
-  return typeof team === 'object' ? team.name : `Team ${teamId}`;
+  if (typeof teamInTrade === 'object') return teamInTrade.name;
+
+  // Fall back to allTeams lookup
+  const team = allTeams.value.find(t => t.id === teamId);
+  return team?.name || `Team ${teamId}`;
 }
 
 function getGivingAssets(teamId: number): TradeAsset[] {
@@ -560,7 +568,17 @@ function editTrade() {
   router.push({ name: 'trade-edit', params: { id: props.tradeId } });
 }
 
+async function loadTeams() {
+  try {
+    const response = await api.get('/teams/');
+    allTeams.value = response.data.results || [];
+  } catch (error) {
+    console.error('Failed to load teams:', error);
+  }
+}
+
 onMounted(async () => {
+  await loadTeams();
   await tradeStore.loadTrade(props.tradeId);
 });
 </script>

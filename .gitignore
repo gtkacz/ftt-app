@@ -26,3 +26,5 @@ dist-ssr
 # Custom
 *.js
 *.tsbuildinfo
+.serena/
+.claude/

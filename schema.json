@@ -1,0 +1,3157 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Fantasy Trash Talk API",
+        "version": "1.0.0",
+        "description": "A comprehensive REST API for managing dynasty-style fantasy basketball leagues"
+    },
+    "paths": {
+        "/api/auth/login/": {
+            "post": {
+                "operationId": "auth_login_create",
+                "description": "Authenticate user and return JWT tokens",
+                "summary": "User login",
+                "tags": [
+                    "Authentication"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "description": "Username"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "description": "Password"
+                                    }
+                                },
+                                "required": [
+                                    "username",
+                                    "password"
+                                ]
+                            },
+                            "examples": {
+                                "LoginExample": {
+                                    "value": {
+                                        "username": "john_doe",
+                                        "password": "secure_password123"
+                                    },
+                                    "summary": "Login Example"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/api/auth/register/": {
+            "post": {
+                "operationId": "auth_register_create",
+                "description": "Create a new user account with username, email, and password",
+                "summary": "Register a new user",
+                "tags": [
+                    "Authentication"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegistrationRequest"
+                            },
+                            "examples": {
+                                "RegistrationExample": {
+                                    "value": {
+                                        "username": "john_doe",
+                                        "email": "john@example.com",
+                                        "first_name": "John",
+                                        "last_name": "Doe",
+                                        "password": "secure_password123",
+                                        "password_confirm": "secure_password123"
+                                    },
+                                    "summary": "Registration Example"
+                                }
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegistrationRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegistrationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                },
+                                "examples": {
+                                    "SuccessResponse": {
+                                        "value": {
+                                            "user": {
+                                                "id": 1,
+                                                "username": "john_doe",
+                                                "email": "john@example.com"
+                                            },
+                                            "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                                            "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                        },
+                                        "summary": "Success Response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "User successfully created with JWT tokens"
+                    },
+                    "400": {
+                        "description": "Validation errors"
+                    }
+                }
+            }
+        },
+        "/api/draft-positions/": {
+            "get": {
+                "operationId": "draft_positions_list",
+                "description": "Retrieve a paginated list of all draft positions",
+                "summary": "List draft positions",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "draft",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by draft ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "is_pick_made",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by whether pick has been made"
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedDraftPositionList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "draft_positions_create",
+                "description": "Create a new draft position (usually done via generate-order endpoint)",
+                "summary": "Create a draft position",
+                "tags": [
+                    "Draft Positions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftPosition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/draft-positions/{id}/": {
+            "get": {
+                "operationId": "draft_positions_retrieve",
+                "description": "Retrieve detailed information about a specific draft position",
+                "summary": "Get draft position details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftPosition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "draft_positions_update",
+                "description": "Update draft position information",
+                "summary": "Update draft position",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftPositionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftPosition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "draft_positions_partial_update",
+                "description": "Partially update draft position information",
+                "summary": "Partially update draft position",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftPositionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftPositionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftPositionRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftPosition"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "draft_positions_destroy",
+                "description": "Remove a draft position",
+                "summary": "Delete draft position",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/draft-positions/{position_id}/pick/": {
+            "post": {
+                "operationId": "draft_positions_pick_create",
+                "description": "Select a player for a specific draft position during live draft",
+                "summary": "Make a draft pick",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "position_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Draft position ID to make pick for",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Positions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "player_id": {
+                                        "type": "integer",
+                                        "description": "ID of the player to draft"
+                                    }
+                                },
+                                "required": [
+                                    "player_id"
+                                ]
+                            },
+                            "examples": {
+                                "MakePickExample": {
+                                    "value": {
+                                        "player_id": 15
+                                    },
+                                    "summary": "Make Pick Example"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DraftPosition"
+                                }
+                            }
+                        },
+                        "description": "Pick made successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request (pick already made, player unavailable, etc.)"
+                    },
+                    "404": {
+                        "description": "Draft position or player not found"
+                    }
+                }
+            }
+        },
+        "/api/drafts/": {
+            "get": {
+                "operationId": "drafts_list",
+                "description": "Retrieve a paginated list of all draft events",
+                "summary": "List drafts",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedDraftList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "drafts_create",
+                "description": "Create a new draft event for a specific year",
+                "summary": "Create a draft",
+                "tags": [
+                    "Drafts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Draft"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/drafts/{draft_id}/board/": {
+            "get": {
+                "operationId": "drafts_board_retrieve",
+                "description": "Retrieve the current state of the draft board with all positions and next pick",
+                "summary": "Get draft board",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "draft_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Draft ID to get board for",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Draft board retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Draft not found"
+                    }
+                }
+            }
+        },
+        "/api/drafts/{draft_id}/generate-order/": {
+            "post": {
+                "operationId": "drafts_generate_order_create",
+                "description": "Generate the complete draft order for a draft event, supporting both standard and snake draft formats",
+                "summary": "Generate draft order",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "draft_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Draft ID to generate order for",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "teams_order": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "description": "Array of team IDs in draft order (worst to best record typically)"
+                                    },
+                                    "rounds": {
+                                        "type": "integer",
+                                        "description": "Number of rounds in the draft",
+                                        "default": 1
+                                    }
+                                },
+                                "required": [
+                                    "teams_order"
+                                ]
+                            },
+                            "examples": {
+                                "GenerateOrderExample": {
+                                    "value": {
+                                        "teams_order": [
+                                            3,
+                                            1,
+                                            5,
+                                            2,
+                                            4
+                                        ],
+                                        "rounds": 2
+                                    },
+                                    "summary": "Generate Order Example"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Draft order generated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid request data"
+                    },
+                    "404": {
+                        "description": "Draft not found"
+                    }
+                }
+            }
+        },
+        "/api/drafts/{id}/": {
+            "get": {
+                "operationId": "drafts_retrieve",
+                "description": "Retrieve detailed information about a specific draft including players and positions",
+                "summary": "Get draft details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Draft"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "drafts_update",
+                "description": "Update draft information",
+                "summary": "Update draft",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DraftRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Draft"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "drafts_partial_update",
+                "description": "Partially update draft information",
+                "summary": "Partially update draft",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedDraftRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Draft"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "drafts_destroy",
+                "description": "Delete a draft event",
+                "summary": "Delete draft",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Drafts"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/picks/": {
+            "get": {
+                "operationId": "picks_list",
+                "description": "Retrieve a paginated list of all draft picks (draft capital)",
+                "summary": "List draft picks",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "current_team",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by current team owner"
+                    },
+                    {
+                        "in": "query",
+                        "name": "draft_year",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by draft year"
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Draft Capital"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPickList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "picks_create",
+                "description": "Create a new draft pick asset",
+                "summary": "Create a draft pick",
+                "tags": [
+                    "Draft Capital"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pick"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/picks/{id}/": {
+            "get": {
+                "operationId": "picks_retrieve",
+                "description": "Retrieve detailed information about a specific draft pick",
+                "summary": "Get draft pick details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Capital"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pick"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "picks_update",
+                "description": "Update draft pick information (used for trades)",
+                "summary": "Update draft pick",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Capital"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pick"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "picks_partial_update",
+                "description": "Partially update draft pick information",
+                "summary": "Partially update draft pick",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Capital"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPickRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPickRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPickRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pick"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "picks_destroy",
+                "description": "Remove a draft pick",
+                "summary": "Delete draft pick",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Draft Capital"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/players/": {
+            "get": {
+                "operationId": "players_list",
+                "description": "Retrieve a paginated list of all players in the league",
+                "summary": "List all players",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "is_rfa",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by RFA status"
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "position",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by position (G, F, C)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "team",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by team ID"
+                    }
+                ],
+                "tags": [
+                    "Players"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPlayerList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "players_create",
+                "description": "Add a new player to the league",
+                "summary": "Create a new player",
+                "tags": [
+                    "Players"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Player"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/players/{id}/": {
+            "get": {
+                "operationId": "players_retrieve",
+                "description": "Retrieve detailed information about a specific player",
+                "summary": "Get player details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Players"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Player"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "players_update",
+                "description": "Update player information (full update)",
+                "summary": "Update player",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Players"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlayerRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Player"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "players_partial_update",
+                "description": "Partially update player information",
+                "summary": "Partially update player",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Players"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPlayerRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPlayerRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPlayerRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Player"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "players_destroy",
+                "description": "Remove a player from the league",
+                "summary": "Delete player",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Players"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/teams/": {
+            "get": {
+                "operationId": "teams_list",
+                "description": "Retrieve a paginated list of all teams with their basic info and stats",
+                "summary": "List all teams",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedTeamList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "teams_create",
+                "description": "Create a new team for a user",
+                "summary": "Create a new team",
+                "tags": [
+                    "Teams"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Team"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/": {
+            "get": {
+                "operationId": "teams_retrieve",
+                "description": "Retrieve detailed information about a specific team",
+                "summary": "Get team details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Team"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "teams_update",
+                "description": "Update team information (full update)",
+                "summary": "Update team",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeamRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Team"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "teams_partial_update",
+                "description": "Partially update team information",
+                "summary": "Partially update team",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTeamRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTeamRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTeamRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Team"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "teams_destroy",
+                "description": "Delete a team",
+                "summary": "Delete team",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/picks/": {
+            "get": {
+                "operationId": "teams_picks_retrieve",
+                "description": "Retrieve all draft picks currently owned by a team",
+                "summary": "Get team draft picks",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Team ID",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Team draft picks retrieved"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/players/": {
+            "get": {
+                "operationId": "teams_players_retrieve",
+                "description": "Retrieve all players on a team along with the total player count",
+                "summary": "Get team players",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Team ID",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Team players retrieved"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/salary/": {
+            "get": {
+                "operationId": "teams_salary_retrieve",
+                "description": "Calculate and return the total salary of all players on a team",
+                "summary": "Get team total salary",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Team ID",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Total salary calculated"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                }
+            }
+        },
+        "/api/users/": {
+            "get": {
+                "operationId": "users_list",
+                "description": "Retrieve a paginated list of all users in the system",
+                "summary": "List all users",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedUserList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "users_create",
+                "description": "Create a new user (admin only)",
+                "summary": "Create a new user",
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/": {
+            "get": {
+                "operationId": "users_retrieve",
+                "description": "Retrieve detailed information about a specific user",
+                "summary": "Get user details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "users_update",
+                "description": "Update user information (full update)",
+                "summary": "Update user",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "users_partial_update",
+                "description": "Partially update user information",
+                "summary": "Partially update user",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedUserRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "users_destroy",
+                "description": "Delete a user account",
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Draft": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Draft year (must be unique)"
+                    },
+                    "draftable_players": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Player"
+                        },
+                        "readOnly": true,
+                        "description": "List of all players available in this draft"
+                    },
+                    "draft_positions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftPosition"
+                        },
+                        "readOnly": true,
+                        "description": "Complete draft order and pick status"
+                    },
+                    "is_completed": {
+                        "type": "boolean",
+                        "description": "Whether this draft has been completed"
+                    },
+                    "is_snake_draft": {
+                        "type": "boolean",
+                        "description": "Whether this is a snake draft (reverses order each round)"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when draft was created"
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "draft_positions",
+                    "draftable_players",
+                    "id",
+                    "year"
+                ]
+            },
+            "DraftPosition": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "team": {
+                        "type": "integer",
+                        "description": "Team ID making this pick"
+                    },
+                    "team_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Name of the team making this pick"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number (1, 2, etc.)"
+                    },
+                    "pick_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Pick number within the round"
+                    },
+                    "overall_pick": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Overall pick number in the entire draft"
+                    },
+                    "selected_player": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Player ID selected with this pick (if made)"
+                    },
+                    "selected_player_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Name of the selected player (if pick has been made)"
+                    },
+                    "is_pick_made": {
+                        "type": "boolean",
+                        "description": "Whether this pick has been made yet"
+                    },
+                    "pick_made_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "Date and time when pick was made"
+                    }
+                },
+                "required": [
+                    "id",
+                    "overall_pick",
+                    "pick_made_at",
+                    "pick_number",
+                    "round_number",
+                    "selected_player_name",
+                    "team",
+                    "team_name"
+                ]
+            },
+            "DraftPositionRequest": {
+                "type": "object",
+                "properties": {
+                    "team": {
+                        "type": "integer",
+                        "description": "Team ID making this pick"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number (1, 2, etc.)"
+                    },
+                    "pick_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Pick number within the round"
+                    },
+                    "overall_pick": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Overall pick number in the entire draft"
+                    },
+                    "selected_player": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Player ID selected with this pick (if made)"
+                    },
+                    "is_pick_made": {
+                        "type": "boolean",
+                        "description": "Whether this pick has been made yet"
+                    }
+                },
+                "required": [
+                    "overall_pick",
+                    "pick_number",
+                    "round_number",
+                    "team"
+                ]
+            },
+            "DraftRequest": {
+                "type": "object",
+                "properties": {
+                    "year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Draft year (must be unique)"
+                    },
+                    "is_completed": {
+                        "type": "boolean",
+                        "description": "Whether this draft has been completed"
+                    },
+                    "is_snake_draft": {
+                        "type": "boolean",
+                        "description": "Whether this is a snake draft (reverses order each round)"
+                    }
+                },
+                "required": [
+                    "year"
+                ]
+            },
+            "PaginatedDraftList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Draft"
+                        }
+                    }
+                }
+            },
+            "PaginatedDraftPositionList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DraftPosition"
+                        }
+                    }
+                }
+            },
+            "PaginatedPickList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Pick"
+                        }
+                    }
+                }
+            },
+            "PaginatedPlayerList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Player"
+                        }
+                    }
+                }
+            },
+            "PaginatedTeamList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Team"
+                        }
+                    }
+                }
+            },
+            "PaginatedUserList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    }
+                }
+            },
+            "PatchedDraftPositionRequest": {
+                "type": "object",
+                "properties": {
+                    "team": {
+                        "type": "integer",
+                        "description": "Team ID making this pick"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number (1, 2, etc.)"
+                    },
+                    "pick_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Pick number within the round"
+                    },
+                    "overall_pick": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Overall pick number in the entire draft"
+                    },
+                    "selected_player": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Player ID selected with this pick (if made)"
+                    },
+                    "is_pick_made": {
+                        "type": "boolean",
+                        "description": "Whether this pick has been made yet"
+                    }
+                }
+            },
+            "PatchedDraftRequest": {
+                "type": "object",
+                "properties": {
+                    "year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Draft year (must be unique)"
+                    },
+                    "is_completed": {
+                        "type": "boolean",
+                        "description": "Whether this draft has been completed"
+                    },
+                    "is_snake_draft": {
+                        "type": "boolean",
+                        "description": "Whether this is a snake draft (reverses order each round)"
+                    }
+                }
+            },
+            "PatchedPickRequest": {
+                "type": "object",
+                "properties": {
+                    "original_team": {
+                        "type": "integer",
+                        "description": "Team ID that originally owned this pick"
+                    },
+                    "current_team": {
+                        "type": "integer",
+                        "description": "Team ID that currently owns this pick"
+                    },
+                    "draft_year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Year this pick can be used in the draft"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number of this pick (1, 2, etc.)"
+                    },
+                    "protections": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional description of pick protections (e.g., \"Top 3 protected\")"
+                    }
+                }
+            },
+            "PatchedPlayerRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Player full name",
+                        "maxLength": 100
+                    },
+                    "team": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Team ID this player belongs to (can be null for free agents)"
+                    },
+                    "salary": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+                        "description": "Player annual salary in dollars"
+                    },
+                    "contract_duration": {
+                        "type": "integer",
+                        "maximum": 10,
+                        "minimum": 1,
+                        "description": "Contract length in years (1-10)"
+                    },
+                    "primary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "description": "Primary position: G (Guard), F (Forward), or C (Center)\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "secondary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C",
+                            "",
+                            null
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "nullable": true,
+                        "description": "Secondary position (optional): G, F, or C\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "is_rfa": {
+                        "type": "boolean",
+                        "description": "Whether player is a Restricted Free Agent"
+                    }
+                }
+            },
+            "PatchedTeamRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Team name",
+                        "maxLength": 100
+                    },
+                    "owner": {
+                        "type": "integer",
+                        "description": "User ID of the team owner"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true,
+                        "description": "Team avatar image (optional)"
+                    }
+                }
+            },
+            "PatchedUserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Unique username for the user",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email address",
+                        "description": "User email address",
+                        "maxLength": 254
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "description": "User first name",
+                        "maxLength": 150
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "description": "User last name",
+                        "maxLength": 150
+                    },
+                    "is_admin": {
+                        "type": "boolean",
+                        "description": "Whether the user has admin privileges"
+                    }
+                }
+            },
+            "Pick": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "original_team": {
+                        "type": "integer",
+                        "description": "Team ID that originally owned this pick"
+                    },
+                    "original_team_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Name of the team that originally owned this pick"
+                    },
+                    "current_team": {
+                        "type": "integer",
+                        "description": "Team ID that currently owns this pick"
+                    },
+                    "current_team_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Name of the team that currently owns this pick"
+                    },
+                    "draft_year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Year this pick can be used in the draft"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number of this pick (1, 2, etc.)"
+                    },
+                    "protections": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional description of pick protections (e.g., \"Top 3 protected\")"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when pick was created"
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "current_team",
+                    "current_team_name",
+                    "draft_year",
+                    "id",
+                    "original_team",
+                    "original_team_name",
+                    "round_number"
+                ]
+            },
+            "PickRequest": {
+                "type": "object",
+                "properties": {
+                    "original_team": {
+                        "type": "integer",
+                        "description": "Team ID that originally owned this pick"
+                    },
+                    "current_team": {
+                        "type": "integer",
+                        "description": "Team ID that currently owns this pick"
+                    },
+                    "draft_year": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Year this pick can be used in the draft"
+                    },
+                    "round_number": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Round number of this pick (1, 2, etc.)"
+                    },
+                    "protections": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional description of pick protections (e.g., \"Top 3 protected\")"
+                    }
+                },
+                "required": [
+                    "current_team",
+                    "draft_year",
+                    "original_team",
+                    "round_number"
+                ]
+            },
+            "Player": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Player full name",
+                        "maxLength": 100
+                    },
+                    "team": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Team ID this player belongs to (can be null for free agents)"
+                    },
+                    "team_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Name of the team this player belongs to"
+                    },
+                    "salary": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+                        "description": "Player annual salary in dollars"
+                    },
+                    "contract_duration": {
+                        "type": "integer",
+                        "maximum": 10,
+                        "minimum": 1,
+                        "description": "Contract length in years (1-10)"
+                    },
+                    "primary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "description": "Primary position: G (Guard), F (Forward), or C (Center)\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "secondary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C",
+                            "",
+                            null
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "nullable": true,
+                        "description": "Secondary position (optional): G, F, or C\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "is_rfa": {
+                        "type": "boolean",
+                        "description": "Whether player is a Restricted Free Agent"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when player was added"
+                    }
+                },
+                "required": [
+                    "contract_duration",
+                    "created_at",
+                    "id",
+                    "name",
+                    "primary_position",
+                    "salary",
+                    "team_name"
+                ]
+            },
+            "PlayerRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Player full name",
+                        "maxLength": 100
+                    },
+                    "team": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Team ID this player belongs to (can be null for free agents)"
+                    },
+                    "salary": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+                        "description": "Player annual salary in dollars"
+                    },
+                    "contract_duration": {
+                        "type": "integer",
+                        "maximum": 10,
+                        "minimum": 1,
+                        "description": "Contract length in years (1-10)"
+                    },
+                    "primary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "description": "Primary position: G (Guard), F (Forward), or C (Center)\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "secondary_position": {
+                        "enum": [
+                            "G",
+                            "F",
+                            "C",
+                            "",
+                            null
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "74aabab8c23db26b",
+                        "nullable": true,
+                        "description": "Secondary position (optional): G, F, or C\n\n* `G` - Guard\n* `F` - Forward\n* `C` - Center"
+                    },
+                    "is_rfa": {
+                        "type": "boolean",
+                        "description": "Whether player is a Restricted Free Agent"
+                    }
+                },
+                "required": [
+                    "contract_duration",
+                    "name",
+                    "primary_position",
+                    "salary"
+                ]
+            },
+            "Team": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Team name",
+                        "maxLength": 100
+                    },
+                    "owner": {
+                        "type": "integer",
+                        "description": "User ID of the team owner"
+                    },
+                    "owner_username": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Username of the team owner"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true,
+                        "description": "Team avatar image (optional)"
+                    },
+                    "total_salary": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Total salary of all players on the team"
+                    },
+                    "total_players": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "Number of players currently on the team"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when team was created"
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "name",
+                    "owner",
+                    "owner_username",
+                    "total_players",
+                    "total_salary"
+                ]
+            },
+            "TeamRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Team name",
+                        "maxLength": 100
+                    },
+                    "owner": {
+                        "type": "integer",
+                        "description": "User ID of the team owner"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true,
+                        "description": "Team avatar image (optional)"
+                    }
+                },
+                "required": [
+                    "name",
+                    "owner"
+                ]
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "Unique username for the user",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email address",
+                        "description": "User email address",
+                        "maxLength": 254
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "description": "User first name",
+                        "maxLength": 150
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "description": "User last name",
+                        "maxLength": 150
+                    },
+                    "is_admin": {
+                        "type": "boolean",
+                        "description": "Whether the user has admin privileges"
+                    },
+                    "date_joined": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when user joined"
+                    }
+                },
+                "required": [
+                    "date_joined",
+                    "id",
+                    "username"
+                ]
+            },
+            "UserRegistrationRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Unique username for the user",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email address",
+                        "description": "User email address",
+                        "maxLength": 254
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "description": "User first name",
+                        "maxLength": 150
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "description": "User last name",
+                        "maxLength": 150
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 8,
+                        "description": "Password must be at least 8 characters long"
+                    },
+                    "password_confirm": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1,
+                        "description": "Must match the password field"
+                    }
+                },
+                "required": [
+                    "password",
+                    "password_confirm",
+                    "username"
+                ]
+            },
+            "UserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Unique username for the user",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email address",
+                        "description": "User email address",
+                        "maxLength": 254
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "description": "User first name",
+                        "maxLength": 150
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "description": "User last name",
+                        "maxLength": 150
+                    },
+                    "is_admin": {
+                        "type": "boolean",
+                        "description": "Whether the user has admin privileges"
+                    }
+                },
+                "required": [
+                    "username"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "User registration and authentication endpoints"
+        },
+        {
+            "name": "Users",
+            "description": "User management operations"
+        },
+        {
+            "name": "Teams",
+            "description": "Team management and analytics"
+        },
+        {
+            "name": "Players",
+            "description": "Player roster management"
+        },
+        {
+            "name": "Draft Capital",
+            "description": "Draft pick assets and trading"
+        },
+        {
+            "name": "Drafts",
+            "description": "Draft events and live drafting"
+        },
+        {
+            "name": "Draft Positions",
+            "description": "Draft order and pick management"
+        }
+    ]
+}
