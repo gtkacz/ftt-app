@@ -26,17 +26,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/ftt-backend-api\.(tkacz\.dev\.br|loca\.lt)\/api\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
+            handler: "NetworkOnly",
           },
         ],
       },

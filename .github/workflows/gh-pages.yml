@@ -109,11 +109,11 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Commit version update
-        if: success()
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add package.json
-          git commit -m "chore: bump version to ${{ steps.update_version.outputs.new_version }} [skip ci]"
-          git push
+      # - name: Commit version update
+      #   if: success()
+      #   run: |
+      #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "github-actions[bot]"
+      #     git add package.json
+      #     git commit -m "chore: bump version to ${{ steps.update_version.outputs.new_version }} [skip ci]"
+      #     git push
