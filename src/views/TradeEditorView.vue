@@ -164,12 +164,15 @@
     />
 
     <!-- Team Selector Dialog -->
-    <TeamSelector
-      v-model="showTeamSelector"
-      :selected-teams="draftTrade.teams"
-      :available-teams="allTeams"
-      @team-selected="handleTeamSelected"
-    />
+    <v-dialog v-model="showTeamSelector" max-width="600px">
+      <TeamSelector
+        :teams="allTeams"
+        :selected-team-ids="draftTrade.teams"
+        :proposing-team-id="draftTrade.proposing_team || undefined"
+        @add-team="handleTeamSelected"
+        @remove-team="handleRemoveTeam"
+      />
+    </v-dialog>
 
     <!-- Snackbar for notifications -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
@@ -348,8 +351,17 @@ function handleRemoveTeam(teamId: number) {
   showSnackbar('Team removed from trade', 'info');
 }
 
-function handleTeamSelected(teamId: number) {
+async function handleTeamSelected(teamId: number) {
   tradeStore.addTeamToTrade(teamId);
+  
+  // Load players and picks for the newly added team
+  try {
+    await tradeStore.loadAvailablePlayers(teamId);
+    await tradeStore.loadAvailablePicks(teamId);
+  } catch (error) {
+    console.error('Failed to load team assets:', error);
+  }
+  
   showSnackbar('Team added to trade', 'success');
 }
 
@@ -414,9 +426,9 @@ function showSnackbar(message: string, color: 'success' | 'error' | 'warning' | 
 // Load data on mount
 onMounted(async () => {
   try {
-    // TODO: Load all teams from API
-    // For now, using mock data structure
-    // allTeams.value = await TeamService.listTeams();
+    // Load all teams from API
+    await tradeStore.loadAvailableTeams();
+    allTeams.value = tradeStore.availableTeams;
 
     if (isEditMode.value && tradeId.value) {
       // Load existing trade
@@ -427,7 +439,23 @@ onMounted(async () => {
         tradeStore.draftTrade.proposing_team = currentTrade.value.proposing_team;
         tradeStore.draftTrade.teams = currentTrade.value.teams;
         tradeStore.draftTrade.notes = currentTrade.value.notes || '';
-        // TODO: Convert assets to draft format
+        
+        // Convert assets to draft format
+        tradeStore.draftTrade.assets = currentTrade.value.assets.map((asset) => ({
+          asset_type: asset.asset_type,
+          giving_team: asset.giving_team,
+          receiving_team: asset.receiving_team,
+          player: asset.player || undefined,
+          pick: asset.pick || undefined,
+          player_detail: asset.player_detail || undefined,
+          pick_detail: asset.pick_detail || undefined,
+        }));
+
+        // Load players and picks for all teams in the trade
+        for (const teamId of currentTrade.value.teams) {
+          await tradeStore.loadAvailablePlayers(teamId);
+          await tradeStore.loadAvailablePicks(teamId);
+        }
       } else {
         showSnackbar('Can only edit draft trades', 'error');
         router.push({ name: 'trade-overview' });
@@ -443,6 +471,10 @@ onMounted(async () => {
       }
 
       tradeStore.createDraftTrade(userTeamId);
+      
+      // Load players and picks for user's team
+      await tradeStore.loadAvailablePlayers(userTeamId);
+      await tradeStore.loadAvailablePicks(userTeamId);
     }
   } catch (error) {
     console.error('Failed to load trade:', error);

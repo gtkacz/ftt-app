@@ -101,7 +101,7 @@
           <v-data-table
             v-model:model-value="selectedPicks"
             :headers="pickTableHeaders"
-            :items="availablePicks"
+            :items="props.availablePicks || []"
             item-value="id"
             show-select
             :single-select="true"
@@ -364,12 +364,12 @@ const destinationTeams = computed(() => {
 
 // Filtered players based on search
 const filteredPlayers = computed(() => {
-  if (!playerSearch.value) return props.availablePlayers;
+  if (!playerSearch.value) return props.availablePlayers || [];
   const search = playerSearch.value.toLowerCase();
-  return props.availablePlayers.filter((p) =>
-    p.full_name.toLowerCase().includes(search) ||
-    p.position.toLowerCase().includes(search) ||
-    p.nba_team.toLowerCase().includes(search)
+  return (props.availablePlayers || []).filter((p) =>
+    (p.full_name || '').toLowerCase().includes(search) ||
+    (p.position || '').toLowerCase().includes(search) ||
+    (p.nba_team || '').toLowerCase().includes(search)
   );
 });
 

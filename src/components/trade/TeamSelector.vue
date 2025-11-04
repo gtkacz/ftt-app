@@ -22,7 +22,7 @@
           <template #item="{ item, props: itemProps }">
             <v-list-item
               v-bind="itemProps"
-              :disabled="selectedTeamIds.includes(item.value)"
+              :disabled="(props.selectedTeamIds || []).includes(item.value)"
             >
               <template #prepend>
                 <v-avatar
@@ -51,18 +51,18 @@
       </div>
 
       <!-- Selected Teams Display -->
-      <div v-if="selectedTeamIds?.length > 0" class="mt-4">
+      <div v-if="(props.selectedTeamIds || []).length > 0" class="mt-4">
         <div class="text-caption text-medium-emphasis mb-2">
-          Teams in Trade ({{ selectedTeamIds?.length }})
+          Teams in Trade ({{ (props.selectedTeamIds || []).length }})
         </div>
 
         <v-chip-group column>
           <v-chip
-            v-for="teamId in selectedTeamIds"
+            v-for="teamId in (props.selectedTeamIds || [])"
             :key="teamId"
-            :color="teamId === proposingTeamId ? 'primary' : 'default'"
-            :variant="teamId === proposingTeamId ? 'flat' : 'outlined'"
-            :closable="teamId !== proposingTeamId && !disabled"
+            :color="teamId === props.proposingTeamId ? 'primary' : 'default'"
+            :variant="teamId === props.proposingTeamId ? 'flat' : 'outlined'"
+            :closable="teamId !== props.proposingTeamId && !props.disabled"
             @click:close="removeTeam(teamId)"
           >
             <template #prepend>
@@ -73,7 +73,7 @@
                 start
               />
               <v-icon
-                v-else-if="teamId === proposingTeamId"
+                v-else-if="teamId === props.proposingTeamId"
                 icon="star"
                 size="small"
                 start
@@ -83,7 +83,7 @@
             {{ getTeam(teamId)?.name }}
 
             <v-tooltip
-              v-if="teamId === proposingTeamId"
+              v-if="teamId === props.proposingTeamId"
               activator="parent"
               location="top"
             >
@@ -95,7 +95,7 @@
 
       <!-- Trade Type Info -->
       <v-alert
-        v-if="selectedTeamIds?.length >= 3"
+        v-if="(props.selectedTeamIds || []).length >= 3"
         type="info"
         variant="tonal"
         density="compact"
@@ -118,12 +118,14 @@ import type { Team } from '@/types/trade';
 
 interface Props {
   teams: Team[];
-  selectedTeamIds: number[];
+  selectedTeamIds?: number[];
   proposingTeamId?: number;
   disabled?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  selectedTeamIds: () => [],
+});
 const emit = defineEmits<{
   'add-team': [teamId: number];
   'remove-team': [teamId: number];
@@ -132,7 +134,7 @@ const emit = defineEmits<{
 const selectedTeam = ref<number | null>(null);
 
 const availableTeams = computed(() => {
-  return props.teams?.filter(team => !props.selectedTeamIds.includes(team.id));
+  return props.teams?.filter(team => !(props.selectedTeamIds || []).includes(team.id));
 });
 
 function getTeam(teamId: number): Team | undefined {

@@ -171,7 +171,12 @@ export const useTradeStore = defineStore('trade', {
       this.loading.trades = true;
       try {
         const response = await TradeService.listTrades(filters);
-        this.trades = response.results || response;
+        // Handle both paginated response (with results) and array response
+        if (Array.isArray(response)) {
+          this.trades = response;
+        } else {
+          this.trades = response.results || [];
+        }
       } catch (error) {
         console.error('Failed to fetch trades:', error);
         throw error;
@@ -196,8 +201,7 @@ export const useTradeStore = defineStore('trade', {
     async loadAvailableTeams() {
       this.loading.teams = true;
       try {
-        // TODO: Implement team loading from API
-        // this.availableTeams = await TeamService.listTeams();
+        this.availableTeams = await TradeService.listTeams();
       } catch (error) {
         console.error('Failed to load teams:', error);
         throw error;
@@ -213,9 +217,8 @@ export const useTradeStore = defineStore('trade', {
 
       this.loading.players = true;
       try {
-        // TODO: Implement player loading from API
-        // const players = await PlayerService.listPlayers({ team: teamId });
-        // this.availablePlayersByTeam[teamId] = players;
+        const players = await TradeService.listPlayers({ team: teamId });
+        this.availablePlayersByTeam[teamId] = players;
       } catch (error) {
         console.error('Failed to load players:', error);
         throw error;
@@ -379,27 +382,34 @@ export const useTradeStore = defineStore('trade', {
     async respondToTrade(offerId: number, response: 'accept' | 'reject' | 'counter', message?: string) {
       this.loading.currentTrade = true;
       try {
-        let result;
+        let result: Trade | TradeOffer | null = null;
         switch (response) {
           case 'accept':
             result = await TradeService.acceptOffer(offerId, { message });
+            // After accepting, we need to reload the trade to get updated status
+            // The acceptOffer returns a TradeOffer, so we need to get the trade
+            if (result && 'trade' in result) {
+              await this.fetchTradeById(result.trade);
+            }
             break;
           case 'reject':
             result = await TradeService.rejectOffer(offerId, { message });
+            // After rejecting, reload the trade
+            if (result && 'trade' in result) {
+              await this.fetchTradeById(result.trade);
+            }
             break;
           case 'counter':
+            // Counter creates a new draft trade
             result = await TradeService.counterOffer(offerId, { message });
-            // Counter creates a new draft trade, navigate to it
-            if (result.id) {
-              this.currentTrade = result;
+            // Counter returns a Trade (the new draft), set it as current
+            if (result && 'id' in result) {
+              this.currentTrade = result as Trade;
             }
             break;
         }
 
         await this.fetchUserTrades();
-        if (this.currentTrade && response !== 'counter') {
-          await this.fetchTradeById(this.currentTrade.id);
-        }
 
         return result;
       } catch (error) {

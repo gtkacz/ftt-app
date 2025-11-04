@@ -31,7 +31,7 @@
           <!-- Card Header -->
           <v-card-title class="d-flex align-center">
             <v-chip :color="getStatusColor(trade.status)" size="small" variant="flat">
-              {{ trade.status_display }}
+              {{ getStatusDisplay(trade.status) }}
             </v-chip>
             <v-spacer />
             <span class="text-caption text-medium-emphasis">#{{ trade.id }}</span>
@@ -182,6 +182,20 @@ function getStatusColor(status: string): string {
     completed: 'success',
   };
   return colors[status] || 'grey';
+}
+
+// Get status display text
+function getStatusDisplay(status: string): string {
+  const displays: Record<string, string> = {
+    draft: 'Draft',
+    proposed: 'Proposed',
+    waiting_approval: 'Pending Approval',
+    approved: 'Approved',
+    vetoed: 'Vetoed',
+    rejected: 'Rejected',
+    completed: 'Completed',
+  };
+  return displays[status] || status;
 }
 
 // Get player count

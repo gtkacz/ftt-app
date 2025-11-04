@@ -19,7 +19,7 @@
               <span class="ml-2">Trade #{{ currentTrade.id }}</span>
               <v-spacer />
               <v-chip :color="getStatusColor(currentTrade.status)" variant="flat">
-                {{ currentTrade.status_display }}
+                {{ getStatusDisplay(currentTrade.status) }}
               </v-chip>
             </v-card-title>
             <v-card-subtitle v-if="currentTrade.created_at" class="pt-2">
@@ -41,9 +41,9 @@
             <v-divider />
             <v-card-text>
               <TradeSummaryPanel
-                :teams="teams"
+                :teams="currentTrade.teams_detail"
                 :assets="currentTrade.assets"
-                :validation="currentTrade.validation_result"
+                :validation="null"
               />
             </v-card-text>
           </v-card>
@@ -206,7 +206,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
-import type { Team, VoteType } from '@/types/trade';
+import type { VoteType } from '@/types/trade';
 
 import TradeSummaryPanel from '@/components/trade/TradeSummaryPanel.vue';
 import TradeTimeline from '@/components/trade/TradeTimeline.vue';
@@ -229,7 +229,6 @@ const responseDialog = ref({
   color: 'primary',
   message: '',
 });
-const teams = ref<Team[]>([]);
 const snackbar = ref({
   show: false,
   message: '',
@@ -283,10 +282,25 @@ function getStatusColor(status: string): string {
   return colors[status] || 'grey';
 }
 
+// Get status display text
+function getStatusDisplay(status: string): string {
+  const displays: Record<string, string> = {
+    draft: 'Draft',
+    proposed: 'Proposed',
+    waiting_approval: 'Pending Approval',
+    approved: 'Approved',
+    vetoed: 'Vetoed',
+    rejected: 'Rejected',
+    completed: 'Completed',
+  };
+  return displays[status] || status;
+}
+
 // Get team name
 function getTeamName(teamId: number): string {
-  const team = teams.value.find((t) => t.id === teamId);
-  return team?.name || `Team ${teamId}`;
+  if (!currentTrade.value) return `Team ${teamId}`;
+  const team = currentTrade.value.teams_detail.find((t) => t.id === teamId);
+  return team?.name || currentTrade.value.proposing_team_detail?.name || `Team ${teamId}`;
 }
 
 // Format date
@@ -322,13 +336,51 @@ function handleReject() {
   };
 }
 
-function handleCounter() {
-  showSnackbar('You can now edit this trade as a counter offer', 'info');
-  router.push({
-    name: 'trade-edit',
-    params: { id: tradeId.value },
-    query: { mode: 'counter' }
-  });
+async function handleCounter() {
+  if (!currentTrade.value) return;
+
+  try {
+    responding.value = true;
+    
+    // Find the TradeOffer for the user's team
+    const userTeamId = authStore.user?.team?.id;
+    if (!userTeamId) {
+      showSnackbar('Unable to determine your team', 'error');
+      return;
+    }
+
+    const userOffer = currentTrade.value.offers.find(
+      (offer) => offer.team === userTeamId && !offer.is_proposer
+    );
+
+    if (!userOffer) {
+      showSnackbar('Trade offer not found for your team', 'error');
+      return;
+    }
+
+    // Counter creates a new draft trade
+    const newTrade = await tradeStore.respondToTrade(
+      userOffer.id,
+      'counter',
+      undefined
+    );
+
+    showSnackbar('Counter-offer created. You can now edit it.', 'success');
+
+    // Navigate to the new trade edit page
+    if (newTrade && newTrade.id) {
+      router.push({
+        name: 'trade-edit',
+        params: { id: newTrade.id },
+        query: { mode: 'counter' }
+      });
+    }
+  } catch (error: any) {
+    console.error('Counter error:', error);
+    showSnackbar(error.message || 'Failed to create counter-offer', 'error');
+  } finally {
+    responding.value = false;
+  }
 }
 
 async function confirmResponse() {
@@ -336,8 +388,25 @@ async function confirmResponse() {
 
   try {
     responding.value = true;
+    
+    // Find the TradeOffer for the user's team
+    const userTeamId = authStore.user?.team?.id;
+    if (!userTeamId) {
+      showSnackbar('Unable to determine your team', 'error');
+      return;
+    }
+
+    const userOffer = currentTrade.value.offers.find(
+      (offer) => offer.team === userTeamId && !offer.is_proposer
+    );
+
+    if (!userOffer) {
+      showSnackbar('Trade offer not found for your team', 'error');
+      return;
+    }
+
     await tradeStore.respondToTrade(
-      currentTrade.value.id,
+      userOffer.id,
       responseDialog.value.type,
       responseDialog.value.message || undefined
     );
@@ -417,9 +486,6 @@ function showSnackbar(message: string, color: 'success' | 'error' | 'warning' | 
 onMounted(async () => {
   try {
     await tradeStore.fetchTradeById(tradeId.value);
-
-    // TODO: Load teams from API
-    // teams.value = await TeamService.listTeams();
   } catch (error) {
     console.error('Failed to load trade:', error);
     showSnackbar('Failed to load trade details', 'error');
