@@ -8,7 +8,7 @@
     <v-divider />
 
     <v-card-text class="pa-0">
-      <div v-if="!timeline || timeline.length === 0" class="empty-state">
+      <div v-if="!history || history.length === 0" class="empty-state">
         <v-icon icon="history" size="48" class="text-medium-emphasis mb-2" />
         <div class="text-caption text-medium-emphasis">No events yet</div>
       </div>
@@ -22,7 +22,7 @@
         >
           <template #opposite>
             <div class="text-caption text-medium-emphasis">
-              {{ formatTimestamp(event.timestamp) }}
+              {{ formatTimestamp(event.created_at) }}
             </div>
           </template>
 
@@ -31,36 +31,23 @@
               <div class="d-flex align-center mb-1">
                 <v-icon :icon="getEventIcon(event.event_type)" size="small" class="mr-2" />
                 <span class="text-subtitle-2 font-weight-medium">
-                  {{ getEventTitle(event.event_type) }}
+                  {{ event.event_display }}
                 </span>
               </div>
 
               <div class="event-details">
-                <div v-if="event.actor_username" class="text-caption text-medium-emphasis mb-1">
-                  by {{ event.actor_username }}
-                  <span v-if="getTeamName(event.actor_team)">
-                    ({{ getTeamName(event.actor_team) }})
-                  </span>
+                <div v-if="event.actor_display" class="text-caption text-medium-emphasis mb-1">
+                  {{ event.actor_display }}
                 </div>
 
                 <div v-if="event.message" class="event-message text-caption">
                   {{ event.message }}
                 </div>
 
-                <div v-if="event.metadata && hasMetadataDisplay(event)" class="event-metadata mt-2">
-                  <div v-if="event.metadata.veto_reason" class="veto-reason">
-                    <v-chip size="small" color="error" variant="tonal">
-                      Veto Reason
-                    </v-chip>
-                    <div class="text-caption mt-1">{{ event.metadata.veto_reason }}</div>
-                  </div>
-
-                  <div v-if="event.metadata.counter_changes" class="counter-changes">
-                    <v-chip size="small" color="warning" variant="tonal">
-                      Counter Offer
-                    </v-chip>
-                    <div class="text-caption mt-1">{{ event.metadata.counter_changes }}</div>
-                  </div>
+                <div v-if="event.has_snapshot" class="event-metadata mt-2">
+                  <v-chip size="small" color="info" variant="tonal">
+                    {{ event.snapshot_summary }}
+                  </v-chip>
                 </div>
               </div>
             </v-card-text>
@@ -73,98 +60,72 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TradeTimelineEvent, TradeTimelineEventType, Team } from '@/types/trade';
-import { format, parseISO } from 'date-fns';
+import type { TradeHistoryEntry, TradeHistoryEventType } from '@/types/trade';
 
 interface Props {
-  timeline: TradeTimelineEvent[];
-  teams: Team[];
+  tradeId: number;
+  history?: TradeHistoryEntry[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  history: () => [],
+});
 
 const sortedTimeline = computed(() => {
-  return [...props.timeline].sort((a, b) => {
-    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  return [...props.history].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 });
 
-function getTeamName(teamIdOrTeam: Team | number | undefined): string {
-  if (!teamIdOrTeam) return '';
-
-  if (typeof teamIdOrTeam === 'number') {
-    const team = props.teams.find(t => t.id === teamIdOrTeam);
-    return team?.name || '';
-  }
-
-  return teamIdOrTeam.name;
-}
+// Team names are already provided in history entries via team_name field
+// No need for a separate lookup function
 
 function formatTimestamp(timestamp: string): string {
   try {
-    const date = parseISO(timestamp);
-    return format(date, 'MMM d, yyyy h:mm a');
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
   } catch {
     return timestamp;
   }
 }
 
-function getEventColor(eventType: TradeTimelineEventType): string {
-  const colorMap: Record<TradeTimelineEventType, string> = {
+function getEventColor(eventType: TradeHistoryEventType): string {
+  const colorMap: Record<TradeHistoryEventType, string> = {
     created: 'grey',
     proposed: 'primary',
-    team_accepted: 'success',
-    team_rejected: 'error',
-    team_countered: 'warning',
-    cancelled: 'grey-darken-2',
-    commissioner_approved: 'purple',
-    commissioner_vetoed: 'error-darken-2',
-    completed: 'success-darken-2',
+    accepted: 'success',
+    rejected: 'error',
+    countered: 'warning',
+    approved: 'purple',
+    vetoed: 'error-darken-2',
+    executed: 'success-darken-2',
+    modified: 'info',
   };
 
   return colorMap[eventType] || 'grey';
 }
 
-function getEventIcon(eventType: TradeTimelineEventType): string {
-  const iconMap: Record<TradeTimelineEventType, string> = {
+function getEventIcon(eventType: TradeHistoryEventType): string {
+  const iconMap: Record<TradeHistoryEventType, string> = {
     created: 'edit',
     proposed: 'send',
-    team_accepted: 'check_circle',
-    team_rejected: 'cancel',
-    team_countered: 'sync_alt',
-    cancelled: 'block',
-    commissioner_approved: 'verified',
-    commissioner_vetoed: 'gavel',
-    completed: 'done_all',
+    accepted: 'check_circle',
+    rejected: 'cancel',
+    countered: 'sync_alt',
+    approved: 'verified',
+    vetoed: 'gavel',
+    executed: 'done_all',
+    modified: 'edit_note',
   };
 
   return iconMap[eventType] || 'circle';
-}
-
-function getEventTitle(eventType: TradeTimelineEventType): string {
-  const titleMap: Record<TradeTimelineEventType, string> = {
-    created: 'Trade Created',
-    proposed: 'Trade Proposed',
-    team_accepted: 'Team Accepted',
-    team_rejected: 'Team Rejected',
-    team_countered: 'Counter Offer',
-    cancelled: 'Trade Cancelled',
-    commissioner_approved: 'Commissioner Approved',
-    commissioner_vetoed: 'Commissioner Vetoed',
-    completed: 'Trade Completed',
-  };
-
-  return titleMap[eventType] || 'Event';
-}
-
-function hasMetadataDisplay(event: TradeTimelineEvent): boolean {
-  if (!event.metadata) return false;
-
-  return Boolean(
-    event.metadata.veto_reason ||
-    event.metadata.counter_changes ||
-    event.metadata.approval_notes
-  );
 }
 </script>
 

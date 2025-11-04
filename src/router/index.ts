@@ -57,12 +57,47 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/DashboardView.vue"),
     props: true,
   },
+  // Trade Routes
+  {
+    path: "/trades",
+    name: "trade-overview",
+    component: () => import("@/views/TradeOverviewView.vue"),
+    meta: {
+      title: "Trade Center - Fantasy Trash Talk",
+    },
+  },
   {
     path: "/trades/create",
     name: "trade-create",
-    component: () => import("@/views/TradeCreateView.vue"),
+    component: () => import("@/views/TradeEditorView.vue"),
     meta: {
       title: "Create Trade - Fantasy Trash Talk",
+    },
+  },
+  {
+    path: "/trades/:id/edit",
+    name: "trade-edit",
+    component: () => import("@/views/TradeEditorView.vue"),
+    props: true,
+    meta: {
+      title: "Edit Trade - Fantasy Trash Talk",
+    },
+  },
+  {
+    path: "/trades/:id",
+    name: "trade-detail",
+    component: () => import("@/views/TradeDetailView.vue"),
+    props: true,
+    meta: {
+      title: "Trade Details - Fantasy Trash Talk",
+    },
+  },
+  {
+    path: "/trades/league/history",
+    name: "league-trades",
+    component: () => import("@/views/LeagueTradeOverviewView.vue"),
+    meta: {
+      title: "League Trade History - Fantasy Trash Talk",
     },
   },
   {
@@ -80,23 +115,6 @@ const routes: RouteRecordRaw[] = [
     path: "/league",
     name: "league",
     component: () => import("@/views/501View.vue"),
-  },
-  {
-    path: "/trades",
-    name: "trades",
-    component: () => import("@/views/TradesView.vue"),
-    meta: {
-      title: "Trade Center - Fantasy Trash Talk",
-    },
-  },
-  {
-    path: "/trades/:id",
-    name: "trade-detail",
-    component: () => import("@/views/TradeDetailView.vue"),
-    props: true,
-    meta: {
-      title: "Trade Details - Fantasy Trash Talk",
-    },
   },
   {
     path: "/commission",
@@ -143,6 +161,15 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/views/501View.vue"),
         meta: {
           title: "Admin Players - Fantasy Trash Talk",
+          requiresStaff: true,
+        },
+      },
+      {
+        path: "trades",
+        name: "commission-trades",
+        component: () => import("@/views/CommissionerTradesView.vue"),
+        meta: {
+          title: "Commissioner Trade Review - Fantasy Trash Talk",
           requiresStaff: true,
         },
       },

@@ -106,11 +106,9 @@ const navigationGroups = [
         routeName: 'players',
       },
       {
-        icon: 'swap_horiz',
-        // icon: 'handshake',
+        icon: 'handshake',
         label: 'Trades',
-        routeName: 'trades',
-        disabled: true
+        routeName: 'trade-overview'
       },
     ]
   },
@@ -144,6 +142,12 @@ const navigationGroups = [
         icon: 'manage_accounts',
         label: 'Commission',
         routeName: 'commission',
+        commission_only: true
+      },
+      {
+        icon: 'gavel',
+        label: 'Trade Review',
+        routeName: 'commission-trades',
         commission_only: true
       },
       {

@@ -28,3 +28,5 @@ dist-ssr
 *.tsbuildinfo
 .serena/
 .claude/
+*.md
+!README.md

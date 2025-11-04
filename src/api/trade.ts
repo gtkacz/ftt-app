@@ -10,9 +10,9 @@ import type {
   ValidateTradeData,
   TradeValidationResponse,
   TradeListFilters,
-  TradeTimelineEvent,
-  CommissionerApprovalData,
-  CommissionerVetoData,
+  TradeHistoryEntry,
+  CommissionerVoteData,
+  VoteResultData,
 } from '@/types/trade';
 
 export class TradeService {
@@ -128,10 +128,10 @@ export class TradeService {
     return response.data;
   }
 
-  // Timeline
-  static async getTimeline(id: number): Promise<TradeTimelineEvent[]> {
-    const response = await api.get<TradeTimelineEvent[]>(`/trades/${id}/timeline/`);
-    return response.data;
+  // Timeline (now included in trade detail response as 'history')
+  static async getTimeline(id: number): Promise<TradeHistoryEntry[]> {
+    const response = await api.get<{ history: TradeHistoryEntry[] }>(`/trades/${id}/history/`);
+    return response.data.history;
   }
 
   // Commissioner Actions
@@ -140,13 +140,27 @@ export class TradeService {
     return response.data;
   }
 
-  static async approveTrade(id: number, data?: CommissionerApprovalData): Promise<Trade> {
-    const response = await api.post<Trade>(`/trades/${id}/approve/`, data || {});
+  // Primary voting endpoint (replaces approve/veto)
+  static async voteOnTrade(
+    id: number,
+    data: CommissionerVoteData
+  ): Promise<{ trade: Trade; vote_result: VoteResultData }> {
+    const response = await api.post<{ trade: Trade; vote_result: VoteResultData }>(
+      `/trades/${id}/vote/`,
+      data
+    );
     return response.data;
   }
 
-  static async vetoTrade(id: number, data: CommissionerVetoData): Promise<Trade> {
-    const response = await api.post<Trade>(`/trades/${id}/veto/`, data);
-    return response.data;
+  // Deprecated: Use voteOnTrade with vote: 'approve' instead
+  static async approveTrade(id: number, notes?: string): Promise<Trade> {
+    const response = await this.voteOnTrade(id, { vote: 'approve', notes });
+    return response.trade;
+  }
+
+  // Deprecated: Use voteOnTrade with vote: 'veto' instead
+  static async vetoTrade(id: number, reason: string): Promise<Trade> {
+    const response = await this.voteOnTrade(id, { vote: 'veto', notes: reason });
+    return response.trade;
   }
 }

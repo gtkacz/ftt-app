@@ -2,24 +2,34 @@ import { defineStore } from 'pinia';
 import { TradeService } from '@/api/trade';
 import type {
   Trade,
-  TradeOffer,
   TradeAsset,
-  Pick,
-  CreateTradeData,
   CreateTradeAssetData,
   TradeValidationResponse,
   TradeListFilters,
   Team,
+  Player,
+  Pick,
+  CommissionerVoteData,
+  VoteResultData,
+  TradeTeamSummary,
+  TeamImpact,
 } from '@/types/trade';
 
 interface TradeState {
-  // Trade lists
-  activeTrades: Trade[];
-  sentTrades: Trade[];
-  tradeHistory: Trade[];
+  // All trades grouped by status
+  trades: Trade[];
 
-  // Current trade being composed/viewed
+  // Current trade being edited/viewed
   currentTrade: Trade | null;
+
+  // Available teams in league
+  availableTeams: Team[];
+
+  // Available players per team (cached)
+  availablePlayersByTeam: Record<number, Player[]>;
+
+  // Available picks per team (cached)
+  availablePicksByTeam: Record<number, Pick[]>;
 
   // Draft trade being composed
   draftTrade: {
@@ -29,28 +39,27 @@ interface TradeState {
     notes: string;
   };
 
-  // Validation state
+  // Validation results
   validationResult: TradeValidationResponse | null;
-  isValidating: boolean;
-
-  // Available picks for trading
-  availablePicks: Pick[];
 
   // Loading states
-  isLoading: boolean;
-  isLoadingTrades: boolean;
-  isLoadingPicks: boolean;
-
-  // Trade offers
-  tradeOffers: TradeOffer[];
+  loading: {
+    trades: boolean;
+    currentTrade: boolean;
+    validation: boolean;
+    teams: boolean;
+    players: boolean;
+    picks: boolean;
+  };
 }
 
 export const useTradeStore = defineStore('trade', {
   state: (): TradeState => ({
-    activeTrades: [],
-    sentTrades: [],
-    tradeHistory: [],
+    trades: [],
     currentTrade: null,
+    availableTeams: [],
+    availablePlayersByTeam: {},
+    availablePicksByTeam: {},
     draftTrade: {
       proposing_team: null,
       teams: [],
@@ -58,113 +67,182 @@ export const useTradeStore = defineStore('trade', {
       notes: '',
     },
     validationResult: null,
-    isValidating: false,
-    availablePicks: [],
-    isLoading: false,
-    isLoadingTrades: false,
-    isLoadingPicks: false,
-    tradeOffers: [],
+    loading: {
+      trades: false,
+      currentTrade: false,
+      validation: false,
+      teams: false,
+      players: false,
+      picks: false,
+    },
   }),
 
   getters: {
-    // Get active trades where current team needs to respond
-    pendingTrades(): Trade[] {
-      return this.activeTrades.filter(trade =>
-        trade.status === 'proposed' &&
-        trade.offers?.some(offer => offer.status === 'pending')
-      );
+    // Get trades by status
+    tradesByStatus: (state) => (status: string) => {
+      return state.trades.filter((trade) => trade.status === status);
     },
 
-    // Get trades sent by current team
-    proposedByMe(): Trade[] {
-      return this.sentTrades.filter(trade =>
-        trade.status === 'proposed' || trade.status === 'waiting_approval'
-      );
+    // Get draft trades
+    draftTrades(): Trade[] {
+      return this.tradesByStatus('draft');
     },
 
-    // Get draft assets by team
-    assetsByTeam(): (teamId: number) => { giving: CreateTradeAssetData[]; receiving: CreateTradeAssetData[] } {
-      return (teamId: number) => ({
-        giving: this.draftTrade.assets.filter(a => a.giving_team === teamId),
-        receiving: this.draftTrade.assets.filter(a => a.receiving_team === teamId),
-      });
+    // Get proposed trades
+    proposedTrades(): Trade[] {
+      return this.tradesByStatus('proposed');
     },
 
-    // Check if draft trade is valid for proposing
-    canProposeTrade(): boolean {
-      if (!this.draftTrade.proposing_team || this.draftTrade.teams.length < 2) {
+    // Get trades waiting for approval
+    waitingApprovalTrades(): Trade[] {
+      return this.tradesByStatus('waiting_approval');
+    },
+
+    // Get approved trades
+    approvedTrades(): Trade[] {
+      return this.tradesByStatus('approved');
+    },
+
+    // Get completed trades
+    completedTrades(): Trade[] {
+      return this.tradesByStatus('completed');
+    },
+
+    // Get vetoed trades
+    vetoedTrades(): Trade[] {
+      return this.tradesByStatus('vetoed');
+    },
+
+    // Get rejected trades
+    rejectedTrades(): Trade[] {
+      return this.tradesByStatus('rejected');
+    },
+
+    // Get assets by team for draft trade
+    draftAssetsByTeam: (state) => (teamId: number) => {
+      return {
+        giving: state.draftTrade.assets.filter((a) => a.giving_team === teamId),
+        receiving: state.draftTrade.assets.filter((a) => a.receiving_team === teamId),
+      };
+    },
+
+    // Get team summary for current trade
+    getTeamSummary: (state) => (teamId: number): TradeTeamSummary | null => {
+      if (!state.currentTrade) return null;
+
+      const team = state.currentTrade.teams_detail.find((t) => t.id === teamId);
+      if (!team) return null;
+
+      const receiving = state.currentTrade.assets.filter((a) => a.receiving_team === teamId);
+      const giving = state.currentTrade.assets.filter((a) => a.giving_team === teamId);
+
+      const impact = state.validationResult?.team_impacts[teamId];
+
+      return {
+        teamId,
+        team,
+        receiving,
+        giving,
+        netSalary: impact?.net_salary || 0,
+        netPlayers: impact?.net_players || 0,
+        impact,
+      };
+    },
+
+    // Check if current user can vote (for commissioner approval)
+    canVote: (state) => (userId: number): boolean => {
+      if (!state.currentTrade || state.currentTrade.status !== 'waiting_approval') {
         return false;
       }
-
-      // Each team must give and receive at least one asset
-      const allTeams = [this.draftTrade.proposing_team, ...this.draftTrade.teams.filter(t => t !== this.draftTrade.proposing_team)];
-      return allTeams.every(teamId => {
-        const { giving, receiving } = this.assetsByTeam(teamId);
-        return giving.length > 0 && receiving.length > 0;
-      });
+      // Check if user already voted
+      return !state.currentTrade.approvals.some((a) => a.commissioner === userId);
     },
 
-    // Get validation impact for specific team
-    teamImpact(): (teamId: number) => any {
-      return (teamId: number) => {
-        return this.validationResult?.team_impacts[teamId] || null;
-      };
+    // Get user's vote if they voted
+    userVote: (state) => (userId: number) => {
+      if (!state.currentTrade) return null;
+      return state.currentTrade.approvals.find((a) => a.commissioner === userId);
     },
   },
 
   actions: {
-    // Load trades
-    async loadTrades(filters?: TradeListFilters) {
-      this.isLoadingTrades = true;
+    // ===== Load Trades =====
+    async fetchUserTrades(filters?: TradeListFilters) {
+      this.loading.trades = true;
       try {
         const response = await TradeService.listTrades(filters);
-
-        // Categorize trades
-        this.activeTrades = response.results.filter(t =>
-          t.status === 'proposed' || t.status === 'waiting_approval'
-        );
-        this.sentTrades = response.results.filter(t =>
-          t.status === 'proposed' || t.status === 'waiting_approval'
-        );
-        this.tradeHistory = response.results.filter(t =>
-          ['accepted', 'rejected', 'cancelled', 'completed', 'vetoed'].includes(t.status)
-        );
+        this.trades = response.results || response;
       } catch (error) {
-        console.error('Failed to load trades:', error);
+        console.error('Failed to fetch trades:', error);
         throw error;
       } finally {
-        this.isLoadingTrades = false;
+        this.loading.trades = false;
       }
     },
 
-    // Load specific trade
-    async loadTrade(id: number) {
-      this.isLoading = true;
+    async fetchTradeById(id: number) {
+      this.loading.currentTrade = true;
       try {
         this.currentTrade = await TradeService.getTrade(id);
       } catch (error) {
-        console.error('Failed to load trade:', error);
+        console.error('Failed to fetch trade:', error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
     },
 
-    // Load available picks
-    async loadAvailablePicks(teamId: number) {
-      this.isLoadingPicks = true;
+    // ===== Load Available Resources =====
+    async loadAvailableTeams() {
+      this.loading.teams = true;
       try {
-        this.availablePicks = await TradeService.listPicks({ team: teamId });
+        // TODO: Implement team loading from API
+        // this.availableTeams = await TeamService.listTeams();
+      } catch (error) {
+        console.error('Failed to load teams:', error);
+        throw error;
+      } finally {
+        this.loading.teams = false;
+      }
+    },
+
+    async loadAvailablePlayers(teamId: number) {
+      if (this.availablePlayersByTeam[teamId]) {
+        return; // Already cached
+      }
+
+      this.loading.players = true;
+      try {
+        // TODO: Implement player loading from API
+        // const players = await PlayerService.listPlayers({ team: teamId });
+        // this.availablePlayersByTeam[teamId] = players;
+      } catch (error) {
+        console.error('Failed to load players:', error);
+        throw error;
+      } finally {
+        this.loading.players = false;
+      }
+    },
+
+    async loadAvailablePicks(teamId: number) {
+      if (this.availablePicksByTeam[teamId]) {
+        return; // Already cached
+      }
+
+      this.loading.picks = true;
+      try {
+        const picks = await TradeService.listPicks({ team: teamId });
+        this.availablePicksByTeam[teamId] = picks;
       } catch (error) {
         console.error('Failed to load picks:', error);
         throw error;
       } finally {
-        this.isLoadingPicks = false;
+        this.loading.picks = false;
       }
     },
 
-    // Initialize draft trade
-    initDraftTrade(proposingTeamId: number) {
+    // ===== Draft Trade Management =====
+    createDraftTrade(proposingTeamId: number) {
       this.draftTrade = {
         proposing_team: proposingTeamId,
         teams: [proposingTeamId],
@@ -174,50 +252,58 @@ export const useTradeStore = defineStore('trade', {
       this.validationResult = null;
     },
 
-    // Add team to draft trade
-    addTeamToDraft(teamId: number) {
+    addTeamToTrade(teamId: number) {
       if (!this.draftTrade.teams.includes(teamId)) {
         this.draftTrade.teams.push(teamId);
       }
     },
 
-    // Remove team from draft trade
-    removeTeamFromDraft(teamId: number) {
-      if (teamId !== this.draftTrade.proposing_team) {
-        this.draftTrade.teams = this.draftTrade.teams.filter(t => t !== teamId);
-        // Remove all assets involving this team
-        this.draftTrade.assets = this.draftTrade.assets.filter(
-          a => a.giving_team !== teamId && a.receiving_team !== teamId
-        );
+    removeTeamFromTrade(teamId: number) {
+      if (teamId === this.draftTrade.proposing_team) {
+        return; // Cannot remove own team
       }
+      this.draftTrade.teams = this.draftTrade.teams.filter((t) => t !== teamId);
+      // Remove all assets involving this team
+      this.draftTrade.assets = this.draftTrade.assets.filter(
+        (a) => a.giving_team !== teamId && a.receiving_team !== teamId
+      );
     },
 
-    // Add asset to draft trade
-    addAssetToDraft(asset: CreateTradeAssetData) {
+    addAsset(asset: CreateTradeAssetData) {
       this.draftTrade.assets.push(asset);
     },
 
-    // Remove asset from draft trade
-    removeAssetFromDraft(index: number) {
+    removeAsset(index: number) {
       this.draftTrade.assets.splice(index, 1);
     },
 
-    // Update asset in draft trade
-    updateAssetInDraft(index: number, asset: Partial<CreateTradeAssetData>) {
-      this.draftTrade.assets[index] = { ...this.draftTrade.assets[index], ...asset };
+    updateAssetDestination(index: number, receivingTeam: number) {
+      if (this.draftTrade.assets[index]) {
+        this.draftTrade.assets[index].receiving_team = receivingTeam;
+      }
     },
 
-    // Validate current draft trade
-    async validateDraftTrade() {
+    clearDraft() {
+      this.draftTrade = {
+        proposing_team: null,
+        teams: [],
+        assets: [],
+        notes: '',
+      };
+      this.validationResult = null;
+    },
+
+    // ===== Validation =====
+    async validateTrade() {
       if (this.draftTrade.assets.length === 0) {
         this.validationResult = null;
         return;
       }
 
-      this.isValidating = true;
+      this.loading.validation = true;
       try {
-        // Strip client-side enrichment fields for validation
-        const assetsForValidation = this.draftTrade.assets.map(asset => {
+        // Strip client-side enrichment fields
+        const assetsForValidation = this.draftTrade.assets.map((asset) => {
           const { player_detail, pick_detail, ...cleanAsset } = asset;
           return cleanAsset;
         });
@@ -231,218 +317,147 @@ export const useTradeStore = defineStore('trade', {
         this.validationResult = null;
         throw error;
       } finally {
-        this.isValidating = false;
+        this.loading.validation = false;
       }
     },
 
-    // Create and save draft trade
+    // ===== Trade Operations =====
     async saveDraftTrade() {
       if (!this.draftTrade.proposing_team) {
         throw new Error('No proposing team selected');
       }
 
-      this.isLoading = true;
+      this.loading.currentTrade = true;
       try {
-        const tradeData: CreateTradeData = {
+        // Create trade
+        const trade = await TradeService.createTrade({
           proposing_team: this.draftTrade.proposing_team,
           teams: this.draftTrade.teams,
           notes: this.draftTrade.notes,
-          status: 'draft',
-        };
+        });
 
-        console.log('[Trade Store] Creating draft trade with data:', tradeData);
-        const trade = await TradeService.createTrade(tradeData);
-        console.log('[Trade Store] Trade created, received:', trade);
-
-        // Add all assets, stripping client-side enrichment
+        // Add assets
         for (const asset of this.draftTrade.assets) {
           const { player_detail, pick_detail, ...cleanAsset } = asset;
           await TradeService.addAsset({ ...cleanAsset, trade: trade.id });
         }
 
+        // Reload trade with all data
         this.currentTrade = await TradeService.getTrade(trade.id);
-        console.log('[Trade Store] Trade reloaded, current status:', this.currentTrade?.status);
-
-        // DEFENSIVE CHECK: Verify status is still draft
-        if (this.currentTrade?.status !== 'draft') {
-          console.error('[Trade Store] WARNING: Backend returned wrong status!');
-          console.error('[Trade Store] Expected: draft, Received:', this.currentTrade?.status);
-          console.error('[Trade Store] This is a BACKEND BUG - check your trade creation endpoint');
-        }
-
         return this.currentTrade;
       } catch (error) {
         console.error('Failed to save draft trade:', error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
     },
 
-    // Propose trade
     async proposeTrade(tradeId?: number) {
       const id = tradeId || this.currentTrade?.id;
+
       if (!id) {
-        // If no existing trade, create and propose
+        // Create and propose
         const trade = await this.saveDraftTrade();
-        console.log('[Trade Store] Attempting to propose trade ID:', trade.id, 'with status:', trade.status);
-
-        // Defensive check: warn if status is not draft
-        if (trade.status !== 'draft') {
-          console.error('[Trade Store] ERROR: Cannot propose trade with status:', trade.status);
-          console.error('[Trade Store] Backend should have returned status "draft" but returned:', trade.status);
-          throw new Error(`Backend error: Trade status is "${trade.status}" instead of "draft". Check backend trade creation endpoint.`);
-        }
-
         return await TradeService.proposeTrade(trade.id);
       }
 
-      this.isLoading = true;
+      this.loading.currentTrade = true;
       try {
-        console.log('[Trade Store] Proposing existing trade ID:', id);
         this.currentTrade = await TradeService.proposeTrade(id);
-        await this.loadTrades();
+        await this.fetchUserTrades();
         return this.currentTrade;
       } catch (error) {
         console.error('Failed to propose trade:', error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
     },
 
-    // Accept trade offer
-    async acceptOffer(offerId: number, message?: string) {
-      this.isLoading = true;
+    // ===== Trade Responses =====
+    async respondToTrade(offerId: number, response: 'accept' | 'reject' | 'counter', message?: string) {
+      this.loading.currentTrade = true;
       try {
-        await TradeService.acceptOffer(offerId, { message });
-        await this.loadTrades();
-        if (this.currentTrade) {
-          await this.loadTrade(this.currentTrade.id);
+        let result;
+        switch (response) {
+          case 'accept':
+            result = await TradeService.acceptOffer(offerId, { message });
+            break;
+          case 'reject':
+            result = await TradeService.rejectOffer(offerId, { message });
+            break;
+          case 'counter':
+            result = await TradeService.counterOffer(offerId, { message });
+            // Counter creates a new draft trade, navigate to it
+            if (result.id) {
+              this.currentTrade = result;
+            }
+            break;
         }
+
+        await this.fetchUserTrades();
+        if (this.currentTrade && response !== 'counter') {
+          await this.fetchTradeById(this.currentTrade.id);
+        }
+
+        return result;
       } catch (error) {
-        console.error('Failed to accept offer:', error);
+        console.error(`Failed to ${response} trade:`, error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
     },
 
-    // Reject trade offer
-    async rejectOffer(offerId: number, message?: string) {
-      this.isLoading = true;
+    // ===== Commissioner Actions =====
+    async voteOnTrade(tradeId: number, vote: 'approve' | 'veto', notes?: string) {
+      this.loading.currentTrade = true;
       try {
-        await TradeService.rejectOffer(offerId, { message });
-        await this.loadTrades();
-        if (this.currentTrade) {
-          await this.loadTrade(this.currentTrade.id);
+        const voteData: CommissionerVoteData = { vote, notes: notes || '' };
+        const response = await TradeService.voteOnTrade(tradeId, voteData);
+
+        // Update current trade with new vote data
+        if (response.trade) {
+          this.currentTrade = response.trade;
         }
+
+        await this.fetchUserTrades();
+        return response.vote_result;
       } catch (error) {
-        console.error('Failed to reject offer:', error);
+        console.error('Failed to vote on trade:', error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
     },
 
-    // Cancel trade
+    async executeTrade(tradeId: number) {
+      this.loading.currentTrade = true;
+      try {
+        this.currentTrade = await TradeService.executeTrade(tradeId);
+        await this.fetchUserTrades();
+        return this.currentTrade;
+      } catch (error) {
+        console.error('Failed to execute trade:', error);
+        throw error;
+      } finally {
+        this.loading.currentTrade = false;
+      }
+    },
+
+    // ===== Utility Actions =====
     async cancelTrade(tradeId: number) {
-      this.isLoading = true;
+      this.loading.currentTrade = true;
       try {
         await TradeService.cancelTrade(tradeId);
-        await this.loadTrades();
+        await this.fetchUserTrades();
       } catch (error) {
         console.error('Failed to cancel trade:', error);
         throw error;
       } finally {
-        this.isLoading = false;
+        this.loading.currentTrade = false;
       }
-    },
-
-    // Delete draft trade
-    async deleteDraftTrade(tradeId: number) {
-      this.isLoading = true;
-      try {
-        await TradeService.deleteTrade(tradeId);
-        await this.loadTrades();
-      } catch (error) {
-        console.error('Failed to delete trade:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    // Load trade timeline
-    async loadTimeline(tradeId: number) {
-      this.isLoading = true;
-      try {
-        const timeline = await TradeService.getTimeline(tradeId);
-        if (this.currentTrade) {
-          this.currentTrade.timeline = timeline;
-        }
-        return timeline;
-      } catch (error) {
-        console.error('Failed to load timeline:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    // Commissioner approve trade
-    async approveTrade(tradeId: number, notes?: string) {
-      this.isLoading = true;
-      try {
-        this.currentTrade = await TradeService.approveTrade(tradeId, { notes });
-        await this.loadTrades();
-        return this.currentTrade;
-      } catch (error) {
-        console.error('Failed to approve trade:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    // Commissioner veto trade
-    async vetoTrade(tradeId: number, reason: string) {
-      this.isLoading = true;
-      try {
-        this.currentTrade = await TradeService.vetoTrade(tradeId, { reason });
-        await this.loadTrades();
-        return this.currentTrade;
-      } catch (error) {
-        console.error('Failed to veto trade:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    // Load pending approval trades for commissioners
-    async loadPendingApproval() {
-      this.isLoadingTrades = true;
-      try {
-        const response = await TradeService.listPendingApproval();
-        return response;
-      } catch (error) {
-        console.error('Failed to load pending approval trades:', error);
-        throw error;
-      } finally {
-        this.isLoadingTrades = false;
-      }
-    },
-
-    // Clear draft
-    clearDraft() {
-      this.draftTrade = {
-        proposing_team: null,
-        teams: [],
-        assets: [],
-        notes: '',
-      };
-      this.validationResult = null;
     },
   },
 });
