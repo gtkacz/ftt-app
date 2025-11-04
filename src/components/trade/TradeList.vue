@@ -8,7 +8,7 @@
 
     <!-- Empty State -->
     <div v-else-if="trades.length === 0" class="text-center pa-8">
-      <v-icon size="64" color="grey-lighten-1">mdi-swap-horizontal</v-icon>
+      <v-icon size="64" color="grey-lighten-1">swap_horiz</v-icon>
       <p class="text-h6 text-medium-emphasis mt-4">No trades found</p>
       <p class="text-caption">Trades in this status will appear here</p>
     </div>
@@ -55,15 +55,15 @@
           <v-card-text>
             <div class="trade-summary">
               <div class="summary-row">
-                <v-icon size="small" class="mr-2">mdi-account</v-icon>
+                <v-icon size="small" class="mr-2">person</v-icon>
                 <span class="text-caption">{{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}</span>
               </div>
               <div class="summary-row">
-                <v-icon size="small" class="mr-2">mdi-calendar-star</v-icon>
+                <v-icon size="small" class="mr-2">star</v-icon>
                 <span class="text-caption">{{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}</span>
               </div>
               <div v-if="trade.created_at" class="summary-row">
-                <v-icon size="small" class="mr-2">mdi-clock-outline</v-icon>
+                <v-icon size="small" class="mr-2">schedule</v-icon>
                 <span class="text-caption">{{ formatDate(trade.created_at) }}</span>
               </div>
             </div>
@@ -94,7 +94,7 @@
                 color="primary"
                 @click.stop="$emit('edit-trade', trade)"
               >
-                <v-icon start>mdi-pencil</v-icon>
+                <v-icon start>edit</v-icon>
                 Edit
               </v-btn>
               <v-btn
@@ -103,7 +103,7 @@
                 color="error"
                 @click.stop="$emit('delete-trade', trade)"
               >
-                <v-icon start>mdi-delete</v-icon>
+                <v-icon start>delete</v-icon>
                 Delete
               </v-btn>
             </template>
@@ -116,7 +116,7 @@
                 color="success"
                 @click.stop="$emit('respond-trade', { trade, response: 'accept' })"
               >
-                <v-icon start>mdi-check</v-icon>
+                <v-icon start>check</v-icon>
                 Accept
               </v-btn>
               <v-btn
@@ -125,7 +125,7 @@
                 color="warning"
                 @click.stop="$emit('respond-trade', { trade, response: 'counter' })"
               >
-                <v-icon start>mdi-pencil</v-icon>
+                <v-icon start>edit</v-icon>
                 Counter
               </v-btn>
               <v-btn
@@ -134,7 +134,7 @@
                 color="error"
                 @click.stop="$emit('respond-trade', { trade, response: 'reject' })"
               >
-                <v-icon start>mdi-close</v-icon>
+                <v-icon start>close</v-icon>
                 Reject
               </v-btn>
             </template>

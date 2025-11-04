@@ -14,7 +14,7 @@
         color="error"
         @click="$emit('remove-team', teamId)"
       >
-        <v-icon>mdi-close</v-icon>
+        <v-icon>close</v-icon>
       </v-btn>
     </v-card-title>
 
@@ -32,11 +32,11 @@
     <!-- Tabs: Players / Picks -->
     <v-tabs v-model="activeTab" color="primary" align-tabs="center">
       <v-tab value="players">
-        <v-icon start>mdi-account</v-icon>
+        <v-icon start>person</v-icon>
         Players
       </v-tab>
       <v-tab value="picks">
-        <v-icon start>mdi-calendar-star</v-icon>
+        <v-icon start>lasso_select</v-icon>
         Picks
       </v-tab>
     </v-tabs>
@@ -61,7 +61,7 @@
                   size="small"
                   @click="$emit('add-asset', { teamId, assetType: 'player' })"
                 >
-                  <v-icon start>mdi-plus</v-icon>
+                  <v-icon start>add</v-icon>
                   Add Player
                 </v-btn>
               </v-toolbar>
@@ -92,7 +92,7 @@
                 @update:model-value="(value) => $emit('update-destination', { asset: item, receivingTeam: value })"
               >
                 <template #prepend-inner>
-                  <v-icon size="small">mdi-arrow-right</v-icon>
+                  <v-icon size="small">arrow_right_alt</v-icon>
                 </template>
               </v-select>
             </template>
@@ -105,7 +105,7 @@
                 color="error"
                 @click="$emit('remove-asset', item)"
               >
-                <v-icon size="small">mdi-delete</v-icon>
+                <v-icon size="small">backspace</v-icon>
               </v-btn>
             </template>
 
@@ -135,7 +135,7 @@
                   size="small"
                   @click="$emit('add-asset', { teamId, assetType: 'pick' })"
                 >
-                  <v-icon start>mdi-plus</v-icon>
+                  <v-icon start>add</v-icon>
                   Add Pick
                 </v-btn>
               </v-toolbar>
@@ -164,7 +164,7 @@
                 @update:model-value="(value) => $emit('update-destination', { asset: item, receivingTeam: value })"
               >
                 <template #prepend-inner>
-                  <v-icon size="small">mdi-arrow-right</v-icon>
+                  <v-icon size="small">arrow_right_alt</v-icon>
                 </template>
               </v-select>
             </template>
@@ -177,7 +177,7 @@
                 color="error"
                 @click="$emit('remove-asset', item)"
               >
-                <v-icon size="small">mdi-delete</v-icon>
+                <v-icon size="small">backspace</v-icon>
               </v-btn>
             </template>
 

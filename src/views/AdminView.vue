@@ -19,7 +19,7 @@
       </div>
     </div>
     <div v-else class="unauthorized-container">
-      <v-icon icon="mdi-shield-lock-outline" size="64" color="grey" />
+      <v-icon icon="disabled_by_default" size="64" color="grey" />
       <h1 class="page-title">Administrative Panel</h1>
       <p class="page-subtitle">Sorry, the page you are looking for is only available to admins.</p>
     </div>

@@ -51,9 +51,9 @@
       </div>
 
       <!-- Selected Teams Display -->
-      <div v-if="selectedTeamIds.length > 0" class="mt-4">
+      <div v-if="selectedTeamIds?.length > 0" class="mt-4">
         <div class="text-caption text-medium-emphasis mb-2">
-          Teams in Trade ({{ selectedTeamIds.length }})
+          Teams in Trade ({{ selectedTeamIds?.length }})
         </div>
 
         <v-chip-group column>
@@ -95,7 +95,7 @@
 
       <!-- Trade Type Info -->
       <v-alert
-        v-if="selectedTeamIds.length >= 3"
+        v-if="selectedTeamIds?.length >= 3"
         type="info"
         variant="tonal"
         density="compact"
@@ -132,11 +132,11 @@ const emit = defineEmits<{
 const selectedTeam = ref<number | null>(null);
 
 const availableTeams = computed(() => {
-  return props.teams.filter(team => !props.selectedTeamIds.includes(team.id));
+  return props.teams?.filter(team => !props.selectedTeamIds.includes(team.id));
 });
 
 function getTeam(teamId: number): Team | undefined {
-  return props.teams.find(t => t.id === teamId);
+  return props.teams?.find(t => t.id === teamId);
 }
 
 function getInitials(name: string): string {

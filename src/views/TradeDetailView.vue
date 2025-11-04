@@ -14,7 +14,7 @@
           <v-card>
             <v-card-title class="d-flex align-center">
               <v-btn icon variant="text" @click="handleBack">
-                <v-icon>mdi-arrow-left</v-icon>
+                <v-icon>arrow_back</v-icon>
               </v-btn>
               <span class="ml-2">Trade #{{ currentTrade.id }}</span>
               <v-spacer />
@@ -35,7 +35,7 @@
         <v-col cols="12">
           <v-card>
             <v-card-title class="d-flex align-center">
-              <v-icon start>mdi-swap-horizontal</v-icon>
+              <v-icon start>swap_horiz</v-icon>
               Trade Details
             </v-card-title>
             <v-divider />
@@ -55,7 +55,7 @@
         <v-col cols="12">
           <v-card>
             <v-card-title class="d-flex align-center">
-              <v-icon start>mdi-note-text</v-icon>
+              <v-icon start>note</v-icon>
               Notes
             </v-card-title>
             <v-divider />
@@ -101,7 +101,7 @@
                   :loading="responding"
                   @click="handleAccept"
                 >
-                  <v-icon start>mdi-check</v-icon>
+                  <v-icon start>check</v-icon>
                   Accept Trade
                 </v-btn>
                 <v-btn
@@ -110,7 +110,7 @@
                   variant="outlined"
                   @click="handleCounter"
                 >
-                  <v-icon start>mdi-pencil</v-icon>
+                  <v-icon start>edit</v-icon>
                   Counter Offer
                 </v-btn>
                 <v-btn
@@ -120,7 +120,7 @@
                   :loading="responding"
                   @click="handleReject"
                 >
-                  <v-icon start>mdi-close</v-icon>
+                  <v-icon start>close</v-icon>
                   Reject Trade
                 </v-btn>
               </template>
@@ -133,7 +133,7 @@
                   :loading="executing"
                   @click="handleExecute"
                 >
-                  <v-icon start>mdi-check-all</v-icon>
+                  <v-icon start>done_all</v-icon>
                   Execute Trade
                 </v-btn>
               </template>
@@ -156,7 +156,7 @@
 
     <!-- Error State -->
     <div v-else class="text-center pa-8">
-      <v-icon size="64" color="error">mdi-alert-circle</v-icon>
+      <v-icon size="64" color="error">error</v-icon>
       <p class="text-h6 text-medium-emphasis mt-4">Trade not found</p>
       <v-btn class="mt-4" @click="handleBack">Back to Overview</v-btn>
     </div>

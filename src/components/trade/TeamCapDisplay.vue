@@ -8,7 +8,7 @@
           size="small"
           class="w-100"
         >
-          <v-icon start size="small">mdi-currency-usd</v-icon>
+          <v-icon start size="small">attach_money</v-icon>
           <span class="text-caption">
             Cap: {{ formatCurrency(currentSalary) }} / {{ formatCurrency(salaryCap) }}
           </span>
@@ -22,7 +22,7 @@
           size="small"
           class="w-100"
         >
-          <v-icon start size="small">mdi-account-group</v-icon>
+          <v-icon start size="small">groups</v-icon>
           <span class="text-caption">
             Roster: {{ currentPlayers }} / {{ maxPlayers }}
           </span>
@@ -38,7 +38,7 @@
             :color="impact.net_salary > 0 ? 'error' : 'success'"
             size="x-small"
           >
-            {{ impact.net_salary > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
+            {{ impact.net_salary > 0 ? 'arrow_upward' : 'arrow_downward' }}
           </v-icon>
           {{ formatCurrency(Math.abs(impact.net_salary)) }}
         </div>
@@ -50,7 +50,7 @@
             :color="impact.net_players > 0 ? 'primary' : 'warning'"
             size="x-small"
           >
-            {{ impact.net_players > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
+            {{ impact.net_players > 0 ? 'arrow_upward' : 'arrow_downward' }}
           </v-icon>
           {{ Math.abs(impact.net_players) }} player{{ Math.abs(impact.net_players) !== 1 ? 's' : '' }}
         </div>

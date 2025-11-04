@@ -1,7 +1,7 @@
 <template>
   <v-card class="trade-summary-panel">
     <v-card-title class="d-flex align-center">
-      <v-icon start>mdi-swap-horizontal</v-icon>
+      <v-icon start>swap_horiz</v-icon>
       Trade Summary
     </v-card-title>
 
@@ -28,7 +28,7 @@
                 variant="flat"
               >
                 <v-icon start size="small">
-                  {{ summary.netSalary < 0 ? 'mdi-arrow-down' : 'mdi-arrow-up' }}
+                  {{ summary.netSalary < 0 ? 'arrow_downward' : 'arrow_upward' }}
                 </v-icon>
                 {{ formatCurrency(Math.abs(summary.netSalary)) }}
               </v-chip>
@@ -39,7 +39,7 @@
                 variant="flat"
               >
                 <v-icon start size="small">
-                  {{ summary.netPlayers > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
+                  {{ summary.netPlayers > 0 ? 'arrow_upward' : 'arrow_downward' }}
                 </v-icon>
                 {{ Math.abs(summary.netPlayers) }} player{{ Math.abs(summary.netPlayers) !== 1 ? 's' : '' }}
               </v-chip>
@@ -53,7 +53,7 @@
             <v-col cols="12" md="6">
               <div class="summary-section">
                 <h4 class="text-subtitle-2 mb-2 d-flex align-center">
-                  <v-icon color="success" size="small" class="mr-1">mdi-arrow-down</v-icon>
+                  <v-icon color="success" size="small" class="mr-1">arrow_downward</v-icon>
                   Receiving
                 </h4>
                 <v-list density="compact">
@@ -64,7 +64,7 @@
                   >
                     <template #prepend>
                       <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                        {{ asset.asset_type === 'player' ? 'mdi-account' : 'mdi-calendar-star' }}
+                        {{ asset.asset_type === 'player' ? 'person' : 'star' }}
                       </v-icon>
                     </template>
 
@@ -102,7 +102,7 @@
             <v-col cols="12" md="6">
               <div class="summary-section">
                 <h4 class="text-subtitle-2 mb-2 d-flex align-center">
-                  <v-icon color="warning" size="small" class="mr-1">mdi-arrow-up</v-icon>
+                  <v-icon color="warning" size="small" class="mr-1">arrow_upward</v-icon>
                   Giving
                 </h4>
                 <v-list density="compact">
@@ -113,7 +113,7 @@
                   >
                     <template #prepend>
                       <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                        {{ asset.asset_type === 'player' ? 'mdi-account' : 'mdi-calendar-star' }}
+                        {{ asset.asset_type === 'player' ? 'person' : 'star' }}
                       </v-icon>
                     </template>
 
@@ -169,7 +169,7 @@
     </v-expansion-panels>
 
     <v-card-text v-if="teamSummaries.length === 0" class="text-center text-medium-emphasis">
-      <v-icon size="48" color="grey-lighten-1">mdi-swap-horizontal</v-icon>
+      <v-icon size="48" color="grey-lighten-1">swap_horiz</v-icon>
       <p class="mt-2">No assets in trade yet</p>
     </v-card-text>
   </v-card>

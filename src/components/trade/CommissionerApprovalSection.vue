@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title class="d-flex align-center">
-      <v-icon start>mdi-gavel</v-icon>
+      <v-icon start>gavel</v-icon>
       Commissioner Approval
     </v-card-title>
 
@@ -51,7 +51,7 @@
               <template #prepend>
                 <v-badge
                   v-if="approval.is_admin_vote"
-                  icon="mdi-star"
+                  icon="star"
                   color="purple"
                   overlap
                 >
@@ -75,7 +75,7 @@
                   size="small"
                   color="purple"
                   variant="flat"
-                  prepend-icon="mdi-star"
+                  prepend-icon="star"
                   class="ml-2"
                 >
                   Admin - Instant Decision
@@ -107,7 +107,7 @@
                     @click="toggleNotes(approval.id)"
                   >
                     <v-icon start size="small">
-                      {{ expandedNotes.includes(approval.id) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                      {{ expandedNotes.includes(approval.id) ? 'expand_less' : 'expand_more' }}
                     </v-icon>
                     {{ expandedNotes.includes(approval.id) ? 'Hide' : 'View' }} Notes
                   </v-btn>
@@ -130,7 +130,7 @@
             Pending Votes ({{ approvalStatus.votes_remaining }} remaining)
           </div>
           <v-chip size="small" variant="outlined" color="grey">
-            <v-icon start size="small">mdi-clock-outline</v-icon>
+            <v-icon start size="small">schedule</v-icon>
             Awaiting commissioner decisions
           </v-chip>
         </v-col>
@@ -146,7 +146,7 @@
             <v-radio label="Approve" value="approve" color="success">
               <template #label>
                 <div class="d-flex align-center">
-                  <v-icon color="success" class="mr-2">mdi-check-circle</v-icon>
+                  <v-icon color="success" class="mr-2">check_circle</v-icon>
                   <span>Approve</span>
                 </div>
               </template>
@@ -154,7 +154,7 @@
             <v-radio label="Veto" value="veto" color="error">
               <template #label>
                 <div class="d-flex align-center">
-                  <v-icon color="error" class="mr-2">mdi-close-circle</v-icon>
+                  <v-icon color="error" class="mr-2">cancel</v-icon>
                   <span>Veto</span>
                 </div>
               </template>
@@ -177,7 +177,7 @@
             :loading="submitting"
             @click="submitVote"
           >
-            <v-icon start>mdi-send</v-icon>
+            <v-icon start>send</v-icon>
             Submit Vote
           </v-btn>
         </v-col>
@@ -188,7 +188,7 @@
         <v-col cols="12">
           <v-alert type="info" variant="tonal">
             <template #prepend>
-              <v-icon>mdi-information</v-icon>
+              <v-icon>info</v-icon>
             </template>
             You have already voted on this trade.
           </v-alert>
@@ -262,10 +262,10 @@ function getApprovalStatusType(): 'success' | 'error' | 'warning' | 'info' {
 function getApprovalStatusIcon(): string {
   const type = getApprovalStatusType();
   const icons = {
-    success: 'mdi-check-circle',
-    error: 'mdi-close-circle',
-    warning: 'mdi-clock-alert',
-    info: 'mdi-information',
+    success: 'check_circle',
+    error: 'cancel',
+    warning: 'schedule',
+    info: 'info',
   };
   return icons[type];
 }
@@ -309,7 +309,7 @@ function getVoteColor(vote: VoteType): string {
 
 // Get vote icon
 function getVoteIcon(vote: VoteType): string {
-  return vote === 'approve' ? 'mdi-check' : 'mdi-close';
+  return vote === 'approve' ? 'check' : 'close';
 }
 
 // Format date

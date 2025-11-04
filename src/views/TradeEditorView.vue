@@ -6,7 +6,7 @@
         <v-card>
           <v-card-title class="d-flex align-center">
             <v-btn icon variant="text" @click="handleCancel">
-              <v-icon>mdi-arrow-left</v-icon>
+              <v-icon>arrow_back</v-icon>
             </v-btn>
             <span class="ml-2">
               {{ isCounterMode ? `Counter Offer for Trade #${tradeId}` : isEditMode ? `Edit Trade #${tradeId}` : 'Create New Trade' }}
@@ -30,7 +30,7 @@
           border="start"
         >
           <template #prepend>
-            <v-icon>mdi-information</v-icon>
+            <v-icon>info</v-icon>
           </template>
           <div class="text-subtitle-1 font-weight-medium">
             You're making a counter offer
@@ -73,7 +73,7 @@
                   variant="outlined"
                   @click="showTeamSelector = true"
                 >
-                  <v-icon start>mdi-plus</v-icon>
+                  <v-icon start>add</v-icon>
                   Add Team
                 </v-btn>
                 <p class="text-caption text-medium-emphasis mt-2">
@@ -116,7 +116,7 @@
               :disabled="!canPropose"
               @click="handlePropose"
             >
-              <v-icon start>mdi-send</v-icon>
+              <v-icon start>send</v-icon>
               {{ isCounterMode ? 'Send Counter Offer' : 'Propose Trade' }}
             </v-btn>
             <v-btn
@@ -126,7 +126,7 @@
               :disabled="draftTrade.assets.length === 0"
               @click="handleSaveDraft"
             >
-              <v-icon start>mdi-content-save</v-icon>
+              <v-icon start>save</v-icon>
               Save Draft
             </v-btn>
             <v-btn
@@ -144,7 +144,7 @@
               :disabled="draftTrade.assets.length === 0"
               @click="validateTrade"
             >
-              <v-icon start>mdi-check-circle</v-icon>
+              <v-icon start>check_circle</v-icon>
               Validate
             </v-btn>
           </v-card-text>

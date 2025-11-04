@@ -2,11 +2,11 @@
   <v-dialog v-model="internalDialog" max-width="900px" scrollable>
     <v-card>
       <v-card-title class="d-flex align-center">
-        <v-icon start>{{ assetType === 'player' ? 'mdi-account' : 'mdi-calendar-star' }}</v-icon>
+        <v-icon start>{{ assetType === 'player' ? 'person' : 'star' }}</v-icon>
         Select {{ assetType === 'player' ? 'Player' : 'Pick' }}
         <v-spacer />
         <v-btn icon variant="text" @click="closeDialog">
-          <v-icon>mdi-close</v-icon>
+          <v-icon>close</v-icon>
         </v-btn>
       </v-card-title>
 
@@ -22,7 +22,7 @@
               item-title="name"
               item-value="id"
               label="Send to Team"
-              prepend-inner-icon="mdi-arrow-right-bold"
+              prepend-inner-icon="arrow_forward"
               variant="outlined"
               :rules="[v => !!v || 'Destination team is required']"
             >
@@ -51,7 +51,7 @@
         <div v-if="assetType === 'player'">
           <v-text-field
             v-model="playerSearch"
-            prepend-inner-icon="mdi-magnify"
+            prepend-inner-icon="search"
             label="Search players"
             variant="outlined"
             density="compact"
@@ -88,7 +88,7 @@
 
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon size="48" color="grey-lighten-1">mdi-account-off</v-icon>
+                <v-icon size="48" color="grey-lighten-1">person_off</v-icon>
                 <p class="text-h6 text-medium-emphasis mt-2">No players available</p>
                 <p class="text-caption">This team has no available players to trade</p>
               </div>
@@ -127,7 +127,7 @@
 
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon size="48" color="grey-lighten-1">mdi-calendar-remove</v-icon>
+                <v-icon size="48" color="grey-lighten-1">event_busy</v-icon>
                 <p class="text-h6 text-medium-emphasis mt-2">No picks available</p>
                 <p class="text-caption">This team has no available draft picks to trade</p>
               </div>
@@ -139,7 +139,7 @@
             <div v-if="selectedPicks.length > 0" class="mt-4">
               <v-divider class="mb-4" />
               <h4 class="text-subtitle-1 mb-3">
-                <v-icon start>mdi-shield-check</v-icon>
+                <v-icon start>verified_user</v-icon>
                 Pick Protection (Optional)
               </h4>
 
@@ -150,7 +150,7 @@
                       <span>No Protection</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
-                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">mdi-information</v-icon>
+                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
                           <div class="font-weight-bold mb-1">No Protection</div>
@@ -169,7 +169,7 @@
                       <span>Top X Protected</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
-                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">mdi-information</v-icon>
+                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
                           <div class="font-weight-bold mb-1">Top X Protected</div>
@@ -192,7 +192,7 @@
                       <span>Swap Best</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
-                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">mdi-information</v-icon>
+                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
                           <div class="font-weight-bold mb-1">Swap Best (Pick Swap Rights)</div>
@@ -215,7 +215,7 @@
                       <span>Swap Worst</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
-                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">mdi-information</v-icon>
+                          <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
                           <div class="font-weight-bold mb-1">Swap Worst (Reverse Pick Swap)</div>
@@ -250,7 +250,7 @@
 
               <v-alert v-if="pickProtection !== 'none'" type="info" variant="tonal" class="mt-3" prominent>
                 <template #prepend>
-                  <v-icon>mdi-shield-check</v-icon>
+                  <v-icon>verified_user</v-icon>
                 </template>
                 <template v-if="pickProtection === 'top_x'">
                   <div class="text-subtitle-2 mb-2">Top {{ protectionValue || 'X' }} Protected Pick</div>
@@ -260,11 +260,11 @@
                   </div>
                   <div class="mt-2">
                     <v-chip size="small" color="success" variant="outlined" class="mr-2">
-                      <v-icon start size="small">mdi-check</v-icon>
+                      <v-icon start size="small">check</v-icon>
                       Conveys: #{{ (protectionValue || 0) + 1 }}+
                     </v-chip>
                     <v-chip size="small" color="error" variant="outlined">
-                      <v-icon start size="small">mdi-close</v-icon>
+                      <v-icon start size="small">close</v-icon>
                       Protected: #1-{{ protectionValue || 'X' }}
                     </v-chip>
                   </div>
@@ -276,7 +276,7 @@
                     and the giving team gets the worse pick. This is typically used when teams want to secure a higher draft position.
                   </div>
                   <div class="mt-2 text-caption">
-                    <v-icon size="small" class="mr-1">mdi-information</v-icon>
+                    <v-icon size="small" class="mr-1">info</v-icon>
                     Common in deals where one team wants lottery protection
                   </div>
                 </template>
@@ -287,7 +287,7 @@
                     and the giving team gets the better pick. This protects the giving team from giving up their best draft position.
                   </div>
                   <div class="mt-2 text-caption">
-                    <v-icon size="small" class="mr-1">mdi-information</v-icon>
+                    <v-icon size="small" class="mr-1">info</v-icon>
                     Rarely used; ensures the giving team maintains their higher pick
                   </div>
                 </template>

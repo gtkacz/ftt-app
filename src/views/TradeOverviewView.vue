@@ -5,7 +5,7 @@
       <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center">
-            <v-icon start>mdi-swap-horizontal</v-icon>
+            <v-icon start>swap_horiz</v-icon>
             Trade Overview
             <v-spacer />
             <v-btn
@@ -13,14 +13,14 @@
               variant="outlined"
               class="mr-2"
             >
-              <v-icon start>mdi-history</v-icon>
+              <v-icon start>history</v-icon>
               League History
             </v-btn>
             <v-btn
               color="primary"
               @click="createNewTrade"
             >
-              <v-icon start>mdi-plus</v-icon>
+              <v-icon start>add</v-icon>
               Create Trade
             </v-btn>
           </v-card-title>
@@ -39,7 +39,7 @@
             show-arrows
           >
             <v-tab value="draft">
-              <v-icon start>mdi-file-document-edit</v-icon>
+              <v-icon start>draft</v-icon>
               Draft
               <v-chip
                 v-if="getCountByStatus('draft') > 0"
@@ -51,7 +51,7 @@
               </v-chip>
             </v-tab>
             <v-tab value="proposed">
-              <v-icon start>mdi-email-send</v-icon>
+              <v-icon start>send</v-icon>
               Proposed
               <v-chip
                 v-if="getCountByStatus('proposed') > 0"
@@ -63,7 +63,7 @@
               </v-chip>
             </v-tab>
             <v-tab value="waiting_approval">
-              <v-icon start>mdi-clock-outline</v-icon>
+              <v-icon start>schedule</v-icon>
               Pending Approval
               <v-chip
                 v-if="getCountByStatus('waiting_approval') > 0"
@@ -75,7 +75,7 @@
               </v-chip>
             </v-tab>
             <v-tab value="approved">
-              <v-icon start>mdi-check-circle</v-icon>
+              <v-icon start>check_circle</v-icon>
               Approved
               <v-chip
                 v-if="getCountByStatus('approved') > 0"
@@ -87,7 +87,7 @@
               </v-chip>
             </v-tab>
             <v-tab value="completed">
-              <v-icon start>mdi-check-all</v-icon>
+              <v-icon start>done_all</v-icon>
               Completed
               <v-chip
                 v-if="getCountByStatus('completed') > 0"
@@ -99,7 +99,7 @@
               </v-chip>
             </v-tab>
             <v-tab value="rejected">
-              <v-icon start>mdi-close-circle</v-icon>
+              <v-icon start>approval_delegation_off</v-icon>
               Rejected/Vetoed
               <v-chip
                 v-if="getRejectedCount() > 0"
@@ -187,7 +187,7 @@
       elevation="8"
       @click="createNewTrade"
     >
-      <v-icon>mdi-plus</v-icon>
+      <v-icon>add</v-icon>
     </v-btn>
 
     <!-- Snackbar for notifications -->
