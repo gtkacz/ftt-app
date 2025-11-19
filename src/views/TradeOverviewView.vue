@@ -332,7 +332,7 @@ function tradesByStatus(status: TradeDisplayStatus): Trade[] {
   if (status === 'waiting_acceptance') {
     const userTeamId = authStore.user?.team?.id;
     if (userTeamId) {
-      return allTrades.filter((trade) => {
+      return allTrades.filter((trade: Trade) => {
         const participantIds = trade.teams_detail?.map((t: any) => t.id) || 
                                trade.participants?.map((t: any) => typeof t === 'object' ? t.id : t) ||
                                trade.teams || [];
@@ -340,6 +340,11 @@ function tradesByStatus(status: TradeDisplayStatus): Trade[] {
       });
     }
     return [];
+  }
+  
+  // For "vetoed" tab, only show trades that are actually vetoed (majority or admin)
+  if (status === 'vetoed') {
+    return allTrades.filter((trade: Trade) => isTradeActuallyVetoed(trade));
   }
   
   // For other statuses, show all trades (staff can see all, regular users already filtered by backend)
@@ -351,12 +356,29 @@ function getCountByStatus(status: TradeDisplayStatus): number {
   return tradesByStatus(status).length;
 }
 
+// Check if trade is actually vetoed (only if done=true)
+function isTradeActuallyVetoed(trade: Trade): boolean {
+  // Trade is only definitively vetoed if done=true
+  if (!trade.done) {
+    return false;
+  }
+  
+  const displayStatus = trade.displayStatus || getTradeDisplayStatus(trade);
+  return displayStatus === 'vetoed';
+}
+
 // Get trades pending approval (for commissioners)
-// Includes: accepted trades and approved trades that aren't finalized yet
+// Includes: accepted trades and approved trades that aren't finalized (done=false)
 function getPendingApprovalTrades(): Trade[] {
   const allTrades = tradeStore.trades || [];
   
-  return allTrades.filter((trade) => {
+  return allTrades.filter((trade: Trade) => {
+    // Only include trades that are not finalized (done=false)
+    // A trade is only definitively vetoed/approved if done=true
+    if (trade.done) {
+      return false;
+    }
+    
     const displayStatus = trade.displayStatus || getTradeDisplayStatus(trade);
     
     // Include trades that are accepted (waiting for first approval)
@@ -366,7 +388,15 @@ function getPendingApprovalTrades(): Trade[] {
     
     // Include trades that are approved but not finalized (done=false)
     // This allows commissioners to still vote even if others have already approved
-    if (displayStatus === 'approved' && !trade.done) {
+    if (displayStatus === 'approved') {
+      return true;
+    }
+    
+    // Include trades that have commissioner votes (status shows 'vetoed' or 'approved' but done=false)
+    // This includes trades where someone voted to veto/approve but trade isn't finalized yet
+    const status = trade.backendStatus || (trade as any).status;
+    if (status?.commissioners && Object.keys(status.commissioners).length > 0) {
+      // Has commissioner votes and trade is not done, so it's still pending
       return true;
     }
     
