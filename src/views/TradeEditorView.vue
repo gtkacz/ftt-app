@@ -449,7 +449,7 @@ async function handlePropose() {
   try {
     // Transform assets to backend format
     // Group by receiver, then format as AssetPayload
-    const assetsByReceiver = new Map<number, { players: number[]; picks: Array<{ id: number; protection: string }> }>();
+    const assetsByReceiver = new Map<number, { players: number[]; picks: Array<{ id: number; protection: string; metadata?: { x_value: number } }> }>();
 
     selectedAssets.value.forEach((asset) => {
       const receiver = asset.receiving_team;
@@ -465,10 +465,20 @@ async function handlePropose() {
         const protection = (asset as any).protection_type || 
                           (asset as any).pick_detail?.protection_type || 
                           'unprotected';
-        receiverAssets.picks.push({
+        const protectionValue = (asset as any).protection_value || 
+                               (asset as any).pick_detail?.protection_value;
+        
+        const pickPayload: { id: number; protection: string; metadata?: { x_value: number } } = {
           id: asset.pick,
           protection: protection,
-        });
+        };
+        
+        // Include metadata with x_value if protection is top_x and value is provided
+        if (protection === 'top_x' && protectionValue !== undefined && protectionValue !== null) {
+          pickPayload.metadata = { x_value: protectionValue };
+        }
+        
+        receiverAssets.picks.push(pickPayload);
       }
     });
 
