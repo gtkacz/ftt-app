@@ -225,7 +225,7 @@ async function handleRespondTrade(payload: { trade: Trade; response: 'accept' | 
     // Use the backend trade action endpoint
     const { TradeService } = await import('@/api/trade');
     await TradeService.performTradeAction({
-      action: response === 'accept' ? 'accept' : 'reject',
+      action: response === 'accept' ? 'accepted' : 'rejected',
       trade_id: trade.id,
     });
 

@@ -324,7 +324,7 @@ export class TradeService {
   // ===== Trade Actions (Backend endpoint) =====
   static async performTradeAction(data: TradeActionRequest): Promise<{ detail: string }> {
     const payload: any = {
-      action: data.action.toUpperCase(),
+      action: data.action.toLowerCase(),
       trade_id: data.trade_id,
     };
     
