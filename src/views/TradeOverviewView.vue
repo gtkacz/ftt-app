@@ -214,8 +214,11 @@ async function handleRespondTrade(payload: { trade: Trade; response: 'accept' | 
   
   try {
     if (response === 'counter') {
-      // Navigate to edit page for counter-offer
-      router.push({ name: 'trade-edit', params: { id: trade.id } });
+      // Navigate to create page with counteroffer query param
+      router.push({ 
+        name: 'trade-create', 
+        query: { counterofferId: trade.id.toString() } 
+      });
       return;
     }
 

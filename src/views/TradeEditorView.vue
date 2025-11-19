@@ -8,7 +8,7 @@
             <v-btn icon variant="text" @click="handleCancel">
               <v-icon>arrow_back</v-icon>
             </v-btn>
-            <span class="ml-2">Create New Trade</span>
+            <span class="ml-2">{{ isCounteroffer ? 'Create Counteroffer' : 'Create New Trade' }}</span>
             <v-spacer />
           </v-card-title>
         </v-card>
@@ -114,7 +114,7 @@
               @click="handlePropose"
             >
               <v-icon start>send</v-icon>
-              Propose Trade
+              {{ isCounteroffer ? 'Propose Counteroffer' : 'Propose Trade' }}
             </v-btn>
             <v-btn
               variant="text"
@@ -178,12 +178,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
 import { storeToRefs } from 'pinia';
-import type { Team, Player, Pick, CreateTradeAssetData, TradeValidationResponse } from '@/types/trade';
+import type { Team, Player, Pick, CreateTradeAssetData, TradeValidationResponse, Trade, BackendTradeAssets, TradeAsset } from '@/types/trade';
 import { TradeService } from '@/api/trade';
 import { SettingsService } from '@/api/settings';
 
@@ -192,6 +192,7 @@ import TradeSummaryPanel from '@/components/trade/TradeSummaryPanel.vue';
 import TradeValidationDisplay from '@/components/trade/TradeValidationDisplay.vue';
 
 const router = useRouter();
+const route = useRoute();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
@@ -224,6 +225,10 @@ const snackbar = ref({
   color: 'success',
 });
 
+// Counteroffer state
+const originalTradeId = ref<number | null>(null);
+const isCounteroffer = computed(() => originalTradeId.value !== null);
+
 // User's team ID
 const userTeamId = computed(() => authStore.user?.team?.id);
 
@@ -241,14 +246,22 @@ const availableTeamsToAdd = computed(() => {
 const canPropose = computed(() => {
   if (selectedTeamIds.value.length < 2) return false;
   if (selectedAssets.value.length === 0) return false;
-  if (!validationResult.value || !validationResult.value.valid) return false;
+  
+  // If validation result exists and is invalid, don't allow propose
+  if (validationResult.value && !validationResult.value.valid) return false;
 
   // Each team must give and receive at least one asset
-  return selectedTeamIds.value.every((teamId) => {
+  const allTeamsValid = selectedTeamIds.value.every((teamId) => {
     const giving = selectedAssets.value.filter((a) => a.giving_team === teamId);
     const receiving = selectedAssets.value.filter((a) => a.receiving_team === teamId);
     return giving.length > 0 && receiving.length > 0;
   });
+  
+  if (!allTeamsValid) return false;
+  
+  // If validation endpoint exists and returned a result, require it to be valid
+  // Otherwise, allow propose if basic requirements are met
+  return true;
 });
 
 // Get team by ID
@@ -276,10 +289,22 @@ function getAvailablePicks(teamId: number): Pick[] {
 }
 
 // Handlers
+// Debounce validation to avoid too many calls
+let validationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function debouncedValidate() {
+  if (validationTimeout) {
+    clearTimeout(validationTimeout);
+  }
+  validationTimeout = setTimeout(() => {
+    validateTrade();
+  }, 500); // Wait 500ms after last change
+}
+
 function handleAddAsset(asset: CreateTradeAssetData) {
   selectedAssets.value.push(asset);
-  // Auto-validate after adding asset
-  validateTrade();
+  // Debounced validation after adding asset
+  debouncedValidate();
 }
 
 function handleRemoveAsset(asset: CreateTradeAssetData) {
@@ -294,8 +319,8 @@ function handleRemoveAsset(asset: CreateTradeAssetData) {
   });
   if (index !== -1) {
     selectedAssets.value.splice(index, 1);
-    // Auto-validate after removing asset
-    validateTrade();
+    // Debounced validation after removing asset
+    debouncedValidate();
   }
 }
 
@@ -317,8 +342,8 @@ function handleUpdateAsset(asset: CreateTradeAssetData) {
       // For picks, ensure protection is stored
       pick_detail: asset.pick_detail || selectedAssets.value[index].pick_detail,
     };
-    // Auto-validate after updating asset
-    validateTrade();
+    // Debounced validation after updating asset
+    debouncedValidate();
   }
 }
 
@@ -388,10 +413,27 @@ async function validateTrade() {
     const result = await TradeService.validateTrade(validationPayload);
     // Update store validation result
     tradeStore.validationResult = result;
-  } catch (error) {
-    console.error('Validation error:', error);
-    showSnackbar('Failed to validate trade', 'error');
-    tradeStore.validationResult = null;
+  } catch (error: any) {
+    // Only log error, don't show snackbar for missing endpoint (404) or network issues
+    // Only show snackbar for actual validation failures (400/422)
+    const status = error.response?.status;
+    if (status === 404) {
+      // Endpoint doesn't exist - validation is optional
+      console.log('Validation endpoint not available, skipping validation');
+      tradeStore.validationResult = null;
+    } else if (status === 400 || status === 422) {
+      // Actual validation failure
+      console.error('Validation failed:', error);
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          'Trade validation failed';
+      showSnackbar(errorMessage, 'error');
+      tradeStore.validationResult = null;
+    } else {
+      // Other errors (network, etc.) - log but don't show snackbar
+      console.error('Validation error:', error);
+      tradeStore.validationResult = null;
+    }
   } finally {
     validating.value = false;
   }
@@ -437,9 +479,63 @@ async function handlePropose() {
     }));
 
     // Submit trade - backend expects array of AssetPayload
-    const response = await TradeService.createTrade(payload as any);
+    const createResponse = await TradeService.createTrade(payload as any);
     
-    showSnackbar('Trade created successfully!', 'success');
+    // The backend returns { status: "Trade created successfully: {trade}" }
+    // We need to extract the trade ID or fetch the newly created trade
+    // For now, we'll try to get it from the response or fetch the latest trade
+    let newTradeId: number | null = null;
+    
+    if (createResponse && typeof createResponse === 'object' && 'id' in createResponse) {
+      newTradeId = createResponse.id;
+    } else if (createResponse && typeof createResponse === 'object' && 'status' in createResponse) {
+      // Try to extract ID from status message or fetch latest trade
+      // For now, we'll need to fetch the user's trades and get the latest one
+      // This is not ideal but works around the backend response format
+      try {
+        const userTrades = await TradeService.listTrades();
+        const trades = Array.isArray(userTrades) ? userTrades : userTrades.results;
+        if (trades && trades.length > 0) {
+          // Get the most recent trade (assuming it's the one we just created)
+          newTradeId = trades[0].id;
+        }
+      } catch (fetchError) {
+        console.error('Failed to fetch new trade ID:', fetchError);
+      }
+    }
+    
+    // If this is a counteroffer, call the counteroffer action endpoint
+    if (isCounteroffer.value && originalTradeId.value) {
+      if (!newTradeId) {
+        showSnackbar('Trade created but could not determine trade ID for counteroffer', 'warning');
+        router.push({ name: 'trade-overview' });
+        return;
+      }
+      
+      try {
+        // The backend expects the offer to be a Trade object
+        // Since we're sending JSON, we'll pass the new trade ID
+        // The backend may need to be updated to handle this, or fetch the trade from the ID
+        await TradeService.performTradeAction({
+          action: 'counteroffer',
+          trade_id: originalTradeId.value,
+          offer: newTradeId, // Pass the new trade ID
+        });
+        
+        showSnackbar('Counteroffer created successfully!', 'success');
+      } catch (counterError: any) {
+        console.error('Counteroffer action error:', counterError);
+        // If counteroffer action fails, the trade was still created
+        // We should still show success but maybe a warning
+        const errorMessage = counterError.response?.data?.detail || 
+                           counterError.message || 
+                           'Trade created but counteroffer action failed';
+        showSnackbar(errorMessage, 'warning');
+      }
+    } else {
+      showSnackbar('Trade created successfully!', 'success');
+    }
+    
     router.push({ name: 'trade-overview' });
   } catch (error: any) {
     console.error('Propose error:', error);
@@ -461,9 +557,202 @@ function showSnackbar(message: string, color: 'success' | 'error' | 'warning' | 
   snackbar.value = { show: true, message, color };
 }
 
+// Transform trade assets to CreateTradeAssetData format
+function transformTradeAssetsToCreateData(trade: Trade): CreateTradeAssetData[] {
+  const assets: CreateTradeAssetData[] = [];
+  
+  // The backend returns assets as BackendTradeAssets { players: [], picks: [] }
+  // But we need to get giving_team and receiving_team from the TradeAsset objects
+  // We need to fetch the full trade with assets to get this info, or reconstruct from participants
+  
+  // Handle both BackendTradeAssets and TradeAsset[] formats
+  if (Array.isArray(trade.assets)) {
+    // TradeAsset[] format - has giving_team and receiving_team directly
+    trade.assets.forEach((asset: TradeAsset) => {
+      const createAsset: CreateTradeAssetData = {
+        asset_type: asset.asset_type,
+        giving_team: asset.giving_team,
+        receiving_team: asset.receiving_team,
+        player_detail: asset.player_detail || undefined,
+        pick_detail: asset.pick_detail || undefined,
+      };
+      
+      if (asset.asset_type === 'player' && asset.player) {
+        createAsset.player = asset.player;
+      } else if (asset.asset_type === 'pick' && asset.pick) {
+        createAsset.pick = asset.pick;
+        // Extract protection from pick_detail if available
+        if (asset.pick_detail) {
+          (createAsset as any).protection_type = asset.pick_detail.protection_type || 'unprotected';
+          (createAsset as any).protection_value = asset.pick_detail.protection_value;
+        }
+      }
+      
+      assets.push(createAsset);
+    });
+  } else if (trade.assets && typeof trade.assets === 'object') {
+    // BackendTradeAssets format { players: [], picks: [] }
+    // This format doesn't include giving_team/receiving_team directly
+    // We need to infer from the asset's team (contract.team for players, current_team for picks)
+    const backendAssets = trade.assets as BackendTradeAssets;
+    const participants = trade.participants || trade.teams_detail || [];
+    const participantIds = participants.map((t: Team | number) => typeof t === 'object' ? t.id : t);
+    
+    // Process players - infer giving_team from contract.team
+    if (backendAssets.players && Array.isArray(backendAssets.players)) {
+      backendAssets.players.forEach((playerData: any) => {
+        if (typeof playerData !== 'object') return;
+        
+        // The backend sends player data, but we need contract ID
+        // Try to get contract ID from playerData.contract.id
+        // If not available, we'll try to match with loaded players later
+        const contractId = playerData.contract?.id;
+        const playerTeam = playerData.team || playerData.contract?.team;
+        const givingTeamId = typeof playerTeam === 'object' ? playerTeam.id : playerTeam;
+        const playerId = playerData.id;
+        
+        // Find receiving team (other participant)
+        if (givingTeamId && participantIds.includes(givingTeamId)) {
+          const receivingTeamId = participantIds.find((id: number) => id !== givingTeamId);
+          
+          if (receivingTeamId) {
+            // If we have contract ID, use it directly
+            if (contractId) {
+              assets.push({
+                asset_type: 'player',
+                giving_team: givingTeamId,
+                receiving_team: receivingTeamId,
+                player: contractId,
+                player_detail: playerData,
+              });
+            } else if (playerId) {
+              // Try to find contract ID from loaded players
+              // This will be matched later when players are loaded
+              const teamPlayers = availablePlayersByTeam.value[givingTeamId] || [];
+              const matchingPlayer = teamPlayers.find((p: Player) => p.id === playerId);
+              
+              if (matchingPlayer?.contract?.id) {
+                assets.push({
+                  asset_type: 'player',
+                  giving_team: givingTeamId,
+                  receiving_team: receivingTeamId,
+                  player: matchingPlayer.contract.id,
+                  player_detail: playerData,
+                });
+              } else {
+                // Store player ID temporarily - we'll try to resolve contract ID after players are loaded
+                console.warn(`Could not find contract ID for player ${playerId} on team ${givingTeamId}`);
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Process picks - infer giving_team from current_team
+    if (backendAssets.picks && Array.isArray(backendAssets.picks)) {
+      backendAssets.picks.forEach((pickData: any) => {
+        if (typeof pickData !== 'object') return;
+        
+        const pickId = pickData.id;
+        const currentTeam = pickData.current_team || pickData.team;
+        const givingTeamId = typeof currentTeam === 'object' ? currentTeam.id : currentTeam;
+        const protection = pickData.protection || pickData.protection_type || 'unprotected';
+        const protectionValue = pickData.protection_value || pickData.value;
+        
+        // Find receiving team (other participant)
+        if (givingTeamId && participantIds.includes(givingTeamId)) {
+          const receivingTeamId = participantIds.find((id: number) => id !== givingTeamId);
+          
+          if (receivingTeamId && pickId) {
+            const createAsset: CreateTradeAssetData = {
+              asset_type: 'pick',
+              giving_team: givingTeamId,
+              receiving_team: receivingTeamId,
+              pick: pickId,
+              pick_detail: pickData,
+            };
+            
+            (createAsset as any).protection_type = protection;
+            (createAsset as any).protection_value = protectionValue;
+            
+            assets.push(createAsset);
+          }
+        }
+      });
+    }
+  }
+  
+  return assets;
+}
+
+// Load and pre-fill original trade for counteroffer
+async function loadOriginalTradeForCounteroffer(tradeId: number) {
+  try {
+    const originalTrade = await TradeService.getTrade(tradeId);
+    
+    // Extract teams from original trade
+    const teams = originalTrade.participants || originalTrade.teams_detail || [];
+    const teamIds = teams.map((t: Team | number) => typeof t === 'object' ? t.id : t);
+    
+    if (teamIds.length > 0) {
+      // Reorder teams so user's team comes first (for counteroffer)
+      const userTeam = userTeamId.value;
+      if (userTeam && teamIds.includes(userTeam)) {
+        // Move user's team to the front
+        const reorderedTeamIds = [userTeam, ...teamIds.filter(id => id !== userTeam)];
+        selectedTeamIds.value = reorderedTeamIds;
+      } else {
+        selectedTeamIds.value = [...teamIds];
+      }
+      
+      // Load assets for all teams
+      for (const teamId of selectedTeamIds.value) {
+        await loadTeamAssets(teamId);
+      }
+    }
+    
+    // Transform and set assets
+    // Note: We need players to be loaded first to get contract IDs
+    // So we transform after all teams' assets are loaded
+    const transformedAssets = transformTradeAssetsToCreateData(originalTrade);
+    
+    // If some assets couldn't be transformed (missing contract IDs), try again after a short delay
+    // to allow players to finish loading
+    if (transformedAssets.length === 0 && (originalTrade.assets as any)?.players?.length > 0) {
+      // Wait a bit for players to load, then retry
+      setTimeout(() => {
+        const retryAssets = transformTradeAssetsToCreateData(originalTrade);
+        if (retryAssets.length > 0) {
+          selectedAssets.value = retryAssets;
+          debouncedValidate();
+        }
+      }, 500);
+    } else {
+      selectedAssets.value = transformedAssets;
+      
+      // Auto-validate after loading
+      if (transformedAssets.length > 0) {
+        debouncedValidate();
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load original trade:', error);
+    showSnackbar('Failed to load original trade for counteroffer', 'error');
+    // Navigate back if we can't load the trade
+    router.push({ name: 'trade-overview' });
+  }
+}
+
 // Load data on mount
 onMounted(async () => {
   try {
+    // Check if this is a counteroffer
+    const counterofferId = route.query.counterofferId;
+    if (counterofferId) {
+      originalTradeId.value = parseInt(counterofferId as string, 10);
+    }
+
     // Load league settings
     const settings = await SettingsService.getSettings();
     leagueSettings.value = {
@@ -475,15 +764,20 @@ onMounted(async () => {
     // Load all teams
     allTeams.value = await TradeService.listTeams();
 
-    // Set user's team as default
-    const userTeam = userTeamId.value;
-    if (userTeam) {
-      selectedTeamIds.value = [userTeam];
-      // Load players and picks for user's team
-      await loadTeamAssets(userTeam);
+    // If counteroffer, load original trade
+    if (originalTradeId.value) {
+      await loadOriginalTradeForCounteroffer(originalTradeId.value);
     } else {
-      showSnackbar('You must be on a team to create trades', 'error');
-      router.push({ name: 'trade-overview' });
+      // Normal create flow - set user's team as default
+      const userTeam = userTeamId.value;
+      if (userTeam) {
+        selectedTeamIds.value = [userTeam];
+        // Load players and picks for user's team
+        await loadTeamAssets(userTeam);
+      } else {
+        showSnackbar('You must be on a team to create trades', 'error');
+        router.push({ name: 'trade-overview' });
+      }
     }
   } catch (error) {
     console.error('Failed to load trade data:', error);

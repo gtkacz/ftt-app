@@ -340,46 +340,14 @@ async function handleCounter() {
   if (!currentTrade.value) return;
 
   try {
-    responding.value = true;
-    
-    // Find the TradeOffer for the user's team
-    const userTeamId = authStore.user?.team?.id;
-    if (!userTeamId) {
-      showSnackbar('Unable to determine your team', 'error');
-      return;
-    }
-
-    const userOffer = currentTrade.value.offers.find(
-      (offer) => offer.team === userTeamId && !offer.is_proposer
-    );
-
-    if (!userOffer) {
-      showSnackbar('Trade offer not found for your team', 'error');
-      return;
-    }
-
-    // Counter creates a new draft trade
-    const newTrade = await tradeStore.respondToTrade(
-      userOffer.id,
-      'counter',
-      undefined
-    );
-
-    showSnackbar('Counter-offer created. You can now edit it.', 'success');
-
-    // Navigate to the new trade edit page
-    if (newTrade && newTrade.id) {
-      router.push({
-        name: 'trade-edit',
-        params: { id: newTrade.id },
-        query: { mode: 'counter' }
-      });
-    }
+    // Navigate to create page with counteroffer query param
+    router.push({ 
+      name: 'trade-create', 
+      query: { counterofferId: currentTrade.value.id.toString() } 
+    });
   } catch (error: any) {
     console.error('Counter error:', error);
-    showSnackbar(error.message || 'Failed to create counter-offer', 'error');
-  } finally {
-    responding.value = false;
+    showSnackbar(error.message || 'Failed to navigate to counteroffer', 'error');
   }
 }
 
