@@ -13,6 +13,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
+  refreshPromise: Promise<boolean> | null;
 }
 
 export const useAuthStore = defineStore("auth", {
@@ -24,6 +25,7 @@ export const useAuthStore = defineStore("auth", {
     accessToken: localStorage.getItem("access_token"),
     refreshToken: localStorage.getItem("refresh_token"),
     isLoading: false,
+    refreshPromise: null,
   }),
 
   actions: {
@@ -122,27 +124,44 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async refreshAccessToken(): Promise<boolean> {
-      try {
-        if (!this.refreshToken) {
-          this.logout();
-          return false;
-        }
+      // Prevent multiple simultaneous refresh attempts by reusing the same promise
+      if (this.refreshPromise) {
+        return this.refreshPromise;
+      }
 
-        const response = await AuthService.refreshToken({
-          refresh: this.refreshToken,
-        });
-
-        this.setTokens(response.access, response.refresh);
-        return true;
-      } catch (error) {
+      // Check if we have a refresh token before starting
+      if (!this.refreshToken) {
         this.logout();
         return false;
       }
+
+      // Create the refresh promise
+      this.refreshPromise = (async () => {
+        try {
+          const response = await AuthService.refreshToken({
+            refresh: this.refreshToken!,
+          });
+
+          // Handle response: refresh endpoint may only return access token
+          // If refresh token is provided, use it; otherwise keep the existing one
+          this.setTokens(response.access, response.refresh);
+          return true;
+        } catch (error) {
+          this.logout();
+          return false;
+        } finally {
+          // Reset the promise so future refresh attempts can create a new one
+          this.refreshPromise = null;
+        }
+      })();
+
+      return this.refreshPromise;
     },
 
     logout(): void {
       // Ensure loading state is reset on logout
       this.isLoading = false;
+      this.refreshPromise = null;
       this.user = null;
       this.accessToken = null;
       this.refreshToken = null;
