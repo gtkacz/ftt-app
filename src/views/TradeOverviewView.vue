@@ -106,7 +106,7 @@
 
           <v-divider />
 
-          <v-card-text>
+          <v-card-text class="trade-window-container">
             <v-window v-model="activeTab">
               <!-- Waiting Acceptance Tab -->
               <v-window-item value="waiting_acceptance">
@@ -221,13 +221,10 @@
             border="start"
             border-color="info"
           >
-            <div class="d-flex align-center">
-              <v-icon class="mr-2">info</v-icon>
-              <div>
-                <div class="font-weight-medium mb-1">Review Before Approving</div>
-                <div class="text-caption">Please carefully review all trade details below before confirming your approval.</div>
-              </div>
-            </div>
+            <p>
+              <div class="font-weight-medium mb-1">Review Before Approving</div>
+              <div class="text-caption">Please carefully review all trade details below before confirming your approval.</div>
+            </p>
           </v-alert>
           
           <!-- Trade Summary -->
@@ -257,12 +254,11 @@
           <v-btn
             color="success"
             variant="flat"
-            size="large"
             class="action-btn action-btn--success"
+            prepend-icon="check_circle"
             :loading="votingTradeId === approveDialog.trade?.id"
             @click="confirmApprove"
           >
-            <v-icon start>check_circle</v-icon>
             Confirm Approval
           </v-btn>
         </v-card-actions>
@@ -300,11 +296,10 @@
             border-color="error"
           >
             <div class="d-flex align-center">
-              <v-icon class="mr-2">warning</v-icon>
-              <div>
+              <p>
                 <div class="font-weight-medium mb-1">Are you sure you want to veto this trade?</div>
                 <div class="text-caption">This action is permanent and will prevent the trade from being completed.</div>
-              </div>
+              </p>
             </div>
           </v-alert>
           
@@ -320,26 +315,6 @@
               :validation="null"
             />
           </div>
-          
-          <v-card variant="outlined" class="veto-reason-card">
-            <v-card-title class="text-subtitle-2 pa-3 pb-2">
-              <v-icon size="small" color="error" class="mr-2">edit</v-icon>
-              Veto Reason
-              <v-chip size="x-small" color="grey" variant="text" class="ml-2">Optional</v-chip>
-            </v-card-title>
-            <v-card-text class="pt-0">
-              <v-textarea
-                v-model="vetoDialog.reason"
-                label="Explain why you're vetoing this trade"
-                variant="outlined"
-                rows="4"
-                placeholder="Provide a reason for vetoing this trade (e.g., unfair trade, salary cap concerns, etc.)..."
-                hint="Adding a reason helps other commissioners understand your decision"
-                persistent-hint
-                class="veto-textarea"
-              />
-            </v-card-text>
-          </v-card>
         </v-card-text>
         <v-divider />
         <v-card-actions class="dialog-actions">
@@ -355,12 +330,11 @@
           <v-btn
             color="error"
             variant="flat"
-            size="large"
             class="action-btn action-btn--error"
+            prepend-icon="block"
             :loading="votingTradeId === vetoDialog.trade?.id"
             @click="confirmVeto"
           >
-            <v-icon start>block</v-icon>
             Confirm Veto
           </v-btn>
         </v-card-actions>
@@ -402,7 +376,6 @@ const approveDialog = ref({
 const vetoDialog = ref({
   show: false,
   trade: null as Trade | null,
-  reason: '',
 });
 
 // Check if user is commissioner/admin
@@ -616,7 +589,6 @@ function handleVeto(trade: Trade) {
   vetoDialog.value = {
     show: true,
     trade: trade,
-    reason: '',
   };
 }
 
@@ -648,7 +620,6 @@ function closeVetoDialog() {
   vetoDialog.value = {
     show: false,
     trade: null,
-    reason: '',
   };
 }
 
@@ -757,6 +728,19 @@ onMounted(async () => {
   padding: 8px;
 }
 
+.trade-window-container {
+  overflow: visible !important;
+  padding: 16px !important;
+}
+
+.trade-window-container :deep(.v-window) {
+  overflow: visible !important;
+}
+
+.trade-window-container :deep(.v-window-item) {
+  overflow: visible !important;
+}
+
 .summary-header {
   display: flex;
   align-items: center;
@@ -801,6 +785,7 @@ onMounted(async () => {
   text-transform: none;
   letter-spacing: 0.3px;
   min-width: 120px;
+  width: 25%;
   transition: all 0.2s;
 }
 
@@ -819,13 +804,6 @@ onMounted(async () => {
 
 .action-btn--error:hover {
   box-shadow: 0 4px 8px rgba(var(--v-theme-error), 0.4);
-}
-
-/* Veto Dialog Specific */
-.veto-reason-card {
-  margin-top: 16px;
-  border: 2px solid rgba(var(--v-theme-error), 0.2);
-  background: linear-gradient(135deg, rgba(var(--v-theme-error), 0.05), transparent);
 }
 
 .veto-textarea :deep(.v-field) {

@@ -146,12 +146,6 @@ const navigationGroups = [
         commission_only: true
       },
       {
-        icon: 'gavel',
-        label: 'Trade Review',
-        routeName: 'commission-trades',
-        commission_only: true
-      },
-      {
         icon: 'settings',
         label: 'Settings',
         routeName: 'settings'

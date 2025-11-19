@@ -478,63 +478,34 @@ async function handlePropose() {
       assets,
     }));
 
-    // Submit trade - backend expects array of AssetPayload
-    const createResponse = await TradeService.createTrade(payload as any);
-    
-    // The backend returns { status: "Trade created successfully: {trade}" }
-    // We need to extract the trade ID or fetch the newly created trade
-    // For now, we'll try to get it from the response or fetch the latest trade
-    let newTradeId: number | null = null;
-    
-    if (createResponse && typeof createResponse === 'object' && 'id' in createResponse) {
-      newTradeId = createResponse.id;
-    } else if (createResponse && typeof createResponse === 'object' && 'status' in createResponse) {
-      // Try to extract ID from status message or fetch latest trade
-      // For now, we'll need to fetch the user's trades and get the latest one
-      // This is not ideal but works around the backend response format
-      try {
-        const userTrades = await TradeService.listTrades();
-        const trades = Array.isArray(userTrades) ? userTrades : userTrades.results;
-        if (trades && trades.length > 0) {
-          // Get the most recent trade (assuming it's the one we just created)
-          newTradeId = trades[0].id;
-        }
-      } catch (fetchError) {
-        console.error('Failed to fetch new trade ID:', fetchError);
-      }
-    }
-    
-    // If this is a counteroffer, call the counteroffer action endpoint
+    // If this is a counteroffer, call the counteroffer action endpoint directly
+    // Do NOT create a new trade first
     if (isCounteroffer.value && originalTradeId.value) {
-      if (!newTradeId) {
-        showSnackbar('Trade created but could not determine trade ID for counteroffer', 'warning');
-        router.push({ name: 'trade-overview' });
-        return;
-      }
-      
       try {
-        // The backend expects the offer to be a Trade object
-        // Since we're sending JSON, we'll pass the new trade ID
-        // The backend may need to be updated to handle this, or fetch the trade from the ID
         await TradeService.performTradeAction({
           action: 'counteroffer',
           trade_id: originalTradeId.value,
-          offer: newTradeId, // Pass the new trade ID
+          offer: payload, // Pass the AssetPayload array directly
         });
         
         showSnackbar('Counteroffer created successfully!', 'success');
+        router.push({ name: 'trade-overview' });
+        return;
       } catch (counterError: any) {
         console.error('Counteroffer action error:', counterError);
-        // If counteroffer action fails, the trade was still created
-        // We should still show success but maybe a warning
         const errorMessage = counterError.response?.data?.detail || 
                            counterError.message || 
-                           'Trade created but counteroffer action failed';
-        showSnackbar(errorMessage, 'warning');
+                           'Failed to create counteroffer';
+        showSnackbar(errorMessage, 'error');
+        return;
       }
-    } else {
-      showSnackbar('Trade created successfully!', 'success');
     }
+
+    // For regular trades, create the trade normally
+    // Submit trade - backend expects array of AssetPayload
+    const createResponse = await TradeService.createTrade(payload as any);
+    
+    showSnackbar('Trade created successfully!', 'success');
     
     router.push({ name: 'trade-overview' });
   } catch (error: any) {

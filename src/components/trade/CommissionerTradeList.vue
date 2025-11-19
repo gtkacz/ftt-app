@@ -1,5 +1,5 @@
 <template>
-  <div class="commissioner-trade-list">
+  <div class="commissioner-trade-list" :style="{ overflow: 'visible' }">
     <!-- Loading State -->
     <div v-if="loading" class="text-center pa-8">
       <v-progress-circular indeterminate color="primary" size="64" />
@@ -10,26 +10,28 @@
     <div v-else-if="trades.length === 0" class="text-center pa-8">
       <v-icon size="64" color="grey-lighten-1">gavel</v-icon>
       <p class="text-h6 text-medium-emphasis mt-4">No trades pending approval</p>
-      <p class="text-caption">Trades waiting for commissioner approval will appear here</p>
+      <p class="text-caption">Trades waiting for your approval will appear here</p>
     </div>
 
     <!-- Trade Cards -->
-    <v-row v-else>
+    <v-row v-else class="commissioner-cards-row">
       <v-col
         v-for="trade in trades"
         :key="trade.id"
         cols="12"
         md="6"
         lg="4"
+        class="commissioner-card-col"
       >
-        <v-card
-          elevation="2"
-          class="commissioner-trade-card"
-          :class="{ 
-            'voting': votingTradeId === trade.id,
-            'user-voted': hasUserVoted(trade)
-          }"
-        >
+        <div class="commissioner-card-wrapper">
+          <v-card
+            elevation="2"
+            class="commissioner-trade-card"
+            :class="{ 
+              'voting': votingTradeId === trade.id,
+              'user-voted': hasUserVoted(trade)
+            }"
+          >
           <!-- Status Accent Border -->
           <div class="commissioner-card__accent"></div>
 
@@ -170,7 +172,7 @@
 
           <!-- Card Actions -->
           <v-card-actions class="commissioner-card__actions">
-            <v-btn
+            <!-- <v-btn
               size="small"
               variant="outlined"
               color="primary"
@@ -180,7 +182,7 @@
               <v-icon start size="small">visibility</v-icon>
               View Details
             </v-btn>
-            <v-spacer />
+            <v-spacer /> -->
             <!-- Show action buttons if user hasn't voted -->
             <template v-if="!hasUserVoted(trade)">
               <v-btn
@@ -210,6 +212,7 @@
             </template>
           </v-card-actions>
         </v-card>
+        </div>
       </v-col>
     </v-row>
   </div>
@@ -454,17 +457,45 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
 </script>
 
 <style scoped>
+.commissioner-cards-row {
+  margin: -12px;
+}
+
+.commissioner-card-col {
+  padding: 12px !important;
+}
+
+.commissioner-card-wrapper {
+  padding: 8px;
+  height: 100%;
+  overflow: visible;
+}
+
 .commissioner-trade-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
   border-radius: 8px;
   border-left: 4px solid rgb(var(--v-theme-warning));
+  height: 100%;
+  width: 100%;
+  will-change: transform;
+}
+
+.commissioner-trade-card :deep(.v-card) {
+  overflow: visible !important;
+}
+
+.commissioner-trade-card :deep(.v-card__content),
+.commissioner-trade-card :deep(.v-card__title),
+.commissioner-trade-card :deep(.v-card__subtitle),
+.commissioner-trade-card :deep(.v-card__actions) {
+  overflow: hidden;
 }
 
 .commissioner-trade-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 .commissioner-trade-card.voting {
@@ -497,6 +528,10 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
   height: 100%;
   background: linear-gradient(180deg, rgb(var(--v-theme-warning)), rgb(var(--v-theme-warning-lighten-1)));
   transition: width 0.3s;
+  z-index: 1;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .commissioner-trade-card:hover .commissioner-card__accent {
@@ -634,6 +669,11 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
 
 .gap-2 {
   gap: 8px;
+}
+
+.commissioner-trade-list {
+  overflow: visible !important;
+  padding: 4px 0;
 }
 
 @keyframes slideIn {

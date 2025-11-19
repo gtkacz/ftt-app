@@ -28,7 +28,7 @@
 								'notification-item',
 								{ 'notification-unread': !notification.is_read },
 								{ 'notification-clickable': !!notification.redirect_to }
-							]" @click="markAsRead(notification)">
+							]" @click="handleNotificationClick(notification)">
 							<template #prepend>
 								<v-icon :color="getNotificationColor(notification.level)">
 									{{ getNotificationIcon(notification.level) }}
@@ -45,6 +45,10 @@
 
 							<template #append>
 								<div class="notification-append-area">
+									<v-btn v-if="!notification.is_read" icon="check" size="x-small" variant="text"
+										color="primary" class="mark-read-btn"
+										@click.stop="markAsReadOnly(notification)">
+									</v-btn>
 									<v-icon v-if="notification.redirect_to" size="small" class="redirect-icon">
 										open_in_new
 									</v-icon>
@@ -196,17 +200,30 @@ const getNotificationFromMessage = (message: string): Notification | null => {
 	return notifications.value.find(n => n.message === message) || null
 }
 
-const markAsRead = async (notification: Notification) => {
-	if (notification.is_read && !notification.redirect_to) return
+const markAsReadOnly = async (notification: Notification) => {
+	if (notification.is_read) return
 
 	await markNotificationAsRead(notification.id)
 	notification.is_read = true
+}
+
+const handleNotificationClick = async (notification: Notification) => {
+	// Mark as read if unread
+	if (!notification.is_read) {
+		await markNotificationAsRead(notification.id)
+		notification.is_read = true
+	}
 
 	// Navigate if redirect_to is present
 	if (notification.redirect_to) {
 		menuOpen.value = false
 		router.push(notification.redirect_to)
 	}
+}
+
+const markAsRead = async (notification: Notification) => {
+	// Keep this for backwards compatibility with markAllAsRead
+	await markAsReadOnly(notification)
 }
 
 const markAllAsRead = async () => {
@@ -317,6 +334,15 @@ onUnmounted(() => {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+.mark-read-btn {
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.notification-item:hover .mark-read-btn {
+	opacity: 1;
 }
 
 .redirect-icon {

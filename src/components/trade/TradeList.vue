@@ -1,5 +1,5 @@
 <template>
-  <div class="trade-list">
+  <div class="trade-list" :style="{ overflow: 'visible' }">
     <!-- Loading State -->
     <div v-if="loading" class="text-center pa-8">
       <v-progress-circular indeterminate color="primary" size="64" />
@@ -14,21 +14,23 @@
     </div>
 
     <!-- Trade Cards -->
-    <v-row v-else>
+    <v-row v-else class="trade-cards-row">
       <v-col
         v-for="trade in trades"
         :key="trade.id"
         cols="12"
         md="6"
         lg="4"
+        class="trade-card-col"
       >
-        <v-card
-          elevation="2"
-          hover
-          class="trade-card"
-          :class="`trade-card--${getTradeStatus(trade)}`"
-          @click="$emit('trade-click', trade)"
-        >
+        <div class="trade-card-wrapper">
+          <v-card
+            elevation="2"
+            hover
+            class="trade-card"
+            :class="`trade-card--${getTradeStatus(trade)}`"
+            @click="$emit('trade-click', trade)"
+          >
           <!-- Status Accent Border -->
           <div class="trade-card__accent" :class="`trade-card__accent--${getStatusColor(getTradeStatus(trade))}`"></div>
 
@@ -188,6 +190,7 @@
             </template>
           </v-card-actions>
         </v-card>
+        </div>
       </v-col>
     </v-row>
   </div>
@@ -348,33 +351,45 @@ function showActions(trade: Trade): boolean {
 </script>
 
 <style scoped>
+.trade-cards-row {
+  margin: -12px;
+}
+
+.trade-card-col {
+  padding: 12px !important;
+}
+
+.trade-card-wrapper {
+  padding: 8px;
+  height: 100%;
+  overflow: visible;
+}
+
 .trade-card {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
   border-radius: 8px;
+  height: 100%;
+  width: 100%;
+  will-change: transform;
 }
 
-.trade-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(var(--v-theme-primary), 0.3), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
+.trade-card :deep(.v-card) {
+  overflow: visible !important;
+}
+
+.trade-card :deep(.v-card__content),
+.trade-card :deep(.v-card__title),
+.trade-card :deep(.v-card__subtitle),
+.trade-card :deep(.v-card__actions) {
+  overflow: hidden;
 }
 
 .trade-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-}
-
-.trade-card:hover::before {
-  opacity: 1;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 .trade-card__accent {
@@ -384,6 +399,10 @@ function showActions(trade: Trade): boolean {
   width: 4px;
   height: 100%;
   transition: width 0.3s;
+  z-index: 1;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .trade-card:hover .trade-card__accent {
@@ -496,6 +515,11 @@ function showActions(trade: Trade): boolean {
 
 .gap-2 {
   gap: 8px;
+}
+
+.trade-list {
+  overflow: visible !important;
+  padding: 4px 0;
 }
 
 /* Status-specific styling */
