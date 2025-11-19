@@ -254,6 +254,7 @@ export interface Trade {
 
   // Workflow data
   history?: TradeHistoryEntry[];
+  timeline?: TradeHistoryEntry[];
   approvals?: TradeApproval[];
   approval_status?: ApprovalStatus | null;
 

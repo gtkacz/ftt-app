@@ -69,23 +69,27 @@
                     </template>
 
                     <v-list-item-title v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.full_name }}
+                      {{ asset.player_detail.full_name || asset.player_detail.name || `${asset.player_detail.first_name || ''} ${asset.player_detail.last_name || ''}`.trim() || 'Unknown Player' }}
                     </v-list-item-title>
                     <v-list-item-title v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                      {{ asset.pick_detail.year }} Round {{ asset.pick_detail.round }}
+                      {{ asset.pick_detail.draft_year || asset.pick_detail.year || '' }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round || '' }}
                       <PickProtectionBadge
-                        v-if="asset.pick_detail.protection_type && asset.pick_detail.protection_type !== 'none'"
-                        :protection="asset.pick_detail.protection_type"
-                        :value="asset.pick_detail.protection_value"
-                        size="x-small"
+                        v-if="getPickProtectionType(asset.pick_detail) && getPickProtectionType(asset.pick_detail) !== 'none' && getPickProtectionType(asset.pick_detail) !== 'unprotected'"
+                        :protection-type="getPickProtectionType(asset.pick_detail)"
+                        :range-start="getPickProtectionRangeStart(asset.pick_detail)"
+                        :range-end="getPickProtectionRangeEnd(asset.pick_detail)"
+                        :rollover-year="getPickProtectionRolloverYear(asset.pick_detail)"
                       />
                     </v-list-item-title>
 
                     <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.position }} - {{ asset.player_detail.nba_team }}
+                      {{ asset.player_detail.primary_position || asset.player_detail.position || '' }} - {{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || asset.player_detail.team_name || '' }}
                     </v-list-item-subtitle>
-                    <v-list-item-subtitle v-else-if="asset.asset_type === 'pick'">
+                    <v-list-item-subtitle v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
                       From {{ getTeamName(asset.giving_team) }}
+                      <span v-if="asset.pick_detail.original_team_name || asset.pick_detail.original_team">
+                        (Originally {{ asset.pick_detail.original_team_name || (typeof asset.pick_detail.original_team === 'object' ? asset.pick_detail.original_team.name : '') }})
+                      </span>
                     </v-list-item-subtitle>
                   </v-list-item>
 
@@ -118,20 +122,21 @@
                     </template>
 
                     <v-list-item-title v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.full_name }}
+                      {{ asset.player_detail.full_name || asset.player_detail.name || `${asset.player_detail.first_name || ''} ${asset.player_detail.last_name || ''}`.trim() || 'Unknown Player' }}
                     </v-list-item-title>
                     <v-list-item-title v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                      {{ asset.pick_detail.year }} Round {{ asset.pick_detail.round }}
+                      {{ asset.pick_detail.draft_year || asset.pick_detail.year || '' }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round || '' }}
                       <PickProtectionBadge
-                        v-if="asset.pick_detail.protection_type && asset.pick_detail.protection_type !== 'none'"
-                        :protection="asset.pick_detail.protection_type"
-                        :value="asset.pick_detail.protection_value"
-                        size="x-small"
+                        v-if="getPickProtectionType(asset.pick_detail) && getPickProtectionType(asset.pick_detail) !== 'none' && getPickProtectionType(asset.pick_detail) !== 'unprotected'"
+                        :protection-type="getPickProtectionType(asset.pick_detail)"
+                        :range-start="getPickProtectionRangeStart(asset.pick_detail)"
+                        :range-end="getPickProtectionRangeEnd(asset.pick_detail)"
+                        :rollover-year="getPickProtectionRolloverYear(asset.pick_detail)"
                       />
                     </v-list-item-title>
 
                     <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.position }} - {{ asset.player_detail.nba_team }}
+                      {{ asset.player_detail.primary_position || asset.player_detail.position || '' }} - {{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || asset.player_detail.team_name || '' }}
                     </v-list-item-subtitle>
                     <v-list-item-subtitle v-else-if="asset.asset_type === 'pick'">
                       To {{ getTeamName(asset.receiving_team) }}
@@ -176,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { Team, CreateTradeAssetData, TradeAsset, TradeTeamSummary, TeamImpact } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
 
@@ -219,6 +224,44 @@ function getTeamName(teamId: number): string {
   return team?.name || 'Unknown Team';
 }
 
+// Helper to get pick protection type
+function getPickProtectionType(pickDetail: any): string {
+  return pickDetail?.protection || pickDetail?.protection_type || 'unprotected';
+}
+
+// Helper to get pick protection range start
+function getPickProtectionRangeStart(pickDetail: any): number | undefined {
+  if (pickDetail?.protection_metadata?.range_start !== undefined) {
+    return pickDetail.protection_metadata.range_start;
+  }
+  if (pickDetail?.protection_metadata?.rangeStart !== undefined) {
+    return pickDetail.protection_metadata.rangeStart;
+  }
+  return pickDetail?.protection_range_start;
+}
+
+// Helper to get pick protection range end
+function getPickProtectionRangeEnd(pickDetail: any): number | undefined {
+  if (pickDetail?.protection_metadata?.range_end !== undefined) {
+    return pickDetail.protection_metadata.range_end;
+  }
+  if (pickDetail?.protection_metadata?.rangeEnd !== undefined) {
+    return pickDetail.protection_metadata.rangeEnd;
+  }
+  return pickDetail?.protection_range_end;
+}
+
+// Helper to get pick protection rollover year
+function getPickProtectionRolloverYear(pickDetail: any): number | undefined {
+  if (pickDetail?.protection_metadata?.rollover_year !== undefined) {
+    return pickDetail.protection_metadata.rollover_year;
+  }
+  if (pickDetail?.protection_metadata?.rolloverYear !== undefined) {
+    return pickDetail.protection_metadata.rolloverYear;
+  }
+  return pickDetail?.pick_rollover_year || pickDetail?.rollover_year;
+}
+
 // Format currency
 function formatCurrency(value: number): string {
   if (value >= 1000000) {
@@ -231,12 +274,12 @@ function formatCurrency(value: number): string {
 }
 
 // Auto-open all panels when summaries are available
-computed(() => {
-  if (teamSummaries.value.length > 0 && openPanels.value.length === 0) {
-    openPanels.value = teamSummaries.value.map((s) => s.teamId);
+watch(teamSummaries, (summaries) => {
+  if (summaries.length > 0) {
+    const panelIds = summaries.map((s) => s.teamId);
+    openPanels.value = panelIds;
   }
-  return teamSummaries.value;
-});
+}, { immediate: true, deep: true });
 </script>
 
 <style scoped>

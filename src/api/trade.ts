@@ -65,9 +65,86 @@ export class TradeService {
   }
 
   static async getTrade(id: number): Promise<Trade> {
-    const response = await api.get<BackendTrade>(`/trades/${id}/`);
+    const response = await api.get<BackendTrade & { timeline?: any[] }>(`/trades/${id}/`);
     const trade = response.data;
     const displayStatus = getTradeDisplayStatus(trade);
+    
+    // Transform backend timeline entries to frontend format
+    const transformTimelineEntry = (entry: any, index: number): any => {
+      // Backend format: { status, timestamp, actioned_by, description }
+      // Frontend format: { id, created_at, event_type, event_display, actor_display, message, ... }
+      const status = entry.status || '';
+      // Handle timestamp - could be ISO string or Date object
+      let timestamp = entry.timestamp || entry.created_at;
+      if (timestamp instanceof Date) {
+        timestamp = timestamp.toISOString();
+      } else if (typeof timestamp === 'string' && !timestamp.includes('T')) {
+        // If it's just a date string, add time
+        timestamp = `${timestamp}T00:00:00Z`;
+      }
+      const actionedBy = entry.actioned_by;
+      const description = entry.description || '';
+      
+      // Map backend status to frontend event_type
+      const eventTypeMap: Record<string, string> = {
+        'sent': 'proposed',
+        'counteroffer': 'countered',
+        'accepted': 'accepted',
+        'rejected': 'rejected',
+        'vetoed': 'vetoed',
+        'approved': 'approved',
+        'pending': 'waiting_approval',
+      };
+      
+      const eventType = eventTypeMap[status.toLowerCase()] || 'modified';
+      
+      // Get actor display - actioned_by is a Team object
+      let actorDisplay = '';
+      let actorId: number | null = null;
+      let actorUsername: string | null = null;
+      if (actionedBy) {
+        if (typeof actionedBy === 'object') {
+          actorDisplay = actionedBy.name || '';
+          actorId = actionedBy.id || null;
+          actorUsername = actionedBy.owner_username || actionedBy.owner?.username || null;
+        } else if (typeof actionedBy === 'string') {
+          actorDisplay = actionedBy;
+        }
+      }
+      
+      // Get event display text
+      const eventDisplayMap: Record<string, string> = {
+        'proposed': 'Trade Proposed',
+        'countered': 'Counteroffer Made',
+        'accepted': 'Trade Accepted',
+        'rejected': 'Trade Rejected',
+        'vetoed': 'Trade Vetoed',
+        'approved': 'Trade Approved',
+        'waiting_approval': 'Pending Approval',
+        'modified': 'Trade Modified',
+      };
+      
+      return {
+        id: entry.id || index,
+        trade: trade.id || id,
+        created_at: timestamp || new Date().toISOString(),
+        event_type: eventType as any,
+        event_display: eventDisplayMap[eventType] || 'Trade Event',
+        actor: actorId,
+        actor_username: actorUsername,
+        actor_display: actorDisplay || 'System',
+        team: actorId,
+        team_name: actorDisplay || '',
+        message: description || eventDisplayMap[eventType] || 'Trade event occurred',
+        assets_snapshot: null,
+        has_snapshot: false,
+        snapshot_summary: '',
+      };
+    };
+    
+    const backendTimeline = (response.data as any).timeline || [];
+    const transformedTimeline = backendTimeline.map(transformTimelineEntry);
+    
     return {
       ...trade,
       displayStatus,
@@ -77,10 +154,13 @@ export class TradeService {
       participants: trade.participants,
       // Map backend structure to legacy frontend structure for compatibility
       proposing_team: trade.sender?.id,
-      teams: trade.participants?.map(p => p.id) || [],
+      teams: trade.participants?.map((p: any) => p.id) || [],
       proposing_team_detail: trade.sender,
       teams_detail: trade.participants || [],
       assets: trade.assets,
+      // Include transformed timeline from response
+      timeline: transformedTimeline,
+      history: transformedTimeline, // Alias for compatibility
     };
   }
 
