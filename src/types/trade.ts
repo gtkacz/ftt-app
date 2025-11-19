@@ -439,7 +439,7 @@ export interface TradeListFilters {
 }
 
 export interface TradeActionRequest {
-  action: 'accept' | 'reject' | 'counteroffer';
+  action: 'accept' | 'reject' | 'counteroffer' | 'approved' | 'vetoed';
   trade_id: number;
   offer?: any; // For counteroffer, the new trade offer
 }

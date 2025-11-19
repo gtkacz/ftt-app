@@ -143,6 +143,7 @@ function getEventIcon(eventType: TradeHistoryEventType): string {
   .timeline-item-content {
     min-width: 150px;
     max-width: 250px;
+    text-align: center;
   }
 
   .timeline-description {
