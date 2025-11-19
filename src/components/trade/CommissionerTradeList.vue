@@ -25,171 +25,169 @@
         <v-card
           elevation="2"
           class="commissioner-trade-card"
-          :class="{ 'voting': votingTradeId === trade.id }"
+          :class="{ 
+            'voting': votingTradeId === trade.id,
+            'user-voted': hasUserVoted(trade)
+          }"
         >
+          <!-- Status Accent Border -->
+          <div class="commissioner-card__accent"></div>
+
           <!-- Card Header -->
-          <v-card-title class="d-flex align-center pb-2">
-            <v-chip color="warning" size="small" variant="flat">
-              <v-icon start size="small">schedule</v-icon>
-              Pending Approval
-            </v-chip>
+          <v-card-title class="commissioner-card__header">
+            <div class="d-flex align-center">
+              <v-chip 
+                color="warning" 
+                size="small" 
+                variant="flat"
+                class="status-chip"
+              >
+                <v-icon start size="small">gavel</v-icon>
+                Pending Approval
+              </v-chip>
+            </div>
             <v-spacer />
-            <span class="text-caption text-medium-emphasis">#{{ trade.id }}</span>
+            <span class="text-caption text-medium-emphasis trade-id">#{{ trade.id }}</span>
           </v-card-title>
 
+          <v-divider class="mx-4" />
+
           <!-- Trade Teams -->
-          <v-card-subtitle class="pt-1 pb-2">
-            <div class="d-flex flex-wrap align-center gap-1">
-              <v-chip
+          <v-card-subtitle class="commissioner-card__teams pt-3 pb-2">
+            <div class="d-flex flex-wrap align-center gap-2">
+              <div
                 v-for="team in getTeams(trade)"
                 :key="team.id"
-                size="small"
-                variant="outlined"
+                class="team-chip"
               >
-                {{ team.name }}
-              </v-chip>
+                <v-avatar v-if="team.logo" size="20" class="mr-1">
+                  <v-img :src="team.logo" />
+                </v-avatar>
+                <v-chip
+                  size="small"
+                  variant="outlined"
+                  class="team-chip__content"
+                >
+                  {{ team.name }}
+                </v-chip>
+              </div>
             </div>
           </v-card-subtitle>
 
           <!-- Trade Summary -->
-          <v-card-text class="pt-2">
-            <!-- Full Trade Details -->
-            <div class="trade-assets-summary">
-              <div v-for="team in getTeams(trade)" :key="team.id" class="team-assets mb-3">
-                <div class="team-header mb-2">
-                  <v-chip size="small" variant="flat" color="primary">
-                    {{ team.name }}
-                  </v-chip>
-                </div>
-                
-                <!-- Receiving -->
-                <div v-if="getReceivingAssets(trade, team.id).length > 0" class="asset-group mb-2">
-                  <div class="text-caption text-medium-emphasis mb-1">
-                    <v-icon size="x-small" color="success" class="mr-1">arrow_downward</v-icon>
-                    Receiving
-                  </div>
-                  <v-list density="compact" class="asset-list">
-                    <v-list-item
-                      v-for="asset in getReceivingAssets(trade, team.id)"
-                      :key="`rec-${asset.id || asset.asset_type}-${asset.player || asset.pick}`"
-                      class="px-2 py-1"
-                    >
-                      <template #prepend>
-                        <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                          {{ asset.asset_type === 'player' ? 'person' : 'star' }}
-                        </v-icon>
-                      </template>
-                      <v-list-item-title class="text-caption">
-                        <span v-if="asset.asset_type === 'player' && asset.player_detail">
-                          {{ getPlayerName(asset.player_detail) }}
-                        </span>
-                        <span v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                          {{ getPickDisplay(asset.pick_detail) }}
-                        </span>
-                      </v-list-item-title>
-                      <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail" class="text-caption">
-                        {{ asset.player_detail.position || '' }} - {{ asset.player_detail.nba_team || '' }}
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                  </v-list>
-                </div>
-
-                <!-- Giving -->
-                <div v-if="getGivingAssets(trade, team.id).length > 0" class="asset-group">
-                  <div class="text-caption text-medium-emphasis mb-1">
-                    <v-icon size="x-small" color="warning" class="mr-1">arrow_upward</v-icon>
-                    Giving
-                  </div>
-                  <v-list density="compact" class="asset-list">
-                    <v-list-item
-                      v-for="asset in getGivingAssets(trade, team.id)"
-                      :key="`giv-${asset.id || asset.asset_type}-${asset.player || asset.pick}`"
-                      class="px-2 py-1"
-                    >
-                      <template #prepend>
-                        <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                          {{ asset.asset_type === 'player' ? 'person' : 'star' }}
-                        </v-icon>
-                      </template>
-                      <v-list-item-title class="text-caption">
-                        <span v-if="asset.asset_type === 'player' && asset.player_detail">
-                          {{ getPlayerName(asset.player_detail) }}
-                        </span>
-                        <span v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                          {{ getPickDisplay(asset.pick_detail) }}
-                        </span>
-                      </v-list-item-title>
-                      <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail" class="text-caption">
-                        {{ asset.player_detail.position || '' }} - {{ asset.player_detail.nba_team || '' }}
-                      </v-list-item-subtitle>
-                    </v-list-item>
-                  </v-list>
-                </div>
-              </div>
+          <v-card-text class="commissioner-card__content">
+            <!-- Asset Count Summary -->
+            <div class="asset-summary-badges mb-4">
+              <v-chip
+                v-if="getPlayerCount(trade) > 0"
+                size="small"
+                color="primary"
+                variant="flat"
+                class="asset-badge"
+              >
+                <v-icon start size="small">person</v-icon>
+                {{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}
+              </v-chip>
+              <v-chip
+                v-if="getPickCount(trade) > 0"
+                size="small"
+                color="secondary"
+                variant="flat"
+                class="asset-badge"
+              >
+                <v-icon start size="small">star</v-icon>
+                {{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}
+              </v-chip>
             </div>
 
             <!-- Approval Status -->
-            <div v-if="trade.approval_status" class="mt-3">
-              <v-divider class="mb-2" />
-              <div class="approval-status">
-                <div class="d-flex align-center justify-space-between mb-1">
-                  <span class="text-caption text-medium-emphasis">Approval Status</span>
-                  <v-chip
-                    :color="getApprovalStatusColor(trade.approval_status)"
-                    size="x-small"
-                    variant="flat"
-                  >
-                    {{ getApprovalStatusText(trade.approval_status) }}
-                  </v-chip>
+            <div v-if="trade.approval_status" class="approval-status-card mb-4">
+              <div class="approval-status-header">
+                <div class="d-flex align-center">
+                  <v-icon size="small" color="warning" class="mr-2">how_to_vote</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">Voting Status</span>
+                </div>
+                <v-chip
+                  :color="getApprovalStatusColor(trade.approval_status)"
+                  size="small"
+                  variant="flat"
+                  class="status-badge"
+                >
+                  {{ getApprovalStatusText(trade.approval_status) }}
+                </v-chip>
+              </div>
+              
+              <div class="approval-progress mt-3">
+                <div class="d-flex justify-space-between mb-1">
+                  <span class="text-caption text-medium-emphasis">Progress</span>
+                  <span class="text-caption font-weight-medium">
+                    {{ trade.approval_status.approve_votes + trade.approval_status.veto_votes }} / {{ trade.approval_status.total_commissioners }} votes
+                  </span>
                 </div>
                 <v-progress-linear
                   :model-value="getApprovalProgress(trade.approval_status)"
                   :color="getApprovalProgressColor(trade.approval_status)"
-                  height="6"
+                  height="8"
                   rounded
-                  class="mt-1"
+                  class="progress-bar"
                 />
-                <div class="text-caption text-medium-emphasis mt-1">
-                  {{ trade.approval_status.approve_votes }} approve,
-                  {{ trade.approval_status.veto_votes }} veto
-                  ({{ trade.approval_status.majority_needed }} needed)
+                <div class="vote-counts mt-2">
+                  <div class="vote-count-item">
+                    <v-icon size="x-small" color="success" class="mr-1">check_circle</v-icon>
+                    <span class="text-caption">{{ trade.approval_status.approve_votes }} approve</span>
+                  </div>
+                  <div class="vote-count-item">
+                    <v-icon size="x-small" color="error" class="mr-1">block</v-icon>
+                    <span class="text-caption">{{ trade.approval_status.veto_votes }} veto</span>
+                  </div>
+                  <div class="vote-count-item">
+                    <v-icon size="x-small" color="warning" class="mr-1">schedule</v-icon>
+                    <span class="text-caption">{{ trade.approval_status.majority_needed }} needed</span>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <!-- User Vote Indicator -->
+            <div v-if="hasUserVoted(trade)" class="user-vote-indicator mb-4">
+              <v-alert
+                :type="getUserVote(trade) === 'approve' ? 'success' : 'error'"
+                variant="tonal"
+                density="compact"
+                class="vote-alert"
+              >
+                <div class="d-flex align-center">
+                  <v-icon size="small" class="mr-2">
+                    {{ getUserVote(trade) === 'approve' ? 'check_circle' : 'block' }}
+                  </v-icon>
+                  <span class="text-caption font-weight-medium">
+                    You {{ getUserVote(trade) === 'approve' ? 'approved' : 'vetoed' }} this trade
+                  </span>
+                </div>
+              </v-alert>
             </div>
           </v-card-text>
 
           <!-- Card Actions -->
-          <v-card-actions class="pa-3">
+          <v-card-actions class="commissioner-card__actions">
             <v-btn
               size="small"
-              variant="text"
+              variant="outlined"
               color="primary"
+              class="view-btn"
               @click="$emit('trade-click', trade)"
             >
               <v-icon start size="small">visibility</v-icon>
               View Details
             </v-btn>
             <v-spacer />
-            <!-- Show user's vote if they've already voted -->
-            <template v-if="hasUserVoted(trade)">
-              <v-chip
-                :color="getUserVote(trade) === 'approve' ? 'success' : 'error'"
-                size="small"
-                variant="flat"
-                class="mr-2"
-              >
-                <v-icon start size="small">
-                  {{ getUserVote(trade) === 'approve' ? 'check_circle' : 'block' }}
-                </v-icon>
-                You {{ getUserVote(trade) === 'approve' ? 'Approved' : 'Vetoed' }}
-              </v-chip>
-            </template>
             <!-- Show action buttons if user hasn't voted -->
-            <template v-else>
+            <template v-if="!hasUserVoted(trade)">
               <v-btn
                 size="small"
-                variant="text"
                 color="error"
+                variant="outlined"
+                class="action-btn action-btn--veto"
                 :loading="votingTradeId === trade.id"
                 :disabled="votingTradeId !== null"
                 @click="$emit('veto', trade)"
@@ -201,6 +199,7 @@
                 size="small"
                 color="success"
                 variant="flat"
+                class="action-btn action-btn--approve"
                 :loading="votingTradeId === trade.id"
                 :disabled="votingTradeId !== null"
                 @click="$emit('approve', trade)"
@@ -456,65 +455,196 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
 
 <style scoped>
 .commissioner-trade-card {
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-left: 3px solid rgb(var(--v-theme-warning));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border-left: 4px solid rgb(var(--v-theme-warning));
 }
 
 .commissioner-trade-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .commissioner-trade-card.voting {
-  opacity: 0.7;
+  opacity: 0.6;
   pointer-events: none;
+  position: relative;
 }
 
-.trade-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.commissioner-trade-card.voting::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--v-theme-surface), 0.5);
+  z-index: 1;
 }
 
-.summary-row {
+.commissioner-trade-card.user-voted {
+  border-left-color: rgb(var(--v-theme-success));
+  background: linear-gradient(to right, rgba(var(--v-theme-success), 0.05), transparent);
+}
+
+.commissioner-card__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, rgb(var(--v-theme-warning)), rgb(var(--v-theme-warning-lighten-1)));
+  transition: width 0.3s;
+}
+
+.commissioner-trade-card:hover .commissioner-card__accent {
+  width: 6px;
+}
+
+.commissioner-card__header {
+  padding: 16px 16px 12px 20px;
+  min-height: 56px;
+}
+
+.status-chip {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.trade-id {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.commissioner-card__teams {
+  padding: 8px 16px 8px 20px;
+}
+
+.team-chip {
   display: flex;
   align-items: center;
 }
 
-.approval-status {
-  padding: 8px;
+.team-chip__content {
+  font-weight: 500;
+}
+
+.commissioner-card__content {
+  padding: 12px 16px 12px 20px;
+}
+
+.asset-summary-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.asset-badge {
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.asset-badge:hover {
+  transform: scale(1.05);
+}
+
+.approval-status-card {
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.4), rgba(var(--v-theme-surface-variant), 0.2));
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-warning), 0.2);
+}
+
+.approval-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-badge {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.approval-progress {
+  margin-top: 12px;
+}
+
+.progress-bar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vote-counts {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.vote-count-item {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.user-vote-indicator {
+  animation: slideIn 0.3s ease-out;
+}
+
+.vote-alert {
+  border-left: 4px solid;
+  border-left-color: inherit;
+}
+
+.commissioner-card__actions {
+  padding: 12px 16px 12px 20px;
   background-color: rgba(var(--v-theme-surface-variant), 0.3);
-  border-radius: 4px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.trade-assets-summary {
-  max-height: 400px;
-  overflow-y: auto;
+.view-btn {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.3px;
 }
 
-.team-assets {
-  padding: 8px;
-  background-color: rgba(var(--v-theme-surface-variant), 0.2);
-  border-radius: 4px;
-  border-left: 2px solid rgb(var(--v-theme-primary));
-}
-
-.team-header {
-  display: flex;
-  align-items: center;
-}
-
-.asset-group {
+.action-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
   margin-left: 8px;
+  min-width: 100px;
 }
 
-.asset-list {
-  background-color: rgba(var(--v-theme-surface), 0.5);
-  border-radius: 4px;
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.gap-1 {
-  gap: 4px;
+.action-btn--approve {
+  box-shadow: 0 2px 4px rgba(var(--v-theme-success), 0.3);
+}
+
+.action-btn--veto:hover {
+  box-shadow: 0 4px 8px rgba(var(--v-theme-error), 0.3);
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 

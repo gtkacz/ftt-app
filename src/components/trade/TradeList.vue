@@ -26,84 +26,129 @@
           elevation="2"
           hover
           class="trade-card"
+          :class="`trade-card--${getTradeStatus(trade)}`"
           @click="$emit('trade-click', trade)"
         >
+          <!-- Status Accent Border -->
+          <div class="trade-card__accent" :class="`trade-card__accent--${getStatusColor(getTradeStatus(trade))}`"></div>
+
           <!-- Card Header -->
-          <v-card-title class="d-flex align-center">
-            <v-chip :color="getStatusColor(getTradeStatus(trade))" size="small" variant="flat">
-              {{ getStatusDisplay(getTradeStatus(trade)) }}
-            </v-chip>
+          <v-card-title class="trade-card__header">
+            <div class="d-flex align-center">
+              <v-chip 
+                :color="getStatusColor(getTradeStatus(trade))" 
+                size="small" 
+                variant="flat"
+                class="trade-card__status-chip"
+              >
+                <v-icon start size="small">{{ getStatusIcon(getTradeStatus(trade)) }}</v-icon>
+                {{ getStatusDisplay(getTradeStatus(trade)) }}
+              </v-chip>
+            </div>
             <v-spacer />
-            <span class="text-caption text-medium-emphasis">#{{ trade.id }}</span>
+            <span class="text-caption text-medium-emphasis trade-card__id">#{{ trade.id }}</span>
           </v-card-title>
 
+          <v-divider class="mx-4" />
+
           <!-- Trade Teams -->
-          <v-card-subtitle class="pt-2">
-            <div class="d-flex flex-wrap align-center gap-1">
-              <v-chip
+          <v-card-subtitle class="trade-card__teams pt-3 pb-2">
+            <div class="d-flex flex-wrap align-center gap-2">
+              <div
                 v-for="team in getTeams(trade)"
                 :key="team.id"
-                size="small"
-                variant="outlined"
+                class="team-chip"
               >
-                {{ team.name }}
-              </v-chip>
+                <v-avatar v-if="team.logo" size="20" class="mr-1">
+                  <v-img :src="team.logo" />
+                </v-avatar>
+                <v-chip
+                  size="small"
+                  variant="outlined"
+                  class="team-chip__content"
+                >
+                  {{ team.name }}
+                </v-chip>
+              </div>
             </div>
           </v-card-subtitle>
 
           <!-- Trade Summary -->
-          <v-card-text>
-            <div class="trade-summary">
-              <div class="summary-row">
-                <v-icon size="small" class="mr-2">person</v-icon>
-                <span class="text-caption">{{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}</span>
-              </div>
-              <div class="summary-row">
-                <v-icon size="small" class="mr-2">star</v-icon>
-                <span class="text-caption">{{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}</span>
-              </div>
-              <div v-if="trade.created_at" class="summary-row">
-                <v-icon size="small" class="mr-2">schedule</v-icon>
-                <span class="text-caption">{{ formatDate(trade.created_at) }}</span>
-              </div>
+          <v-card-text class="trade-card__content">
+            <!-- Asset Preview Badges -->
+            <div class="asset-badges mb-3">
+              <v-chip
+                v-if="getPlayerCount(trade) > 0"
+                size="small"
+                color="primary"
+                variant="flat"
+                class="asset-badge"
+              >
+                <v-icon start size="small">person</v-icon>
+                {{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}
+              </v-chip>
+              <v-chip
+                v-if="getPickCount(trade) > 0"
+                size="small"
+                color="secondary"
+                variant="flat"
+                class="asset-badge"
+              >
+                <v-icon start size="small">star</v-icon>
+                {{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}
+              </v-chip>
             </div>
 
-            <!-- Proposing Team -->
-            <div class="mt-2">
-              <span class="text-caption text-medium-emphasis">Proposed by: </span>
-              <span class="text-caption font-weight-medium">{{ getSenderTeam(trade)?.name || 'Unknown Team' }}</span>
+            <v-divider class="my-3" />
+
+            <!-- Trade Metadata -->
+            <div class="trade-metadata">
+              <div class="metadata-item">
+                <v-icon size="small" color="primary" class="mr-2">schedule</v-icon>
+                <span class="text-caption">{{ formatDate(trade.created_at) }}</span>
+              </div>
+              <div class="metadata-item mt-2">
+                <v-icon size="small" color="info" class="mr-2">group</v-icon>
+                <span class="text-caption text-medium-emphasis">Proposed by: </span>
+                <span class="text-caption font-weight-medium">{{ getSenderTeam(trade)?.name || 'Unknown Team' }}</span>
+              </div>
             </div>
 
             <!-- Notes Preview (if available) -->
-            <div v-if="trade.notes" class="mt-2">
-              <p class="text-caption text-medium-emphasis text-truncate">
-                {{ trade.notes }}
-              </p>
+            <div v-if="trade.notes" class="mt-3 pt-3 border-t">
+              <div class="d-flex align-start">
+                <v-icon size="small" color="grey" class="mr-2 mt-1">note</v-icon>
+                <p class="text-caption text-medium-emphasis text-truncate flex-grow-1">
+                  {{ trade.notes }}
+                </p>
+              </div>
             </div>
           </v-card-text>
 
           <!-- Card Actions -->
-          <v-card-actions v-if="showActions(trade)">
+          <v-card-actions v-if="showActions(trade)" class="trade-card__actions">
             <v-spacer />
 
             <!-- Draft Actions -->
             <template v-if="trade.status === 'draft'">
               <v-btn
                 size="small"
-                variant="text"
+                variant="outlined"
                 color="primary"
+                class="action-btn"
                 @click.stop="$emit('edit-trade', trade)"
               >
-                <v-icon start>edit</v-icon>
+                <v-icon start size="small">edit</v-icon>
                 Edit
               </v-btn>
               <v-btn
                 size="small"
-                variant="text"
+                variant="outlined"
                 color="error"
+                class="action-btn"
                 @click.stop="$emit('delete-trade', trade)"
               >
-                <v-icon start>delete</v-icon>
+                <v-icon start size="small">delete</v-icon>
                 Delete
               </v-btn>
             </template>
@@ -112,29 +157,32 @@
             <template v-if="getTradeStatus(trade) === 'waiting_acceptance' && !isProposer(trade)">
               <v-btn
                 size="small"
-                variant="text"
                 color="success"
+                variant="flat"
+                class="action-btn action-btn--success"
                 @click.stop="$emit('respond-trade', { trade, response: 'accept' })"
               >
-                <v-icon start>check</v-icon>
+                <v-icon start size="small">check</v-icon>
                 Accept
               </v-btn>
               <v-btn
                 size="small"
-                variant="text"
                 color="warning"
+                variant="outlined"
+                class="action-btn"
                 @click.stop="$emit('respond-trade', { trade, response: 'counter' })"
               >
-                <v-icon start>edit</v-icon>
+                <v-icon start size="small">edit</v-icon>
                 Counter
               </v-btn>
               <v-btn
                 size="small"
-                variant="text"
                 color="error"
+                variant="outlined"
+                class="action-btn"
                 @click.stop="$emit('respond-trade', { trade, response: 'reject' })"
               >
-                <v-icon start>close</v-icon>
+                <v-icon start size="small">close</v-icon>
                 Reject
               </v-btn>
             </template>
@@ -208,6 +256,23 @@ function getStatusDisplay(status: string): string {
     unknown: 'Unknown',
   };
   return displays[status] || status;
+}
+
+// Get status icon
+function getStatusIcon(status: string): string {
+  const icons: Record<string, string> = {
+    draft: 'edit',
+    proposed: 'send',
+    waiting_acceptance: 'schedule',
+    waiting_approval: 'gavel',
+    accepted: 'check_circle',
+    approved: 'verified',
+    vetoed: 'block',
+    rejected: 'cancel',
+    completed: 'done_all',
+    unknown: 'help',
+  };
+  return icons[status] || 'help';
 }
 
 // Get player count (handles both backend and legacy structures)
@@ -285,25 +350,174 @@ function showActions(trade: Trade): boolean {
 <style scoped>
 .trade-card {
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.trade-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(var(--v-theme-primary), 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .trade-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-.trade-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.trade-card:hover::before {
+  opacity: 1;
 }
 
-.summary-row {
+.trade-card__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.trade-card:hover .trade-card__accent {
+  width: 6px;
+}
+
+.trade-card__accent--info {
+  background: linear-gradient(180deg, rgb(var(--v-theme-info)), rgb(var(--v-theme-info-lighten-1)));
+}
+
+.trade-card__accent--warning {
+  background: linear-gradient(180deg, rgb(var(--v-theme-warning)), rgb(var(--v-theme-warning-lighten-1)));
+}
+
+.trade-card__accent--success {
+  background: linear-gradient(180deg, rgb(var(--v-theme-success)), rgb(var(--v-theme-success-lighten-1)));
+}
+
+.trade-card__accent--error {
+  background: linear-gradient(180deg, rgb(var(--v-theme-error)), rgb(var(--v-theme-error-lighten-1)));
+}
+
+.trade-card__accent--grey {
+  background: linear-gradient(180deg, rgb(var(--v-theme-grey)), rgb(var(--v-theme-grey-lighten-1)));
+}
+
+.trade-card__header {
+  padding: 16px 16px 12px 20px;
+  min-height: 56px;
+}
+
+.trade-card__status-chip {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.trade-card__id {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.trade-card__teams {
+  padding: 8px 16px 8px 20px;
+}
+
+.team-chip {
   display: flex;
   align-items: center;
 }
 
-.gap-1 {
-  gap: 4px;
+.team-chip__content {
+  font-weight: 500;
+}
+
+.trade-card__content {
+  padding: 12px 16px 12px 20px;
+}
+
+.asset-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.asset-badge {
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.asset-badge:hover {
+  transform: scale(1.05);
+}
+
+.trade-metadata {
+  display: flex;
+  flex-direction: column;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+}
+
+.border-t {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.trade-card__actions {
+  padding: 8px 16px 12px 20px;
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+.action-btn {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
+  margin-left: 4px;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn--success {
+  box-shadow: 0 2px 4px rgba(var(--v-theme-success), 0.3);
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+/* Status-specific styling */
+.trade-card--waiting_acceptance {
+  border-left: 4px solid rgb(var(--v-theme-info));
+}
+
+.trade-card--accepted {
+  border-left: 4px solid rgb(var(--v-theme-warning));
+}
+
+.trade-card--completed {
+  border-left: 4px solid rgb(var(--v-theme-success));
+}
+
+.trade-card--rejected,
+.trade-card--vetoed {
+  border-left: 4px solid rgb(var(--v-theme-error));
+  opacity: 0.85;
+}
+
+.trade-card--draft {
+  border-left: 4px solid rgb(var(--v-theme-grey));
 }
 </style>

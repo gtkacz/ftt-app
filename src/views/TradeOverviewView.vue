@@ -192,20 +192,50 @@
     </v-snackbar>
 
     <!-- Approve Confirmation Dialog -->
-    <v-dialog v-model="approveDialog.show" max-width="700px" persistent scrollable>
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon color="success" class="mr-2">check_circle</v-icon>
-          Approve Trade
+    <v-dialog 
+      v-model="approveDialog.show" 
+      max-width="800px" 
+      persistent 
+      scrollable
+      class="approve-dialog"
+    >
+      <v-card class="dialog-card">
+        <v-card-title class="dialog-header dialog-header--success">
+          <div class="d-flex align-center">
+            <v-avatar size="40" color="success" class="mr-3">
+              <v-icon color="white" size="24">check_circle</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-h6 font-weight-bold">Approve Trade</div>
+              <div class="text-caption text-medium-emphasis">Review trade details before confirming</div>
+            </div>
+          </div>
         </v-card-title>
         <v-divider />
-        <v-card-text>
-          <v-alert type="info" variant="tonal" class="mb-4">
-            Please review the trade details below before approving.
+        <v-card-text class="dialog-content">
+          <v-alert 
+            type="info" 
+            variant="tonal" 
+            density="comfortable"
+            class="mb-4 info-alert"
+            border="start"
+            border-color="info"
+          >
+            <div class="d-flex align-center">
+              <v-icon class="mr-2">info</v-icon>
+              <div>
+                <div class="font-weight-medium mb-1">Review Before Approving</div>
+                <div class="text-caption">Please carefully review all trade details below before confirming your approval.</div>
+              </div>
+            </div>
           </v-alert>
           
           <!-- Trade Summary -->
           <div v-if="approveDialog.trade" class="trade-summary-dialog">
+            <div class="summary-header mb-3">
+              <v-icon color="primary" class="mr-2">swap_horiz</v-icon>
+              <span class="text-subtitle-1 font-weight-bold">Trade #{{ approveDialog.trade.id }}</span>
+            </div>
             <TradeSummaryPanel
               :teams="approveDialog.trade.teams_detail || approveDialog.trade.participants || []"
               :assets="getTransformedAssetsForDialog(approveDialog.trade)"
@@ -214,12 +244,21 @@
           </div>
         </v-card-text>
         <v-divider />
-        <v-card-actions>
+        <v-card-actions class="dialog-actions">
           <v-spacer />
-          <v-btn variant="text" @click="closeApproveDialog">Cancel</v-btn>
+          <v-btn 
+            variant="outlined" 
+            color="grey"
+            class="action-btn"
+            @click="closeApproveDialog"
+          >
+            Cancel
+          </v-btn>
           <v-btn
             color="success"
             variant="flat"
+            size="large"
+            class="action-btn action-btn--success"
             :loading="votingTradeId === approveDialog.trade?.id"
             @click="confirmApprove"
           >
@@ -231,20 +270,50 @@
     </v-dialog>
 
     <!-- Veto Confirmation Dialog -->
-    <v-dialog v-model="vetoDialog.show" max-width="700px" persistent scrollable>
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon color="error" class="mr-2">gavel</v-icon>
-          Veto Trade
+    <v-dialog 
+      v-model="vetoDialog.show" 
+      max-width="800px" 
+      persistent 
+      scrollable
+      class="veto-dialog"
+    >
+      <v-card class="dialog-card">
+        <v-card-title class="dialog-header dialog-header--error">
+          <div class="d-flex align-center">
+            <v-avatar size="40" color="error" class="mr-3">
+              <v-icon color="white" size="24">gavel</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-h6 font-weight-bold">Veto Trade</div>
+              <div class="text-caption text-medium-emphasis">This action cannot be undone</div>
+            </div>
+          </div>
         </v-card-title>
         <v-divider />
-        <v-card-text>
-          <v-alert type="warning" variant="tonal" class="mb-4">
-            Are you sure you want to veto this trade? This action cannot be undone.
+        <v-card-text class="dialog-content">
+          <v-alert 
+            type="warning" 
+            variant="tonal" 
+            density="comfortable"
+            class="mb-4 warning-alert"
+            border="start"
+            border-color="error"
+          >
+            <div class="d-flex align-center">
+              <v-icon class="mr-2">warning</v-icon>
+              <div>
+                <div class="font-weight-medium mb-1">Are you sure you want to veto this trade?</div>
+                <div class="text-caption">This action is permanent and will prevent the trade from being completed.</div>
+              </div>
+            </div>
           </v-alert>
           
           <!-- Trade Summary -->
           <div v-if="vetoDialog.trade" class="trade-summary-dialog mb-4">
+            <div class="summary-header mb-3">
+              <v-icon color="primary" class="mr-2">swap_horiz</v-icon>
+              <span class="text-subtitle-1 font-weight-bold">Trade #{{ vetoDialog.trade.id }}</span>
+            </div>
             <TradeSummaryPanel
               :teams="vetoDialog.trade.teams_detail || vetoDialog.trade.participants || []"
               :assets="getTransformedAssetsForDialog(vetoDialog.trade)"
@@ -252,23 +321,42 @@
             />
           </div>
           
-          <v-textarea
-            v-model="vetoDialog.reason"
-            label="Reason (optional)"
-            variant="outlined"
-            rows="3"
-            placeholder="Provide a reason for vetoing this trade..."
-            hint="Optional: Add a note explaining why this trade is being vetoed"
-            persistent-hint
-          />
+          <v-card variant="outlined" class="veto-reason-card">
+            <v-card-title class="text-subtitle-2 pa-3 pb-2">
+              <v-icon size="small" color="error" class="mr-2">edit</v-icon>
+              Veto Reason
+              <v-chip size="x-small" color="grey" variant="text" class="ml-2">Optional</v-chip>
+            </v-card-title>
+            <v-card-text class="pt-0">
+              <v-textarea
+                v-model="vetoDialog.reason"
+                label="Explain why you're vetoing this trade"
+                variant="outlined"
+                rows="4"
+                placeholder="Provide a reason for vetoing this trade (e.g., unfair trade, salary cap concerns, etc.)..."
+                hint="Adding a reason helps other commissioners understand your decision"
+                persistent-hint
+                class="veto-textarea"
+              />
+            </v-card-text>
+          </v-card>
         </v-card-text>
         <v-divider />
-        <v-card-actions>
+        <v-card-actions class="dialog-actions">
           <v-spacer />
-          <v-btn variant="text" @click="closeVetoDialog">Cancel</v-btn>
+          <v-btn 
+            variant="outlined" 
+            color="grey"
+            class="action-btn"
+            @click="closeVetoDialog"
+          >
+            Cancel
+          </v-btn>
           <v-btn
             color="error"
             variant="flat"
+            size="large"
+            class="action-btn action-btn--error"
             :loading="votingTradeId === vetoDialog.trade?.id"
             @click="confirmVeto"
           >
@@ -666,5 +754,102 @@ onMounted(async () => {
 .trade-summary-dialog {
   max-height: 500px;
   overflow-y: auto;
+  padding: 8px;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* Dialog Styles */
+.dialog-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dialog-header {
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.5), rgba(var(--v-theme-surface-variant), 0.2));
+}
+
+.dialog-header--success {
+  border-bottom: 3px solid rgb(var(--v-theme-success));
+}
+
+.dialog-header--error {
+  border-bottom: 3px solid rgb(var(--v-theme-error));
+}
+
+.dialog-content {
+  padding: 24px;
+}
+
+.info-alert,
+.warning-alert {
+  border-radius: 8px;
+}
+
+.dialog-actions {
+  padding: 16px 24px;
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+.action-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  min-width: 120px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn--success {
+  box-shadow: 0 2px 4px rgba(var(--v-theme-success), 0.3);
+}
+
+.action-btn--error {
+  box-shadow: 0 2px 4px rgba(var(--v-theme-error), 0.3);
+}
+
+.action-btn--error:hover {
+  box-shadow: 0 4px 8px rgba(var(--v-theme-error), 0.4);
+}
+
+/* Veto Dialog Specific */
+.veto-reason-card {
+  margin-top: 16px;
+  border: 2px solid rgba(var(--v-theme-error), 0.2);
+  background: linear-gradient(135deg, rgba(var(--v-theme-error), 0.05), transparent);
+}
+
+.veto-textarea :deep(.v-field) {
+  background-color: rgba(var(--v-theme-surface), 0.8);
+}
+
+.veto-textarea :deep(.v-field__input) {
+  min-height: 100px;
+}
+
+/* Dialog Animations */
+.approve-dialog :deep(.v-overlay__content),
+.veto-dialog :deep(.v-overlay__content) {
+  animation: dialogSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 </style>
