@@ -327,11 +327,12 @@ interface Props {
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;
   (e: 'asset-selected', payload: {
-    assetType: 'player' | 'pick';
-    assetId: number;
-    givingTeam: number;
-    receivingTeam: number;
-    asset: Player | Pick;
+    asset_type: 'player' | 'pick';
+    asset_id: number;
+    giving_team: number;
+    receiving_team: number;
+    player?: Player;
+    pick?: Pick;
     protection?: { type: PickProtectionType; value?: number };
   }): void;
 }
@@ -425,22 +426,22 @@ function confirmSelection() {
     const player = props.availablePlayers.find((p) => p.id === selectedPlayers.value[0]);
     if (player) {
       emit('asset-selected', {
-        assetType: 'player',
-        assetId: player.id,
-        givingTeam: props.givingTeam.id,
-        receivingTeam: selectedDestination.value,
-        asset: player,
+        asset_type: 'player',
+        asset_id: player.id,
+        giving_team: props.givingTeam.id,
+        receiving_team: selectedDestination.value,
+        player: player,
       });
     }
   } else if (props.assetType === 'pick' && selectedPicks.value.length > 0) {
     const pick = props.availablePicks.find((p) => p.id === selectedPicks.value[0]);
     if (pick) {
       emit('asset-selected', {
-        assetType: 'pick',
-        assetId: pick.id,
-        givingTeam: props.givingTeam.id,
-        receivingTeam: selectedDestination.value,
-        asset: pick,
+        asset_type: 'pick',
+        asset_id: pick.id,
+        giving_team: props.givingTeam.id,
+        receiving_team: selectedDestination.value,
+        pick: pick,
         protection: pickProtection.value !== 'none'
           ? { type: pickProtection.value, value: pickProtection.value === 'top_x' ? protectionValue.value : undefined }
           : undefined,

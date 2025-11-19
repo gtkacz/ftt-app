@@ -21,19 +21,19 @@
         <div class="text-subtitle-1 font-weight-medium mb-2">Trade Summary</div>
         <div class="summary-grid">
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Trade ID:</span>
+            <span class="text-caption text-medium-emphasis">Trade ID: </span>
             <span class="text-body-2">{{ trade.id }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Proposed by:</span>
+            <span class="text-caption text-medium-emphasis">Proposed by: </span>
             <span class="text-body-2">{{ getProposingTeamName() }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Teams Involved:</span>
+            <span class="text-caption text-medium-emphasis">Teams Involved: </span>
             <span class="text-body-2">{{ trade.teams.length }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Proposed:</span>
+            <span class="text-caption text-medium-emphasis">Proposed: </span>
             <span class="text-body-2">{{ formatDate(trade.proposed_at) }}</span>
           </div>
         </div>

@@ -22,9 +22,9 @@
     <v-card-text class="pb-2">
       <TeamCapDisplay
         :current-salary="team.total_salary || 0"
-        :salary-cap="team.salary_cap || 140000000"
+        :salary-cap="team.salary_cap || 130000000"
         :current-players="team.total_players || 0"
-        :max-players="team.max_player_cap || 17"
+        :max-players="team.max_player_cap || 15"
         :impact="impact"
       />
     </v-card-text>

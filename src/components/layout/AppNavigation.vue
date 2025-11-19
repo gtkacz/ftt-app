@@ -34,7 +34,7 @@
           <NavItem v-for="item in group.items" :key="item.name" :icon="item.icon" :label="item.label"
             :to="{ name: item.routeName, params: item.params || {} }"
             :expanded="isHovered || (mobile && navigationStore.isNavigationExpanded)"
-            :commission_only="item.commission_only ?? false" :disabled="item.disabled ?? false"
+            :commission_only="item.commission_only ?? false" :disabled="(item.disabled || (item.devonly && !isDev)) ?? false"
             @click="mobile && navigationStore.toggleNavigation()" />
         </div>
       </div>
@@ -59,6 +59,7 @@ const teamId = user?.team?.id;
 const version = __APP_VERSION__
 const { mobile } = useDisplay()
 const navigationStore = useNavigationStore()
+const isDev = ref(import.meta.env.DEV);
 
 const isHovered = ref(false)
 
@@ -108,8 +109,7 @@ const navigationGroups = [
       {
         icon: 'handshake',
         label: 'Trades',
-        routeName: 'trade-overview',
-        disabled: true
+        routeName: 'trade-overview'
       },
     ]
   },
@@ -143,12 +143,6 @@ const navigationGroups = [
         icon: 'manage_accounts',
         label: 'Commission',
         routeName: 'commission',
-        commission_only: true
-      },
-      {
-        icon: 'gavel',
-        label: 'Trade Review',
-        routeName: 'commission-trades',
         commission_only: true
       },
       {

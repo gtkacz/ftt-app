@@ -8,50 +8,30 @@
     <v-divider />
 
     <v-card-text class="pa-0">
-      <div v-if="!history || history.length === 0" class="empty-state">
+      <div v-if="loading" class="loading-state">
+        <v-progress-circular indeterminate color="primary" size="32" />
+        <div class="text-caption text-medium-emphasis mt-2">Loading timeline...</div>
+      </div>
+      <div v-else-if="!history || history.length === 0" class="empty-state">
         <v-icon icon="history" size="48" class="text-medium-emphasis mb-2" />
         <div class="text-caption text-medium-emphasis">No events yet</div>
       </div>
 
-      <v-timeline v-else side="end" density="compact" class="timeline-content">
+      <v-timeline direction="horizontal" v-else side="end" density="compact" class="timeline-content">
         <v-timeline-item
           v-for="event in sortedTimeline"
           :key="event.id"
           :dot-color="getEventColor(event.event_type)"
           size="small"
         >
-          <template #opposite>
-            <div class="text-caption text-medium-emphasis">
+          <div class="timeline-item-content">
+            <div class="timeline-description">
+              {{ event.message || event.description || event.event_display }}
+            </div>
+            <div class="timeline-timestamp">
               {{ formatTimestamp(event.created_at) }}
             </div>
-          </template>
-
-          <v-card density="compact" variant="outlined">
-            <v-card-text class="pa-3">
-              <div class="d-flex align-center mb-1">
-                <v-icon :icon="getEventIcon(event.event_type)" size="small" class="mr-2" />
-                <span class="text-subtitle-2 font-weight-medium">
-                  {{ event.event_display }}
-                </span>
-              </div>
-
-              <div class="event-details">
-                <div v-if="event.actor_display" class="text-caption text-medium-emphasis mb-1">
-                  {{ event.actor_display }}
-                </div>
-
-                <div v-if="event.message" class="event-message text-caption">
-                  {{ event.message }}
-                </div>
-
-                <div v-if="event.has_snapshot" class="event-metadata mt-2">
-                  <v-chip size="small" color="info" variant="tonal">
-                    {{ event.snapshot_summary }}
-                  </v-chip>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
+          </div>
         </v-timeline-item>
       </v-timeline>
     </v-card-text>
@@ -65,15 +45,18 @@ import type { TradeHistoryEntry, TradeHistoryEventType } from '@/types/trade';
 interface Props {
   tradeId: number;
   history?: TradeHistoryEntry[];
+  loading?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   history: () => [],
+  loading: false,
 });
 
 const sortedTimeline = computed(() => {
   return [...props.history].sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    // Sort chronologically (oldest first for horizontal timeline)
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
   });
 });
 
@@ -136,6 +119,14 @@ function getEventIcon(eventType: TradeHistoryEventType): string {
     background: rgba(var(--v-theme-surface-variant), 0.3);
   }
 
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
   .empty-state {
     display: flex;
     flex-direction: column;
@@ -146,25 +137,25 @@ function getEventIcon(eventType: TradeHistoryEventType): string {
 
   .timeline-content {
     padding: 16px;
+    overflow-x: auto;
+  }
 
-    .event-details {
-      .event-message {
-        padding: 8px;
-        background: rgba(var(--v-theme-surface-variant), 0.3);
-        border-radius: 4px;
-        font-style: italic;
-      }
+  .timeline-item-content {
+    min-width: 150px;
+    max-width: 250px;
+    text-align: center;
+  }
 
-      .event-metadata {
-        .veto-reason,
-        .counter-changes {
-          padding: 8px;
-          background: rgba(var(--v-theme-surface-variant), 0.2);
-          border-radius: 4px;
-          margin-top: 4px;
-        }
-      }
-    }
+  .timeline-description {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    margin-bottom: 4px;
+  }
+
+  .timeline-timestamp {
+    font-size: 0.75rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
   }
 }
 </style>
