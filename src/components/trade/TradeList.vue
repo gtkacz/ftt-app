@@ -30,8 +30,8 @@
         >
           <!-- Card Header -->
           <v-card-title class="d-flex align-center">
-            <v-chip :color="getStatusColor(trade.status)" size="small" variant="flat">
-              {{ getStatusDisplay(trade.status) }}
+            <v-chip :color="getStatusColor(getTradeStatus(trade))" size="small" variant="flat">
+              {{ getStatusDisplay(getTradeStatus(trade)) }}
             </v-chip>
             <v-spacer />
             <span class="text-caption text-medium-emphasis">#{{ trade.id }}</span>
@@ -41,7 +41,7 @@
           <v-card-subtitle class="pt-2">
             <div class="d-flex flex-wrap align-center gap-1">
               <v-chip
-                v-for="team in trade.teams_detail"
+                v-for="team in getTeams(trade)"
                 :key="team.id"
                 size="small"
                 variant="outlined"
@@ -71,7 +71,7 @@
             <!-- Proposing Team -->
             <div class="mt-2">
               <span class="text-caption text-medium-emphasis">Proposed by: </span>
-              <span class="text-caption font-weight-medium">{{ trade.proposing_team_detail?.name || 'Unknown Team' }}</span>
+              <span class="text-caption font-weight-medium">{{ getSenderTeam(trade)?.name || 'Unknown Team' }}</span>
             </div>
 
             <!-- Notes Preview (if available) -->
@@ -108,8 +108,8 @@
               </v-btn>
             </template>
 
-            <!-- Proposed Actions (for recipients) -->
-            <template v-if="trade.status === 'proposed' && !isProposer(trade)">
+            <!-- Waiting Acceptance Actions (for recipients) -->
+            <template v-if="getTradeStatus(trade) === 'waiting_acceptance' && !isProposer(trade)">
               <v-btn
                 size="small"
                 variant="text"
@@ -148,7 +148,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import type { Trade } from '@/types/trade';
+import type { Trade, BackendTradeAssets } from '@/types/trade';
+import { getTradeDisplayStatus } from '@/types/trade';
 
 const authStore = useAuthStore();
 
@@ -170,16 +171,24 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineEmits<Emits>();
 
+// Get display status for trade
+function getTradeStatus(trade: Trade): string {
+  return trade.displayStatus || getTradeDisplayStatus(trade) || trade.status || 'unknown';
+}
+
 // Get status color
 function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
     draft: 'grey',
     proposed: 'info',
+    waiting_acceptance: 'info',
     waiting_approval: 'warning',
+    accepted: 'warning',
     approved: 'success',
     vetoed: 'error',
     rejected: 'error',
     completed: 'success',
+    unknown: 'grey',
   };
   return colors[status] || 'grey';
 }
@@ -189,23 +198,52 @@ function getStatusDisplay(status: string): string {
   const displays: Record<string, string> = {
     draft: 'Draft',
     proposed: 'Proposed',
+    waiting_acceptance: 'Waiting Response',
     waiting_approval: 'Pending Approval',
+    accepted: 'Accepted',
     approved: 'Approved',
     vetoed: 'Vetoed',
     rejected: 'Rejected',
     completed: 'Completed',
+    unknown: 'Unknown',
   };
   return displays[status] || status;
 }
 
-// Get player count
+// Get player count (handles both backend and legacy structures)
 function getPlayerCount(trade: Trade): number {
-  return trade.assets.filter((a) => a.asset_type === 'player').length;
+  if (Array.isArray(trade.assets)) {
+    // Legacy structure
+    return trade.assets.filter((a: any) => a.asset_type === 'player').length;
+  } else if (trade.assets && typeof trade.assets === 'object') {
+    // Backend structure
+    const backendAssets = trade.assets as BackendTradeAssets;
+    return backendAssets.players?.length || 0;
+  }
+  return 0;
 }
 
-// Get pick count
+// Get pick count (handles both backend and legacy structures)
 function getPickCount(trade: Trade): number {
-  return trade.assets.filter((a) => a.asset_type === 'pick').length;
+  if (Array.isArray(trade.assets)) {
+    // Legacy structure
+    return trade.assets.filter((a: any) => a.asset_type === 'pick').length;
+  } else if (trade.assets && typeof trade.assets === 'object') {
+    // Backend structure
+    const backendAssets = trade.assets as BackendTradeAssets;
+    return backendAssets.picks?.length || 0;
+  }
+  return 0;
+}
+
+// Get teams for display (handles both backend and legacy structures)
+function getTeams(trade: Trade) {
+  return trade.teams_detail || trade.participants || [];
+}
+
+// Get sender/proposing team (handles both backend and legacy structures)
+function getSenderTeam(trade: Trade) {
+  return trade.proposing_team_detail || trade.sender;
 }
 
 // Format date
@@ -226,17 +264,20 @@ function formatDate(dateString: string): string {
   }
 }
 
-// Check if user is proposer
+// Check if user is proposer/sender
 function isProposer(trade: Trade): boolean {
   const userTeamId = authStore.user?.team?.id;
   if (!userTeamId) return false;
-  return trade.proposing_team === userTeamId;
+  // Check both backend (sender) and legacy (proposing_team) structures
+  const senderId = trade.sender?.id || trade.proposing_team;
+  return senderId === userTeamId;
 }
 
 // Show actions for trade
 function showActions(trade: Trade): boolean {
-  if (trade.status === 'draft') return true;
-  if (trade.status === 'proposed' && !isProposer(trade)) return true;
+  const status = getTradeStatus(trade);
+  // Show actions for trades waiting acceptance where user is not the sender
+  if (status === 'waiting_acceptance' && !isProposer(trade)) return true;
   return false;
 }
 </script>

@@ -8,79 +8,76 @@
             <v-btn icon variant="text" @click="handleCancel">
               <v-icon>arrow_back</v-icon>
             </v-btn>
-            <span class="ml-2">
-              {{ isCounterMode ? `Counter Offer for Trade #${tradeId}` : isEditMode ? `Edit Trade #${tradeId}` : 'Create New Trade' }}
-            </span>
+            <span class="ml-2">Create New Trade</span>
             <v-spacer />
-            <v-chip v-if="currentTrade" :color="getStatusColor(currentTrade.status)" variant="flat">
-              {{ currentTrade.status }}
-            </v-chip>
           </v-card-title>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Counter Offer Info Banner -->
-    <v-row v-if="isCounterMode">
+    <!-- Team Selection Section -->
+    <v-row>
       <v-col cols="12">
-        <v-alert
-          type="info"
-          variant="tonal"
-          prominent
-          border="start"
-        >
-          <template #prepend>
-            <v-icon>info</v-icon>
-          </template>
-          <div class="text-subtitle-1 font-weight-medium">
-            You're making a counter offer
-          </div>
-          <div class="text-body-2 mt-1">
-            Modify the trade below by adding/removing teams, players, or picks. When you send the counter offer,
-            it will replace the original proposal and reset approvals from all teams.
-          </div>
-        </v-alert>
+        <v-card>
+          <v-card-title>Teams in Trade</v-card-title>
+          <v-card-text>
+            <div class="d-flex flex-wrap gap-2 align-center">
+              <v-chip
+                v-for="teamId in selectedTeamIds"
+                :key="teamId"
+                :color="teamId === userTeamId ? 'primary' : 'default'"
+                closable
+                :disabled="teamId === userTeamId"
+                @click:close="removeTeam(teamId)"
+              >
+                {{ getTeamName(teamId) }}
+                <v-icon v-if="teamId === userTeamId" start size="small">person</v-icon>
+              </v-chip>
+              <v-btn
+                color="primary"
+                variant="outlined"
+                @click="showTeamSelector = true"
+              >
+                <v-icon start>add</v-icon>
+                Add Team
+              </v-btn>
+            </div>
+            <v-alert
+              v-if="selectedTeamIds.length < 2"
+              type="warning"
+              variant="tonal"
+              density="compact"
+              class="mt-2"
+            >
+              You must add at least one other team to create a trade.
+            </v-alert>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
 
-    <!-- Team Grid (Horizontal Scrollable) -->
-    <v-row>
+    <!-- Team Assets Display (Horizontal Scrollable) -->
+    <v-row v-if="selectedTeamIds.length >= 2">
       <v-col cols="12">
         <div class="team-grid-container">
           <div class="team-grid">
-            <!-- Team Cards -->
-            <TeamTradeCard
-              v-for="teamId in draftTrade.teams"
+            <TeamAssetSelector
+              v-for="teamId in selectedTeamIds"
               :key="teamId"
               :team-id="teamId"
               :team="getTeam(teamId)"
-              :assets="draftTrade.assets"
+              :available-players="getAvailablePlayers(teamId)"
+              :available-picks="getAvailablePicks(teamId)"
+              :selected-assets="selectedAssets"
               :available-teams="selectedTeams"
-              :is-own-team="teamId === draftTrade.proposing_team"
+              :is-own-team="teamId === userTeamId"
               :impact="validationResult?.team_impacts[teamId]"
+              :league-settings="leagueSettings"
               @add-asset="handleAddAsset"
               @remove-asset="handleRemoveAsset"
-              @update-destination="handleUpdateDestination"
-              @remove-team="handleRemoveTeam"
+              @update-asset="handleUpdateAsset"
+              @remove-team="removeTeam"
             />
-
-            <!-- Add Team Button -->
-            <v-card class="add-team-card" elevation="2">
-              <v-card-text class="d-flex flex-column align-center justify-center fill-height">
-                <v-btn
-                  size="large"
-                  color="primary"
-                  variant="outlined"
-                  @click="showTeamSelector = true"
-                >
-                  <v-icon start>add</v-icon>
-                  Add Team
-                </v-btn>
-                <p class="text-caption text-medium-emphasis mt-2">
-                  Add more teams to the trade
-                </p>
-              </v-card-text>
-            </v-card>
           </div>
         </div>
       </v-col>
@@ -94,11 +91,11 @@
     </v-row>
 
     <!-- Trade Summary -->
-    <v-row>
+    <v-row v-if="selectedAssets.length > 0">
       <v-col cols="12">
         <TradeSummaryPanel
           :teams="selectedTeams"
-          :assets="draftTrade.assets"
+          :assets="selectedAssets"
           :validation="validationResult"
         />
       </v-col>
@@ -112,22 +109,12 @@
             <v-btn
               color="primary"
               size="large"
-              :loading="loading.validation || loading.currentTrade"
+              :loading="submitting"
               :disabled="!canPropose"
               @click="handlePropose"
             >
               <v-icon start>send</v-icon>
-              {{ isCounterMode ? 'Send Counter Offer' : 'Propose Trade' }}
-            </v-btn>
-            <v-btn
-              variant="outlined"
-              size="large"
-              :loading="loading.currentTrade"
-              :disabled="draftTrade.assets.length === 0"
-              @click="handleSaveDraft"
-            >
-              <v-icon start>save</v-icon>
-              Save Draft
+              Propose Trade
             </v-btn>
             <v-btn
               variant="text"
@@ -140,8 +127,8 @@
             <v-btn
               variant="outlined"
               size="large"
-              :loading="loading.validation"
-              :disabled="draftTrade.assets.length === 0"
+              :loading="validating"
+              :disabled="selectedAssets.length === 0"
               @click="validateTrade"
             >
               <v-icon start>check_circle</v-icon>
@@ -152,26 +139,31 @@
       </v-col>
     </v-row>
 
-    <!-- Asset Selector Dialog -->
-    <AssetSelector
-      v-model="assetSelectorOpen"
-      :asset-type="assetSelectorType"
-      :giving-team="assetSelectorTeam"
-      :available-teams="selectedTeams"
-      :available-players="getAvailablePlayers(assetSelectorTeam?.id)"
-      :available-picks="getAvailablePicks(assetSelectorTeam?.id)"
-      @asset-selected="handleAssetSelected"
-    />
-
     <!-- Team Selector Dialog -->
     <v-dialog v-model="showTeamSelector" max-width="600px">
-      <TeamSelector
-        :teams="allTeams"
-        :selected-team-ids="draftTrade.teams"
-        :proposing-team-id="draftTrade.proposing_team || undefined"
-        @add-team="handleTeamSelected"
-        @remove-team="handleRemoveTeam"
-      />
+      <v-card>
+        <v-card-title>Select Team to Add</v-card-title>
+        <v-card-text>
+          <v-list>
+            <v-list-item
+              v-for="team in availableTeamsToAdd"
+              :key="team.id"
+              @click="addTeam(team.id)"
+            >
+              <v-list-item-title>{{ team.name }}</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="availableTeamsToAdd.length === 0">
+              <v-list-item-title class="text-medium-emphasis">
+                No teams available to add
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="showTeamSelector = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
 
     <!-- Snackbar for notifications -->
@@ -185,64 +177,76 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
+import { useSettingsStore } from '@/stores/settings';
 import { storeToRefs } from 'pinia';
-import type { Team, Player, Pick, AssetSelectionData } from '@/types/trade';
+import type { Team, Player, Pick, CreateTradeAssetData, TradeValidationResponse } from '@/types/trade';
+import { TradeService } from '@/api/trade';
+import { SettingsService } from '@/api/settings';
 
-import TeamTradeCard from '@/components/trade/TeamTradeCard.vue';
+import TeamAssetSelector from '@/components/trade/TeamAssetSelector.vue';
 import TradeSummaryPanel from '@/components/trade/TradeSummaryPanel.vue';
-import AssetSelector from '@/components/trade/AssetSelector.vue';
-import TeamSelector from '@/components/trade/TeamSelector.vue';
 import TradeValidationDisplay from '@/components/trade/TradeValidationDisplay.vue';
 
 const router = useRouter();
-const route = useRoute();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
+const settingsStore = useSettingsStore();
 
 const {
-  draftTrade,
-  currentTrade,
-  validationResult,
-  loading,
   availablePlayersByTeam,
   availablePicksByTeam,
+  validationResult: storeValidationResult,
+  loading: storeLoading,
 } = storeToRefs(tradeStore);
 
+// Local validation result ref for reactivity
+const validationResult = computed(() => storeValidationResult.value);
+
 // Component state
-const assetSelectorOpen = ref(false);
-const assetSelectorType = ref<'player' | 'pick'>('player');
-const assetSelectorTeam = ref<Team | null>(null);
-const showTeamSelector = ref(false);
+const selectedTeamIds = ref<number[]>([]);
+const selectedAssets = ref<CreateTradeAssetData[]>([]);
 const allTeams = ref<Team[]>([]);
+const leagueSettings = ref<{
+  SALARY_CAP: number;
+  MIN_PLAYER_CAP: number;
+  MAX_PLAYER_CAP: number;
+} | null>(null);
+const showTeamSelector = ref(false);
+const validating = ref(false);
+const submitting = ref(false);
 const snackbar = ref({
   show: false,
   message: '',
   color: 'success',
 });
 
-// Check if edit mode or counter mode
-const isEditMode = computed(() => !!route.params.id);
-const isCounterMode = computed(() => route.query.mode === 'counter');
-const tradeId = computed(() => route.params.id ? parseInt(route.params.id as string) : null);
+// User's team ID
+const userTeamId = computed(() => authStore.user?.team?.id);
 
-// Get selected teams as Team objects
+// Selected teams as Team objects
 const selectedTeams = computed(() => {
-  return allTeams.value.filter((t) => draftTrade.value.teams.includes(t.id));
+  return allTeams.value.filter((t) => selectedTeamIds.value.includes(t.id));
+});
+
+// Available teams to add (not already selected)
+const availableTeamsToAdd = computed(() => {
+  return allTeams.value.filter((t) => !selectedTeamIds.value.includes(t.id));
 });
 
 // Check if can propose
 const canPropose = computed(() => {
-  if (draftTrade.value.teams.length < 2) return false;
-  if (draftTrade.value.assets.length === 0) return false;
+  if (selectedTeamIds.value.length < 2) return false;
+  if (selectedAssets.value.length === 0) return false;
+  if (!validationResult.value || !validationResult.value.valid) return false;
 
   // Each team must give and receive at least one asset
-  return draftTrade.value.teams.every((teamId) => {
-    const giving = draftTrade.value.assets.filter((a) => a.giving_team === teamId);
-    const receiving = draftTrade.value.assets.filter((a) => a.receiving_team === teamId);
+  return selectedTeamIds.value.every((teamId) => {
+    const giving = selectedAssets.value.filter((a) => a.giving_team === teamId);
+    const receiving = selectedAssets.value.filter((a) => a.receiving_team === teamId);
     return giving.length > 0 && receiving.length > 0;
   });
 });
@@ -256,162 +260,196 @@ function getTeam(teamId: number): Team {
   };
 }
 
+// Get team name
+function getTeamName(teamId: number): string {
+  return getTeam(teamId).name;
+}
+
 // Get available players for team
-function getAvailablePlayers(teamId: number | undefined): Player[] {
-  if (!teamId) return [];
+function getAvailablePlayers(teamId: number): Player[] {
   return availablePlayersByTeam.value[teamId] || [];
 }
 
 // Get available picks for team
-function getAvailablePicks(teamId: number | undefined): Pick[] {
-  if (!teamId) return [];
+function getAvailablePicks(teamId: number): Pick[] {
   return availablePicksByTeam.value[teamId] || [];
 }
 
-// Get status color
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    draft: 'grey',
-    proposed: 'info',
-    waiting_approval: 'warning',
-    approved: 'success',
-    vetoed: 'error',
-    rejected: 'error',
-    completed: 'success',
-  };
-  return colors[status] || 'grey';
-}
-
 // Handlers
-function handleAddAsset(payload: { teamId: number; assetType: 'player' | 'pick' }) {
-  assetSelectorType.value = payload.assetType;
-  assetSelectorTeam.value = getTeam(payload.teamId);
-  assetSelectorOpen.value = true;
-}
-
-function handleAssetSelected(selection: AssetSelectionData) {
-  const asset = {
-    asset_type: selection.asset_type,
-    giving_team: selection.giving_team,
-    receiving_team: selection.receiving_team,
-    ...(selection.asset_type === 'player'
-      ? {
-          player: selection.asset_id,
-          player_detail: selection.player as Player,
-        }
-      : {
-          pick: selection.asset_id,
-          pick_detail: {
-            ...(selection.pick as Pick),
-            protection_type: selection.protection?.type,
-            protection_value: selection.protection?.value,
-          },
-        }),
-  };
-
-  tradeStore.addAsset(asset);
-
+function handleAddAsset(asset: CreateTradeAssetData) {
+  selectedAssets.value.push(asset);
   // Auto-validate after adding asset
-  if (draftTrade.value.assets.length > 0) {
-    validateTrade();
-  }
-
-  showSnackbar('Asset added to trade', 'success');
-}
-
-function handleRemoveAsset(asset: any) {
-  const index = draftTrade.value.assets.findIndex((a) =>
-    a.asset_type === asset.asset_type &&
-    ((a.player && a.player === asset.player) || (a.pick && a.pick === asset.pick))
-  );
-
-  if (index !== -1) {
-    tradeStore.removeAsset(index);
-    validateTrade();
-    showSnackbar('Asset removed from trade', 'info');
-  }
-}
-
-function handleUpdateDestination(payload: { asset: any; receivingTeam: number }) {
-  const index = draftTrade.value.assets.findIndex((a) =>
-    a.asset_type === payload.asset.asset_type &&
-    ((a.player && a.player === payload.asset.player) || (a.pick && a.pick === payload.asset.pick))
-  );
-
-  if (index !== -1) {
-    tradeStore.updateAssetDestination(index, payload.receivingTeam);
-    validateTrade();
-    showSnackbar('Destination updated', 'success');
-  }
-}
-
-function handleRemoveTeam(teamId: number) {
-  tradeStore.removeTeamFromTrade(teamId);
   validateTrade();
-  showSnackbar('Team removed from trade', 'info');
 }
 
-async function handleTeamSelected(teamId: number) {
-  tradeStore.addTeamToTrade(teamId);
-  
-  // Load players and picks for the newly added team
+function handleRemoveAsset(asset: CreateTradeAssetData) {
+  const index = selectedAssets.value.findIndex((a) => {
+    if (a.asset_type === 'player' && asset.asset_type === 'player') {
+      return a.player === asset.player && a.giving_team === asset.giving_team;
+    }
+    if (a.asset_type === 'pick' && asset.asset_type === 'pick') {
+      return a.pick === asset.pick && a.giving_team === asset.giving_team;
+    }
+    return false;
+  });
+  if (index !== -1) {
+    selectedAssets.value.splice(index, 1);
+    // Auto-validate after removing asset
+    validateTrade();
+  }
+}
+
+function handleUpdateAsset(asset: CreateTradeAssetData) {
+  const index = selectedAssets.value.findIndex((a) => {
+    if (a.asset_type === 'player' && asset.asset_type === 'player') {
+      return a.player === asset.player && a.giving_team === asset.giving_team;
+    }
+    if (a.asset_type === 'pick' && asset.asset_type === 'pick') {
+      return a.pick === asset.pick && a.giving_team === asset.giving_team;
+    }
+    return false;
+  });
+  if (index !== -1) {
+    // Merge the update, preserving existing properties
+    selectedAssets.value[index] = {
+      ...selectedAssets.value[index],
+      ...asset,
+      // For picks, ensure protection is stored
+      pick_detail: asset.pick_detail || selectedAssets.value[index].pick_detail,
+    };
+    // Auto-validate after updating asset
+    validateTrade();
+  }
+}
+
+function addTeam(teamId: number) {
+  if (!selectedTeamIds.value.includes(teamId)) {
+    selectedTeamIds.value.push(teamId);
+    // Load players and picks for the newly added team
+    loadTeamAssets(teamId);
+    showTeamSelector.value = false;
+    showSnackbar('Team added to trade', 'success');
+  }
+}
+
+function removeTeam(teamId: number) {
+  if (teamId === userTeamId.value) {
+    showSnackbar('Cannot remove your own team', 'warning');
+    return;
+  }
+  selectedTeamIds.value = selectedTeamIds.value.filter((id) => id !== teamId);
+  // Remove all assets involving this team
+  selectedAssets.value = selectedAssets.value.filter(
+    (a) => a.giving_team !== teamId && a.receiving_team !== teamId
+  );
+  showSnackbar('Team removed from trade', 'info');
+  validateTrade();
+}
+
+async function loadTeamAssets(teamId: number) {
   try {
     await tradeStore.loadAvailablePlayers(teamId);
     await tradeStore.loadAvailablePicks(teamId);
   } catch (error) {
     console.error('Failed to load team assets:', error);
+    showSnackbar('Failed to load team assets', 'error');
   }
-  
-  showSnackbar('Team added to trade', 'success');
 }
 
 async function validateTrade() {
+  if (selectedAssets.value.length === 0) {
+    // Clear validation if no assets
+    if (tradeStore.validationResult) {
+      tradeStore.validationResult = null;
+    }
+    return;
+  }
+
+  validating.value = true;
   try {
-    await tradeStore.validateTrade();
+    // Prepare validation payload - match ValidateTradeData type
+    const validationPayload = {
+      teams: selectedTeamIds.value,
+      assets: selectedAssets.value.map((asset) => {
+        const cleanAsset: any = {
+          asset_type: asset.asset_type,
+          giving_team: asset.giving_team,
+          receiving_team: asset.receiving_team,
+        };
+        if (asset.asset_type === 'player' && asset.player) {
+          cleanAsset.player = asset.player; // Contract ID
+        } else if (asset.asset_type === 'pick' && asset.pick) {
+          cleanAsset.pick = asset.pick;
+        }
+        return cleanAsset;
+      }),
+    };
+
+    const result = await TradeService.validateTrade(validationPayload);
+    // Update store validation result
+    tradeStore.validationResult = result;
   } catch (error) {
     console.error('Validation error:', error);
     showSnackbar('Failed to validate trade', 'error');
-  }
-}
-
-async function handleSaveDraft() {
-  try {
-    await tradeStore.saveDraftTrade();
-    showSnackbar('Draft saved successfully', 'success');
-    router.push({ name: 'trade-overview' });
-  } catch (error: any) {
-    console.error('Save draft error:', error);
-    showSnackbar(error.message || 'Failed to save draft', 'error');
+    tradeStore.validationResult = null;
+  } finally {
+    validating.value = false;
   }
 }
 
 async function handlePropose() {
   if (!canPropose.value) {
-    showSnackbar('Cannot propose: each team must give and receive at least one asset', 'warning');
+    showSnackbar('Cannot propose: trade validation failed or requirements not met', 'warning');
     return;
   }
 
-  // Validate first
-  await validateTrade();
-
-  if (validationResult.value && !validationResult.value.valid) {
-    showSnackbar('Cannot propose: trade validation failed', 'error');
-    return;
-  }
-
+  submitting.value = true;
   try {
-    await tradeStore.proposeTrade();
-    const message = isCounterMode.value
-      ? 'Counter offer sent successfully!'
-      : 'Trade proposed successfully!';
-    showSnackbar(message, 'success');
+    // Transform assets to backend format
+    // Group by receiver, then format as AssetPayload
+    const assetsByReceiver = new Map<number, { players: number[]; picks: Array<{ id: number; protection: string }> }>();
+
+    selectedAssets.value.forEach((asset) => {
+      const receiver = asset.receiving_team;
+      if (!assetsByReceiver.has(receiver)) {
+        assetsByReceiver.set(receiver, { players: [], picks: [] });
+      }
+      const receiverAssets = assetsByReceiver.get(receiver)!;
+
+      if (asset.asset_type === 'player' && asset.player) {
+        receiverAssets.players.push(asset.player); // Contract ID
+      } else if (asset.asset_type === 'pick' && asset.pick) {
+        // Get protection from asset (stored at top level or in pick_detail)
+        const protection = (asset as any).protection_type || 
+                          (asset as any).pick_detail?.protection_type || 
+                          'unprotected';
+        receiverAssets.picks.push({
+          id: asset.pick,
+          protection: protection,
+        });
+      }
+    });
+
+    // Convert to array format expected by backend
+    const payload = Array.from(assetsByReceiver.entries()).map(([receiver, assets]) => ({
+      receiver,
+      assets,
+    }));
+
+    // Submit trade - backend expects array of AssetPayload
+    const response = await TradeService.createTrade(payload as any);
+    
+    showSnackbar('Trade created successfully!', 'success');
     router.push({ name: 'trade-overview' });
   } catch (error: any) {
     console.error('Propose error:', error);
-    const errorMessage = isCounterMode.value
-      ? 'Failed to send counter offer'
-      : 'Failed to propose trade';
-    showSnackbar(error.message || errorMessage, 'error');
+    const errorMessage = error.response?.data?.detail || 
+                        error.response?.data?.status || 
+                        error.message || 
+                        'Failed to create trade';
+    showSnackbar(errorMessage, 'error');
+  } finally {
+    submitting.value = false;
   }
 }
 
@@ -426,77 +464,37 @@ function showSnackbar(message: string, color: 'success' | 'error' | 'warning' | 
 // Load data on mount
 onMounted(async () => {
   try {
-    // Load all teams from API
-    await tradeStore.loadAvailableTeams();
-    allTeams.value = tradeStore.availableTeams;
+    // Load league settings
+    const settings = await SettingsService.getSettings();
+    leagueSettings.value = {
+      SALARY_CAP: settings.SALARY_CAP || 130000000,
+      MIN_PLAYER_CAP: settings.MIN_PLAYER_CAP || 13,
+      MAX_PLAYER_CAP: settings.MAX_PLAYER_CAP || 15,
+    };
 
-    if (isEditMode.value && tradeId.value) {
-      // Load existing trade
-      await tradeStore.fetchTradeById(tradeId.value);
+    // Load all teams
+    allTeams.value = await TradeService.listTeams();
 
-      if (currentTrade.value && currentTrade.value.status === 'draft') {
-        // Initialize draft from existing trade
-        tradeStore.draftTrade.proposing_team = currentTrade.value.proposing_team;
-        tradeStore.draftTrade.teams = currentTrade.value.teams;
-        tradeStore.draftTrade.notes = currentTrade.value.notes || '';
-        
-        // Convert assets to draft format
-        tradeStore.draftTrade.assets = currentTrade.value.assets.map((asset) => ({
-          asset_type: asset.asset_type,
-          giving_team: asset.giving_team,
-          receiving_team: asset.receiving_team,
-          player: asset.player || undefined,
-          pick: asset.pick || undefined,
-          player_detail: asset.player_detail || undefined,
-          pick_detail: asset.pick_detail || undefined,
-        }));
-
-        // Load players and picks for all teams in the trade
-        for (const teamId of currentTrade.value.teams) {
-          await tradeStore.loadAvailablePlayers(teamId);
-          await tradeStore.loadAvailablePicks(teamId);
-        }
-      } else {
-        showSnackbar('Can only edit draft trades', 'error');
-        router.push({ name: 'trade-overview' });
-      }
-    } else {
-      // Create new trade - need to get user's team
-      const userTeamId = authStore.user?.team?.id;
-
-      if (!userTeamId) {
-        showSnackbar('You must be on a team to create trades', 'error');
-        router.push({ name: 'trade-overview' });
-        return;
-      }
-
-      tradeStore.createDraftTrade(userTeamId);
-      
+    // Set user's team as default
+    const userTeam = userTeamId.value;
+    if (userTeam) {
+      selectedTeamIds.value = [userTeam];
       // Load players and picks for user's team
-      await tradeStore.loadAvailablePlayers(userTeamId);
-      await tradeStore.loadAvailablePicks(userTeamId);
+      await loadTeamAssets(userTeam);
+    } else {
+      showSnackbar('You must be on a team to create trades', 'error');
+      router.push({ name: 'trade-overview' });
     }
   } catch (error) {
-    console.error('Failed to load trade:', error);
+    console.error('Failed to load trade data:', error);
     showSnackbar('Failed to load trade data', 'error');
   }
 });
-
-// Watch for asset changes to auto-validate
-watch(
-  () => draftTrade.value.assets.length,
-  (newLength, oldLength) => {
-    if (newLength > 0 && newLength !== oldLength) {
-      // Debounce validation
-      setTimeout(() => validateTrade(), 500);
-    }
-  }
-);
 </script>
 
 <style scoped>
 .trade-editor-view {
-  padding-bottom: 100px; /* Space for summary panel */
+  padding-bottom: 100px;
 }
 
 .team-grid-container {
@@ -511,15 +509,6 @@ watch(
   gap: 16px;
   padding: 0 12px;
   min-width: min-content;
-}
-
-.add-team-card {
-  min-width: 350px;
-  max-width: 500px;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .gap-2 {

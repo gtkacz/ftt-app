@@ -73,9 +73,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   currentSalary: 0,
-  salaryCap: 140000000,
+  salaryCap: 130000000,
   currentPlayers: 0,
-  maxPlayers: 17,
+  maxPlayers: 15,
   impact: null,
 });
 

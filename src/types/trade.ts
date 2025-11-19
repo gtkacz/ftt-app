@@ -55,6 +55,7 @@ export interface Player {
   nba_team: string;
   jersey_number?: string;
   photo_url?: string;
+  contract?: Contract; // Contract info for trade creation
 }
 
 export interface Contract {
@@ -188,39 +189,188 @@ export interface ApprovalStatus {
   votes_remaining: number;
 }
 
-// ===== Main Trade Model =====
+// ===== Backend Trade Status Structure =====
+
+export interface BackendTradeStatus {
+  participants: Record<number, any>; // Team ID -> status object
+  commissioners: Record<number, any>; // Team ID -> status object
+}
+
+// ===== Backend Trade Assets Structure =====
+
+export interface BackendTradeAssets {
+  players: any[]; // Serialized player contracts
+  picks: any[]; // Serialized draft picks
+}
+
+// ===== Backend Trade Model (from API) =====
+
+export interface BackendTrade {
+  id: number;
+  sender: Team;
+  participants: Team[];
+  parent: number | null; // For counteroffers
+  done: boolean;
+  assets: BackendTradeAssets;
+  status: BackendTradeStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// ===== Display Status Type =====
+
+export type TradeDisplayStatus =
+  | 'waiting_acceptance'
+  | 'accepted'
+  | 'approved'
+  | 'completed'
+  | 'rejected'
+  | 'vetoed'
+  | 'unknown';
+
+// ===== Main Trade Model (for frontend use) =====
 
 export interface Trade {
   id: number;
-  status: TradeStatus;
+  status: TradeStatus | TradeDisplayStatus; // Can be either old or new status
+  displayStatus?: TradeDisplayStatus; // Computed display status from backend
   notes?: string;
 
-  // Team relationships
-  proposing_team: number;
-  teams: number[];
+  // Team relationships (backend structure)
+  sender?: Team; // Backend uses 'sender'
+  participants?: Team[]; // Backend uses 'participants'
+  parent?: number | null; // For counteroffers
+  done?: boolean; // Backend flag
 
-  // Denormalized team details
-  proposing_team_detail: Team;
-  teams_detail: Team[];
+  // Legacy frontend structure (for compatibility)
+  proposing_team?: number;
+  teams?: number[];
+  proposing_team_detail?: Team;
+  teams_detail?: Team[];
 
   // Trade components
-  assets: TradeAsset[];
-  offers: TradeOffer[];
+  assets: TradeAsset[] | BackendTradeAssets; // Can be either structure
+  offers?: TradeOffer[];
 
   // Workflow data
-  history: TradeHistoryEntry[];
-  approvals: TradeApproval[];
-  approval_status: ApprovalStatus | null;
+  history?: TradeHistoryEntry[];
+  approvals?: TradeApproval[];
+  approval_status?: ApprovalStatus | null;
+
+  // Backend status structure
+  backendStatus?: BackendTradeStatus;
 
   // Timestamps
   created_at: string;
   updated_at: string;
-  proposed_at: string | null;
-  completed_at: string | null;
-  approved_at: string | null;
+  proposed_at?: string | null;
+  completed_at?: string | null;
+  approved_at?: string | null;
 
   // Approval info
-  approved_by: number | null;
+  approved_by?: number | null;
+}
+
+// ===== Helper function to compute display status from backend trade =====
+
+export function getTradeDisplayStatus(trade: BackendTrade | Trade): TradeDisplayStatus {
+  // Get status object (backend structure)
+  const status = trade.backendStatus || (trade as any).status;
+  
+  // Check if this is a counteroffer (has parent)
+  const isCounteroffer = trade.parent !== null && trade.parent !== undefined;
+  
+  // If trade is done, check final state
+  if (trade.done) {
+    // Check if vetoed (commissioner status)
+    if (status?.commissioners) {
+      const commissionerStatuses = Object.values(status.commissioners);
+      if (commissionerStatuses.some((s: any) => s?.status === 'vetoed')) {
+        return 'vetoed';
+      }
+      // If done and has approved status, it's completed
+      if (commissionerStatuses.some((s: any) => s?.status === 'approved')) {
+        return 'completed';
+      }
+    }
+    // If done but no commissioner status, might be rejected
+    if (status?.participants) {
+      const participantStatuses = Object.values(status.participants);
+      if (participantStatuses.some((s: any) => s?.status === 'rejected')) {
+        return 'rejected';
+      }
+    }
+    // Default to completed if done
+    return 'completed';
+  }
+
+  // Trade is not done, check current status
+  if (status) {
+    // Check commissioner statuses first (higher priority)
+    if (status.commissioners) {
+      const commissionerStatuses = Object.values(status.commissioners);
+      if (commissionerStatuses.some((s: any) => s?.status === 'vetoed')) {
+        return 'vetoed';
+      }
+      if (commissionerStatuses.some((s: any) => s?.status === 'approved')) {
+        return 'approved';
+      }
+    }
+    
+    // Check participant statuses
+    if (status.participants) {
+      const participantStatuses = Object.values(status.participants);
+      
+      // Check if any participant rejected
+      if (participantStatuses.some((s: any) => s?.status === 'rejected')) {
+        return 'rejected';
+      }
+      
+      // Check if all participants (except sender) have accepted
+      // The sender doesn't need to accept their own trade
+      const senderId = (trade as any).sender?.id || (trade as any).proposing_team;
+      const participantIds = Object.keys(status.participants || {}).map(Number);
+      const nonSenderParticipantIds = senderId 
+        ? participantIds.filter(id => id !== senderId)
+        : participantIds;
+      
+      if (nonSenderParticipantIds.length > 0) {
+        const nonSenderStatuses = nonSenderParticipantIds
+          .map(id => status.participants[id])
+          .filter(Boolean);
+        
+        if (nonSenderStatuses.length > 0) {
+          const allAccepted = nonSenderStatuses.every((s: any) => s?.status === 'accepted');
+          if (allAccepted) {
+            return 'accepted';
+          }
+        }
+      }
+      
+      // Check if waiting (has sent status or is a counteroffer)
+      // Counteroffers should show as waiting_acceptance
+      if (isCounteroffer) {
+        return 'waiting_acceptance';
+      }
+      
+      // Check for sent status
+      if (participantStatuses.some((s: any) => s?.status === 'sent' || s?.status === 'counteroffer')) {
+        return 'waiting_acceptance';
+      }
+    }
+  }
+
+  // If it's a counteroffer but no status info, it's waiting
+  if (isCounteroffer) {
+    return 'waiting_acceptance';
+  }
+
+  // Fallback: if no status info, check done flag
+  if (trade.done) {
+    return 'completed';
+  }
+
+  return 'unknown';
 }
 
 // ===== Validation Models =====
@@ -279,10 +429,18 @@ export interface VoteResultData {
 }
 
 export interface TradeListFilters {
-  status?: TradeStatus;
+  status?: TradeStatus | TradeDisplayStatus;
   team?: number;
   page?: number;
   page_size?: number;
+  ordering?: string;
+  search?: string;
+}
+
+export interface TradeActionRequest {
+  action: 'accept' | 'reject' | 'counteroffer';
+  trade_id: number;
+  offer?: any; // For counteroffer, the new trade offer
 }
 
 // ===== UI Helper Types =====

@@ -13,7 +13,9 @@ import type {
   VoteResultData,
   TradeTeamSummary,
   TeamImpact,
+  TradeDisplayStatus,
 } from '@/types/trade';
+import { getTradeDisplayStatus } from '@/types/trade';
 
 interface TradeState {
   // All trades grouped by status
@@ -78,44 +80,71 @@ export const useTradeStore = defineStore('trade', {
   }),
 
   getters: {
-    // Get trades by status
+    // Get trades by display status (computed from backend structure)
+    tradesByDisplayStatus: (state) => (status: TradeDisplayStatus) => {
+      return state.trades.filter((trade) => {
+        const displayStatus = trade.displayStatus || getTradeDisplayStatus(trade);
+        return displayStatus === status;
+      });
+    },
+
+    // Get trades by status (legacy support)
     tradesByStatus: (state) => (status: string) => {
-      return state.trades.filter((trade) => trade.status === status);
+      return state.trades.filter((trade) => {
+        const displayStatus = trade.displayStatus || getTradeDisplayStatus(trade);
+        return displayStatus === status || trade.status === status;
+      });
     },
 
-    // Get draft trades
-    draftTrades(): Trade[] {
-      return this.tradesByStatus('draft');
+    // Get trades waiting for acceptance
+    waitingAcceptanceTrades(): Trade[] {
+      return this.tradesByDisplayStatus('waiting_acceptance');
     },
 
-    // Get proposed trades
-    proposedTrades(): Trade[] {
-      return this.tradesByStatus('proposed');
-    },
-
-    // Get trades waiting for approval
-    waitingApprovalTrades(): Trade[] {
-      return this.tradesByStatus('waiting_approval');
+    // Get accepted trades (waiting for commissioner approval)
+    acceptedTrades(): Trade[] {
+      return this.tradesByDisplayStatus('accepted');
     },
 
     // Get approved trades
     approvedTrades(): Trade[] {
-      return this.tradesByStatus('approved');
+      return this.tradesByDisplayStatus('approved');
     },
 
     // Get completed trades
     completedTrades(): Trade[] {
-      return this.tradesByStatus('completed');
-    },
-
-    // Get vetoed trades
-    vetoedTrades(): Trade[] {
-      return this.tradesByStatus('vetoed');
+      return this.tradesByDisplayStatus('completed');
     },
 
     // Get rejected trades
     rejectedTrades(): Trade[] {
-      return this.tradesByStatus('rejected');
+      return this.tradesByDisplayStatus('rejected');
+    },
+
+    // Get vetoed trades
+    vetoedTrades(): Trade[] {
+      return this.tradesByDisplayStatus('vetoed');
+    },
+
+    // Get rejected/vetoed trades combined
+    rejectedOrVetoedTrades(): Trade[] {
+      return [
+        ...this.tradesByDisplayStatus('rejected'),
+        ...this.tradesByDisplayStatus('vetoed'),
+      ];
+    },
+
+    // Legacy getters for compatibility
+    draftTrades(): Trade[] {
+      return [];
+    },
+
+    proposedTrades(): Trade[] {
+      return this.tradesByDisplayStatus('waiting_acceptance');
+    },
+
+    waitingApprovalTrades(): Trade[] {
+      return this.tradesByDisplayStatus('accepted');
     },
 
     // Get assets by team for draft trade
@@ -130,11 +159,23 @@ export const useTradeStore = defineStore('trade', {
     getTeamSummary: (state) => (teamId: number): TradeTeamSummary | null => {
       if (!state.currentTrade) return null;
 
-      const team = state.currentTrade.teams_detail.find((t) => t.id === teamId);
+      // Support both backend and legacy structures
+      const teamsDetail = state.currentTrade.teams_detail || state.currentTrade.participants || [];
+      const team = teamsDetail.find((t: Team) => t.id === teamId);
       if (!team) return null;
 
-      const receiving = state.currentTrade.assets.filter((a) => a.receiving_team === teamId);
-      const giving = state.currentTrade.assets.filter((a) => a.giving_team === teamId);
+      // Handle backend assets structure (object with players/picks) vs legacy array
+      let receiving: any[] = [];
+      let giving: any[] = [];
+      
+      if (Array.isArray(state.currentTrade.assets)) {
+        // Legacy structure
+        receiving = state.currentTrade.assets.filter((a: any) => a.receiving_team === teamId);
+        giving = state.currentTrade.assets.filter((a: any) => a.giving_team === teamId);
+      } else if (state.currentTrade.assets && typeof state.currentTrade.assets === 'object') {
+        // Backend structure - would need to parse from assets object
+        // For now, return empty arrays as this requires more complex parsing
+      }
 
       const impact = state.validationResult?.team_impacts[teamId];
 
@@ -303,18 +344,50 @@ export const useTradeStore = defineStore('trade', {
         return;
       }
 
+      console.log('Draft trade assets before validation:', this.draftTrade.assets);
+
       this.loading.validation = true;
       try {
-        // Strip client-side enrichment fields
+        // Explicitly construct clean assets with only the fields the API expects
         const assetsForValidation = this.draftTrade.assets.map((asset) => {
-          const { player_detail, pick_detail, ...cleanAsset } = asset;
+          console.log('Processing asset:', asset);
+          console.log('Asset type:', typeof asset.pick, asset.pick);
+
+          const cleanAsset: any = {
+            asset_type: asset.asset_type,
+            giving_team: Number(asset.giving_team),
+            receiving_team: Number(asset.receiving_team),
+          };
+
+          // Add player or pick ID (not the full detail objects)
+          if (asset.asset_type === 'player' && asset.player) {
+            cleanAsset.player = Number(asset.player);
+          } else if (asset.asset_type === 'pick' && asset.pick) {
+            cleanAsset.pick = Number(asset.pick);
+          }
+
+          console.log('Clean asset created:', cleanAsset);
           return cleanAsset;
         });
 
-        this.validationResult = await TradeService.validateTrade({
-          teams: this.draftTrade.teams,
+        const validationPayload = {
+          teams: this.draftTrade.teams.map(id => Number(id)),
           assets: assetsForValidation,
-        });
+        };
+
+        console.log('Validation payload (raw):', validationPayload);
+
+        // Test JSON serialization
+        try {
+          const jsonTest = JSON.stringify(validationPayload);
+          console.log('JSON serialization successful:', jsonTest);
+        } catch (e) {
+          console.error('JSON serialization failed:', e);
+          console.error('Problem object:', validationPayload);
+          throw new Error('Cannot serialize validation data: ' + e);
+        }
+
+        this.validationResult = await TradeService.validateTrade(validationPayload);
       } catch (error) {
         console.error('Validation failed:', error);
         this.validationResult = null;
@@ -341,8 +414,22 @@ export const useTradeStore = defineStore('trade', {
 
         // Add assets
         for (const asset of this.draftTrade.assets) {
-          const { player_detail, pick_detail, ...cleanAsset } = asset;
-          await TradeService.addAsset({ ...cleanAsset, trade: trade.id });
+          // Explicitly construct clean asset data
+          const cleanAsset: any = {
+            trade: trade.id,
+            asset_type: asset.asset_type,
+            giving_team: asset.giving_team,
+            receiving_team: asset.receiving_team,
+          };
+
+          // Add player or pick ID (not the full detail objects)
+          if (asset.asset_type === 'player' && asset.player) {
+            cleanAsset.player = asset.player;
+          } else if (asset.asset_type === 'pick' && asset.pick) {
+            cleanAsset.pick = asset.pick;
+          }
+
+          await TradeService.addAsset(cleanAsset);
         }
 
         // Reload trade with all data

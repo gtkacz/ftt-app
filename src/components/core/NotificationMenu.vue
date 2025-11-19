@@ -26,7 +26,8 @@
 						<v-list-item v-for="notification in sortedNotifications" :key="notification.id" class="pa-4"
 							:class="[
 								'notification-item',
-								{ 'notification-unread': !notification.is_read }
+								{ 'notification-unread': !notification.is_read },
+								{ 'notification-clickable': !!notification.redirect_to }
 							]" @click="markAsRead(notification)">
 							<template #prepend>
 								<v-icon :color="getNotificationColor(notification.level)">
@@ -43,7 +44,12 @@
 							</v-list-item-subtitle>
 
 							<template #append>
-								<div v-if="!notification.is_read" class="unread-indicator"></div>
+								<div class="notification-append-area">
+									<v-icon v-if="notification.redirect_to" size="small" class="redirect-icon">
+										open_in_new
+									</v-icon>
+									<div v-if="!notification.is_read" class="unread-indicator"></div>
+								</div>
 							</template>
 						</v-list-item>
 					</v-list>
@@ -89,18 +95,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/api/axios'
+import type { Notification } from '@/types/notification'
 
-interface Notification {
-	id: number
-	message: string
-	is_read: boolean
-	priority: number
-	level: 'info' | 'warning' | 'error'
-	created_at: string
-	updated_at: string
-	user: number
-}
+// Router
+const router = useRouter()
 
 // Reactive state
 const notifications = ref<Notification[]>([])
@@ -197,10 +197,16 @@ const getNotificationFromMessage = (message: string): Notification | null => {
 }
 
 const markAsRead = async (notification: Notification) => {
-	if (notification.is_read) return
+	if (notification.is_read && !notification.redirect_to) return
 
 	await markNotificationAsRead(notification.id)
 	notification.is_read = true
+
+	// Navigate if redirect_to is present
+	if (notification.redirect_to) {
+		menuOpen.value = false
+		router.push(notification.redirect_to)
+	}
 }
 
 const markAllAsRead = async () => {
@@ -292,6 +298,31 @@ onUnmounted(() => {
 		background-color: rgba(var(--v-theme-primary), 0.02);
 		border-left-color: rgb(var(--v-theme-primary));
 	}
+
+	&.notification-clickable {
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(var(--v-theme-primary), 0.08);
+
+			.redirect-icon {
+				opacity: 1;
+				transform: translateX(2px);
+			}
+		}
+	}
+}
+
+.notification-append-area {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.redirect-icon {
+	opacity: 0.6;
+	transition: all 0.2s ease;
+	color: rgb(var(--v-theme-primary));
 }
 
 .unread-indicator {

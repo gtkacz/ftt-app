@@ -1,6 +1,7 @@
 import api from './axios';
 import type {
   Trade,
+  BackendTrade,
   TradeOffer,
   TradeAsset,
   Pick,
@@ -15,7 +16,10 @@ import type {
   TradeHistoryEntry,
   CommissionerVoteData,
   VoteResultData,
+  TradeActionRequest,
+  TradeDisplayStatus,
 } from '@/types/trade';
+import { getTradeDisplayStatus } from '@/types/trade';
 
 export class TradeService {
   // Trade CRUD operations
@@ -25,18 +29,65 @@ export class TradeService {
     if (filters?.team) params.append('team', filters.team.toString());
     if (filters?.page) params.append('page', filters.page.toString());
     if (filters?.page_size) params.append('page_size', filters.page_size.toString());
+    if (filters?.ordering) params.append('ordering', filters.ordering);
+    if (filters?.search) params.append('search', filters.search);
 
-    const response = await api.get<Trade[] | { results: Trade[]; count: number }>('/trades/', { params });
-    return response.data;
+    const response = await api.get<BackendTrade[] | { results: BackendTrade[]; count: number }>('/trades/', { params });
+    
+    // Transform backend trades to frontend format
+    const transformTrade = (trade: BackendTrade): Trade => {
+      const displayStatus = getTradeDisplayStatus(trade);
+      return {
+        ...trade,
+        displayStatus,
+        status: displayStatus,
+        backendStatus: trade.status,
+        sender: trade.sender,
+        participants: trade.participants,
+        // Map backend structure to legacy frontend structure for compatibility
+        proposing_team: trade.sender?.id,
+        teams: trade.participants?.map(p => p.id) || [],
+        proposing_team_detail: trade.sender,
+        teams_detail: trade.participants || [],
+        // Assets are already in BackendTradeAssets format
+        assets: trade.assets,
+      };
+    };
+
+    if (Array.isArray(response.data)) {
+      return response.data.map(transformTrade);
+    } else {
+      return {
+        results: response.data.results.map(transformTrade),
+        count: response.data.count,
+      };
+    }
   }
 
   static async getTrade(id: number): Promise<Trade> {
-    const response = await api.get<Trade>(`/trades/${id}/`);
-    return response.data;
+    const response = await api.get<BackendTrade>(`/trades/${id}/`);
+    const trade = response.data;
+    const displayStatus = getTradeDisplayStatus(trade);
+    return {
+      ...trade,
+      displayStatus,
+      status: displayStatus,
+      backendStatus: trade.status,
+      sender: trade.sender,
+      participants: trade.participants,
+      // Map backend structure to legacy frontend structure for compatibility
+      proposing_team: trade.sender?.id,
+      teams: trade.participants?.map(p => p.id) || [],
+      proposing_team_detail: trade.sender,
+      teams_detail: trade.participants || [],
+      assets: trade.assets,
+    };
   }
 
-  static async createTrade(data: CreateTradeData): Promise<Trade> {
-    const response = await api.post<Trade>('/trades/', data);
+  static async createTrade(data: CreateTradeData | any[]): Promise<any> {
+    // Backend expects array of AssetPayload objects
+    // Format: [{ receiver: teamId, assets: { players: [contractIds], picks: [{id, protection}] } }]
+    const response = await api.post<any>('/trades/', data);
     return response.data;
   }
 
@@ -153,10 +204,21 @@ export class TradeService {
       nba_team: p.nba_team || p.real_team?.abbreviation || p.real_team?.name || 'N/A',
       jersey_number: p.jersey_number,
       photo_url: p.photo_url || p.photo,
-      // Keep contract info for filtering
+      // Keep contract info - needed for trade creation (contract ID)
+      contract: p.contract ? {
+        id: p.contract.id,
+        player: p.contract.player || p.id,
+        team: typeof p.contract.team === 'object' ? p.contract.team?.id : p.contract.team,
+        start_year: p.contract.start_year,
+        duration: p.contract.duration,
+        salary: p.contract.salary,
+        is_rfa: p.contract.is_rfa,
+        is_to: p.contract.is_to,
+      } : undefined,
+      // Keep for filtering
       _contract: p.contract,
       _team: p.team,
-      _team_id: p.team_id, // Sometimes team_id is a separate field
+      _team_id: p.team_id,
     }));
 
     // If team filter is provided but API didn't filter correctly, filter client-side
@@ -173,7 +235,7 @@ export class TradeService {
       });
     }
 
-    // Remove internal fields before returning
+    // Remove internal fields before returning, but keep contract
     return transformedPlayers.map(({ _contract, _team, _team_id, ...p }) => p);
   }
 
@@ -185,6 +247,8 @@ export class TradeService {
   // Picks
   static async listPicks(filters?: { team?: number; year?: number }): Promise<Pick[]> {
     const params = new URLSearchParams();
+    params.append('limit', '10000');
+    params.append('is_from_league_draft', 'false'); // Get all picks
     if (filters?.team) params.append('current_team', filters.team.toString());
     if (filters?.year) params.append('draft_year', filters.year.toString());
 
@@ -255,5 +319,21 @@ export class TradeService {
   static async vetoTrade(id: number, reason: string): Promise<Trade> {
     const response = await this.voteOnTrade(id, { vote: 'veto', notes: reason });
     return response.trade;
+  }
+
+  // ===== Trade Actions (Backend endpoint) =====
+  static async performTradeAction(data: TradeActionRequest): Promise<{ detail: string }> {
+    const payload: any = {
+      action: data.action.toUpperCase(),
+      trade_id: data.trade_id,
+    };
+    
+    // For counteroffer, include the offer
+    if (data.action === 'counteroffer' && data.offer) {
+      payload.offer = data.offer;
+    }
+    
+    const response = await api.post<{ detail: string }>('/trades/actions/', payload);
+    return response.data;
   }
 }

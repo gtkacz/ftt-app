@@ -6,22 +6,14 @@
         <v-card>
           <v-card-title class="d-flex align-center">
             <v-icon start>swap_horiz</v-icon>
-            Trade Overview
+            Trade Center
             <v-spacer />
-            <v-btn
-              :to="{ name: 'league-trades' }"
-              variant="outlined"
-              class="mr-2"
-            >
-              <v-icon start>history</v-icon>
-              League History
-            </v-btn>
             <v-btn
               color="primary"
               @click="createNewTrade"
             >
               <v-icon start>add</v-icon>
-              Create Trade
+              Create New Trade
             </v-btn>
           </v-card-title>
         </v-card>
@@ -38,52 +30,52 @@
             align-tabs="center"
             show-arrows
           >
-            <v-tab value="draft">
-              <v-icon start>draft</v-icon>
-              Draft
+            <v-tab value="waiting_acceptance">
+              <v-icon start>schedule</v-icon>
+              Waiting Response
               <v-chip
-                v-if="getCountByStatus('draft') > 0"
-                size="x-small"
-                class="ml-2"
-                color="grey"
-              >
-                {{ getCountByStatus('draft') }}
-              </v-chip>
-            </v-tab>
-            <v-tab value="proposed">
-              <v-icon start>send</v-icon>
-              Proposed
-              <v-chip
-                v-if="getCountByStatus('proposed') > 0"
+                v-if="getCountByStatus('waiting_acceptance') > 0"
                 size="x-small"
                 class="ml-2"
                 color="info"
               >
-                {{ getCountByStatus('proposed') }}
+                {{ getCountByStatus('waiting_acceptance') }}
               </v-chip>
             </v-tab>
-            <v-tab value="waiting_approval">
-              <v-icon start>schedule</v-icon>
-              Pending Approval
+            <v-tab value="rejected">
+              <v-icon start>cancel</v-icon>
+              Rejected
               <v-chip
-                v-if="getCountByStatus('waiting_approval') > 0"
+                v-if="getCountByStatus('rejected') > 0"
+                size="x-small"
+                class="ml-2"
+                color="error"
+              >
+                {{ getCountByStatus('rejected') }}
+              </v-chip>
+            </v-tab>
+            <v-tab value="accepted">
+              <v-icon start>check_circle</v-icon>
+              Accepted
+              <v-chip
+                v-if="getCountByStatus('accepted') > 0"
                 size="x-small"
                 class="ml-2"
                 color="warning"
               >
-                {{ getCountByStatus('waiting_approval') }}
+                {{ getCountByStatus('accepted') }}
               </v-chip>
             </v-tab>
-            <v-tab value="approved">
-              <v-icon start>check_circle</v-icon>
-              Approved
+            <v-tab value="vetoed">
+              <v-icon start>block</v-icon>
+              Vetoed
               <v-chip
-                v-if="getCountByStatus('approved') > 0"
+                v-if="getCountByStatus('vetoed') > 0"
                 size="x-small"
                 class="ml-2"
-                color="success"
+                color="error"
               >
-                {{ getCountByStatus('approved') }}
+                {{ getCountByStatus('vetoed') }}
               </v-chip>
             </v-tab>
             <v-tab value="completed">
@@ -98,58 +90,44 @@
                 {{ getCountByStatus('completed') }}
               </v-chip>
             </v-tab>
-            <v-tab value="rejected">
-              <v-icon start>approval_delegation_off</v-icon>
-              Rejected/Vetoed
-              <v-chip
-                v-if="getRejectedCount() > 0"
-                size="x-small"
-                class="ml-2"
-                color="error"
-              >
-                {{ getRejectedCount() }}
-              </v-chip>
-            </v-tab>
           </v-tabs>
 
           <v-divider />
 
           <v-card-text>
             <v-window v-model="activeTab">
-              <!-- Draft Tab -->
-              <v-window-item value="draft">
+              <!-- Waiting Acceptance Tab -->
+              <v-window-item value="waiting_acceptance">
                 <TradeList
-                  :trades="tradesByStatus('draft')"
-                  :loading="loading.trades"
-                  @trade-click="handleTradeClick"
-                  @edit-trade="handleEditTrade"
-                  @delete-trade="handleDeleteTrade"
-                />
-              </v-window-item>
-
-              <!-- Proposed Tab -->
-              <v-window-item value="proposed">
-                <TradeList
-                  :trades="tradesByStatus('proposed')"
+                  :trades="tradesByStatus('waiting_acceptance')"
                   :loading="loading.trades"
                   @trade-click="handleTradeClick"
                   @respond-trade="handleRespondTrade"
                 />
               </v-window-item>
 
-              <!-- Waiting Approval Tab -->
-              <v-window-item value="waiting_approval">
+              <!-- Rejected Tab -->
+              <v-window-item value="rejected">
                 <TradeList
-                  :trades="tradesByStatus('waiting_approval')"
+                  :trades="tradesByStatus('rejected')"
                   :loading="loading.trades"
                   @trade-click="handleTradeClick"
                 />
               </v-window-item>
 
-              <!-- Approved Tab -->
-              <v-window-item value="approved">
+              <!-- Accepted Tab -->
+              <v-window-item value="accepted">
                 <TradeList
-                  :trades="tradesByStatus('approved')"
+                  :trades="tradesByStatus('accepted')"
+                  :loading="loading.trades"
+                  @trade-click="handleTradeClick"
+                />
+              </v-window-item>
+
+              <!-- Vetoed Tab -->
+              <v-window-item value="vetoed">
+                <TradeList
+                  :trades="tradesByStatus('vetoed')"
                   :loading="loading.trades"
                   @trade-click="handleTradeClick"
                 />
@@ -159,15 +137,6 @@
               <v-window-item value="completed">
                 <TradeList
                   :trades="tradesByStatus('completed')"
-                  :loading="loading.trades"
-                  @trade-click="handleTradeClick"
-                />
-              </v-window-item>
-
-              <!-- Rejected/Vetoed Tab -->
-              <v-window-item value="rejected">
-                <TradeList
-                  :trades="getRejectedTrades()"
                   :loading="loading.trades"
                   @trade-click="handleTradeClick"
                 />
@@ -201,44 +170,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTradeStore } from '@/stores/trade';
 import { storeToRefs } from 'pinia';
-import type { Trade } from '@/types/trade';
+import type { Trade, TradeDisplayStatus } from '@/types/trade';
 import TradeList from '@/components/trade/TradeList.vue';
 
 const router = useRouter();
 const tradeStore = useTradeStore();
 
-const { trades, loading } = storeToRefs(tradeStore);
+const { loading } = storeToRefs(tradeStore);
 
 // Component state
-const activeTab = ref<string>('proposed');
+const activeTab = ref<string>('waiting_acceptance');
 const snackbar = ref({
   show: false,
   message: '',
   color: 'success',
 });
 
-// Get trades by status
-function tradesByStatus(status: string): Trade[] {
-  return tradeStore.tradesByStatus(status);
-}
-
-// Get rejected/vetoed trades
-function getRejectedTrades(): Trade[] {
-  return trades.value.filter((t) => t.status === 'rejected' || t.status === 'vetoed');
+// Get trades by display status
+function tradesByStatus(status: TradeDisplayStatus): Trade[] {
+  return tradeStore.tradesByDisplayStatus(status);
 }
 
 // Get count by status
-function getCountByStatus(status: string): number {
+function getCountByStatus(status: TradeDisplayStatus): number {
   return tradesByStatus(status).length;
-}
-
-// Get rejected count
-function getRejectedCount(): number {
-  return getRejectedTrades().length;
 }
 
 // Navigation handlers
@@ -250,33 +209,29 @@ function handleTradeClick(trade: Trade) {
   router.push({ name: 'trade-detail', params: { id: trade.id } });
 }
 
-function handleEditTrade(trade: Trade) {
-  router.push({ name: 'trade-edit', params: { id: trade.id } });
-}
-
-async function handleDeleteTrade(trade: Trade) {
-  if (!confirm(`Are you sure you want to delete trade #${trade.id}?`)) {
-    return;
-  }
-
+async function handleRespondTrade(payload: { trade: Trade; response: 'accept' | 'reject' | 'counter' }) {
+  const { trade, response } = payload;
+  
   try {
-    // TODO: Implement delete trade API endpoint
-    // await tradeStore.deleteTrade(trade.id);
-    showSnackbar('Trade deleted successfully', 'success');
+    if (response === 'counter') {
+      // Navigate to edit page for counter-offer
+      router.push({ name: 'trade-edit', params: { id: trade.id } });
+      return;
+    }
+
+    // Use the backend trade action endpoint
+    const { TradeService } = await import('@/api/trade');
+    await TradeService.performTradeAction({
+      action: response === 'accept' ? 'accept' : 'reject',
+      trade_id: trade.id,
+    });
+
+    showSnackbar(`Trade ${response === 'accept' ? 'accepted' : 'rejected'} successfully`, 'success');
     await loadTrades();
   } catch (error: any) {
-    console.error('Delete trade error:', error);
-    showSnackbar(error.message || 'Failed to delete trade', 'error');
-  }
-}
-
-function handleRespondTrade(payload: { trade: Trade; response: 'accept' | 'reject' | 'counter' }) {
-  if (payload.response === 'counter') {
-    // Navigate to edit page for counter-offer
-    router.push({ name: 'trade-edit', params: { id: payload.trade.id } });
-  } else {
-    // Navigate to detail page for accept/reject
-    router.push({ name: 'trade-detail', params: { id: payload.trade.id } });
+    console.error('Trade action error:', error);
+    const errorMessage = error.response?.data?.detail || error.message || `Failed to ${response} trade`;
+    showSnackbar(errorMessage, 'error');
   }
 }
 
