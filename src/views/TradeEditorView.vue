@@ -140,29 +140,65 @@
     </v-row>
 
     <!-- Team Selector Dialog -->
-    <v-dialog v-model="showTeamSelector" max-width="600px">
-      <v-card>
-        <v-card-title>Select Team to Add</v-card-title>
-        <v-card-text>
-          <v-list>
-            <v-list-item
-              v-for="team in availableTeamsToAdd"
-              :key="team.id"
-              @click="addTeam(team.id)"
-            >
-              <v-list-item-title>{{ team.name }}</v-list-item-title>
-            </v-list-item>
-            <v-list-item v-if="availableTeamsToAdd.length === 0">
-              <v-list-item-title class="text-medium-emphasis">
-                No teams available to add
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
+    <v-dialog v-model="showTeamSelector" max-width="700px" scrollable>
+      <v-card class="h-100">
+        <v-card-title class="d-flex align-center py-3 px-4 border-b">
+          <span class="text-h6">Add Team to Trade</span>
           <v-spacer />
-          <v-btn variant="text" @click="showTeamSelector = false">Close</v-btn>
-        </v-card-actions>
+          <v-btn icon variant="text" size="small" @click="showTeamSelector = false">
+            <v-icon>close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text class="pa-0">
+          <div class="px-4 pt-4 pb-2 sticky-search bg-surface">
+            <v-text-field
+              v-model="teamSearchQuery"
+              placeholder="Search teams by name or owner..."
+              prepend-inner-icon="search"
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              class="mb-2"
+              clearable
+            />
+          </div>
+
+          <div class="team-list-container px-4 pb-4">
+            <div v-if="filteredTeamsToAdd.length > 0" class="team-grid-layout">
+              <v-card
+                v-for="team in filteredTeamsToAdd"
+                :key="team.id"
+                class="team-selection-card cursor-pointer"
+                variant="outlined"
+                @click="addTeam(team.id)"
+              >
+                <v-card-text class="d-flex align-center pa-3">
+                  <v-avatar size="48" class="mr-3 border bg-grey-lighten-5">
+                    <v-img v-if="team.logo" :src="team.logo" cover />
+                    <span v-else class="text-h6 font-weight-bold text-primary">{{ team.name.charAt(0) }}</span>
+                  </v-avatar>
+                  
+                  <div class="flex-grow-1 min-width-0">
+                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ team.name }}</div>
+                    <div class="text-caption text-medium-emphasis d-flex align-center">
+                      <v-icon size="x-small" class="mr-1">person</v-icon>
+                      {{ team.owner_username || 'Unknown Owner' }}
+                    </div>
+                  </div>
+                  
+                  <v-icon color="primary" class="ml-2">add_circle_outline</v-icon>
+                </v-card-text>
+              </v-card>
+            </div>
+            
+            <div v-else class="text-center py-8">
+               <v-icon size="64" color="grey-lighten-1" class="mb-2">search_off</v-icon>
+               <div class="text-h6 text-medium-emphasis">No teams found</div>
+               <p class="text-body-2 text-medium-emphasis">Try adjusting your search or all teams may be selected.</p>
+            </div>
+          </div>
+        </v-card-text>
       </v-card>
     </v-dialog>
 
@@ -217,6 +253,7 @@ const leagueSettings = ref<{
   MAX_PLAYER_CAP: number;
 } | null>(null);
 const showTeamSelector = ref(false);
+const teamSearchQuery = ref('');
 const validating = ref(false);
 const submitting = ref(false);
 const snackbar = ref({
@@ -240,6 +277,17 @@ const selectedTeams = computed(() => {
 // Available teams to add (not already selected)
 const availableTeamsToAdd = computed(() => {
   return allTeams.value.filter((t) => !selectedTeamIds.value.includes(t.id));
+});
+
+// Filtered available teams based on search
+const filteredTeamsToAdd = computed(() => {
+  const query = teamSearchQuery.value.toLowerCase().trim();
+  if (!query) return availableTeamsToAdd.value;
+  
+  return availableTeamsToAdd.value.filter(team => 
+    team.name.toLowerCase().includes(query) || 
+    (team.owner_username && team.owner_username.toLowerCase().includes(query))
+  );
 });
 
 // Check if can propose
@@ -353,6 +401,7 @@ function addTeam(teamId: number) {
     // Load players and picks for the newly added team
     loadTeamAssets(teamId);
     showTeamSelector.value = false;
+    teamSearchQuery.value = ''; // Reset search
     showSnackbar('Team added to trade', 'success');
   }
 }
@@ -788,5 +837,30 @@ onMounted(async () => {
 
 .gap-2 {
   gap: 8px;
+}
+
+.sticky-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.team-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.team-selection-card {
+  transition: all 0.2s;
+}
+
+.team-selection-card:hover {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-primary), 0.05);
+}
+
+.min-width-0 {
+  min-width: 0;
 }
 </style>

@@ -112,7 +112,7 @@
             <template #[`item.pick`]="{ item }">
               <div class="font-weight-medium">{{ item.year }} Round {{ item.round }}</div>
               <div class="text-caption text-medium-emphasis">
-                Originally {{ getTeamName(item.original_team) }}
+                via {{ getTeamName(item.original_team) }}
               </div>
             </template>
 

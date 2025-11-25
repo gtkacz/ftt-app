@@ -84,8 +84,8 @@
                         :rollover-year="getPickProtectionRolloverYear(asset.pick_detail)"
                       />
                     </div>
-                    <div v-if="asset.pick_detail.original_team" class="text-caption text-medium-emphasis mt-1">
-                      Originally {{ typeof asset.pick_detail.original_team === 'object' ? asset.pick_detail.original_team.name : 'Team ' + asset.pick_detail.original_team }}
+                    <div v-if="asset.pick_detail.original_team || asset.pick_detail.original_team_name" class="text-caption text-medium-emphasis mt-1">
+                      via {{ getOriginalTeamName(asset.pick_detail) }}
                     </div>
                   </v-list-item-subtitle>
                 </v-list-item>
@@ -198,6 +198,31 @@ function getTeamName(teamId: number): string {
 
 function getPlayerName(playerDetail: any): string {
   return playerDetail.full_name || playerDetail.name || `${playerDetail.first_name || ''} ${playerDetail.last_name || ''}`.trim() || 'Unknown Player';
+}
+
+// Helper to get original team name
+function getOriginalTeamName(pickDetail: any): string {
+  // 1. Check for explicit original_team_name field (common in serializers)
+  if (pickDetail.original_team_name) {
+    return pickDetail.original_team_name;
+  }
+  
+  // 2. Check if original_team is an object with a name
+  if (pickDetail.original_team && typeof pickDetail.original_team === 'object' && pickDetail.original_team.name) {
+    return pickDetail.original_team.name;
+  }
+  
+  // 3. If original_team is an ID, try to find it in the trade participants
+  const teamId = typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team;
+  if (teamId) {
+    const team = props.teams.find((t) => t.id === teamId);
+    if (team) {
+      return team.name;
+    }
+  }
+  
+  // 4. Fallback if we really can't find the name
+  return teamId ? `Team ${teamId}` : 'Unknown Team';
 }
 
 // Helper to check protection

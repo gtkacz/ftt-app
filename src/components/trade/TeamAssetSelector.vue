@@ -1,207 +1,239 @@
 <template>
-  <v-card class="team-asset-selector" elevation="2">
-    <!-- Header: Team Info -->
-    <v-card-title class="d-flex align-center">
-      <v-avatar v-if="team.logo" size="32" class="mr-2">
-        <v-img :src="team.logo" :alt="team.name" />
-      </v-avatar>
-      <span class="flex-grow-1">{{ team.name }}</span>
-      <v-btn
-        v-if="!isOwnTeam"
-        icon
-        size="small"
-        variant="text"
-        color="error"
-        @click="$emit('remove-team', teamId)"
-      >
-        <v-icon>close</v-icon>
-      </v-btn>
-    </v-card-title>
-
-    <!-- Cap and Roster Display -->
-    <v-card-text class="pb-2">
-      <TeamCapDisplay
-        :current-salary="team.total_salary || 0"
-        :salary-cap="leagueSettings?.SALARY_CAP || 130000000"
-        :current-players="team.total_players || 0"
-        :max-players="leagueSettings?.MAX_PLAYER_CAP || 15"
-        :impact="impact"
-      />
-    </v-card-text>
-
-    <!-- Tabs: Players / Picks -->
-    <v-tabs v-model="activeTab" color="primary" align-tabs="center">
-      <v-tab value="players">
-        <v-icon start>person</v-icon>
-        Players
-        <v-chip
-          v-if="selectedPlayersCount > 0"
-          size="x-small"
+  <v-card class="team-asset-selector fill-height d-flex flex-column" elevation="2" width="350">
+    <!-- Team Header -->
+    <div class="team-header px-4 py-3 border-b bg-surface-light">
+      <div class="d-flex align-center justify-space-between mb-2">
+        <div class="d-flex align-center overflow-hidden">
+           <v-avatar v-if="team.logo" size="32" class="mr-2 border bg-white">
+             <v-img :src="team.logo" cover />
+           </v-avatar>
+           <v-avatar v-else size="32" color="primary" class="mr-2">
+             <span class="text-subtitle-2 text-white font-weight-bold">{{ team.name.charAt(0) }}</span>
+           </v-avatar>
+           <div class="text-subtitle-1 font-weight-bold text-truncate">{{ team.name }}</div>
+        </div>
+        <v-btn
+          v-if="!isOwnTeam"
+          icon
+          variant="text"
+          color="error"
+          size="small"
           class="ml-2"
-          color="primary"
+          @click="$emit('remove-team', teamId)"
         >
-          {{ selectedPlayersCount }}
-        </v-chip>
+          <v-icon>close</v-icon>
+        </v-btn>
+      </div>
+
+      <!-- Cap Space Visualization -->
+      <div class="cap-space-viz">
+        <div class="d-flex justify-space-between text-caption mb-1">
+          <span class="text-medium-emphasis">Cap Space</span>
+          <span :class="isOverCap ? 'text-error font-weight-bold' : 'text-success font-weight-bold'">
+             {{ formatCurrency(availableCapSpace) }}
+          </span>
+        </div>
+        <v-progress-linear
+          :model-value="capUsagePercentage"
+          :color="isOverCap ? 'error' : 'success'"
+          height="6"
+          rounded
+        />
+      </div>
+    </div>
+
+    <!-- Asset Type Tabs -->
+    <v-tabs
+      v-model="activeTab"
+      density="compact"
+      color="primary"
+      grow
+    >
+      <v-tab value="players">
+        <v-icon start size="small">person</v-icon>
+        Players ({{ selectedPlayersCount }})
       </v-tab>
       <v-tab value="picks">
-        <v-icon start>lasso_select</v-icon>
-        Picks
-        <v-chip
-          v-if="selectedPicksCount > 0"
-          size="x-small"
-          class="ml-2"
-          color="primary"
-        >
-          {{ selectedPicksCount }}
-        </v-chip>
+        <v-icon start size="small">star</v-icon>
+        Picks ({{ selectedPicksCount }})
       </v-tab>
     </v-tabs>
 
-    <v-card-text class="pa-0" style="max-height: 600px; overflow-y: auto;">
-      <v-window v-model="activeTab">
+    <v-divider />
+
+    <!-- Asset Lists -->
+    <v-card-text class="pa-0 flex-grow-1 overflow-y-auto" style="height: 400px;">
+      <v-window v-model="activeTab" class="fill-height">
+        
         <!-- Players Tab -->
-        <v-window-item value="players">
-          <v-list density="compact">
-            <v-list-item
-              v-for="player in availablePlayers"
-              :key="player.id"
-              class="player-item"
-              :class="{ 'selected': isPlayerSelected(player), 'disabled': !player.contract }"
-              :disabled="!player.contract"
-            >
-              <template #prepend>
-                <v-checkbox
-                  :model-value="isPlayerSelected(player)"
-                  :disabled="!player.contract"
-                  density="compact"
-                  hide-details
-                  @update:model-value="(val) => togglePlayer(player, val)"
-                />
-              </template>
+        <v-window-item value="players" class="fill-height">
+           <v-list density="compact" class="pa-0">
+             <template v-if="availablePlayers.length > 0">
+               <v-list-item
+                 v-for="player in availablePlayers"
+                 :key="getContractId(player)"
+                 :active="isPlayerSelected(player)"
+                 active-color="primary"
+                 class="asset-item py-2"
+                 lines="two"
+               >
+                 <template #prepend>
+                   <v-checkbox-btn
+                     :model-value="isPlayerSelected(player)"
+                     color="primary"
+                     class="mr-2"
+                     @update:model-value="togglePlayer(player)"
+                   />
+                 </template>
 
-              <v-list-item-title>
-                {{ player.full_name || `${player.first_name} ${player.last_name}` }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ player.position }} - {{ player.nba_team }}
-                <span v-if="player.contract?.salary" class="ml-2">
-                  ${{ formatSalary(player.contract.salary) }}
-                </span>
-              </v-list-item-subtitle>
+                 <v-list-item-title class="font-weight-medium">
+                   {{ player.full_name || player.name }}
+                 </v-list-item-title>
+                 
+                 <v-list-item-subtitle class="d-flex align-center mt-1 text-caption">
+                    <span class="font-weight-medium mr-2">{{ player.position }}</span>
+                    <span class="text-medium-emphasis">{{ formatCurrency(player.contract?.salary || 0) }}</span>
+                    <span v-if="player.contract?.years_remaining" class="ml-auto text-medium-emphasis">
+                      {{ player.contract.years_remaining }}y left
+                    </span>
+                 </v-list-item-subtitle>
 
-              <template #append>
-                <v-select
-                  v-if="isPlayerSelected(player)"
-                  :model-value="getPlayerReceiver(player)"
-                  :items="availableDestinations"
-                  item-title="name"
-                  item-value="id"
-                  density="compact"
-                  hide-details
-                  variant="outlined"
-                  style="min-width: 150px;"
-                  @update:model-value="(value) => updatePlayerReceiver(player, value)"
-                >
-                  <template #prepend-inner>
-                    <v-icon size="small">arrow_right_alt</v-icon>
-                  </template>
-                </v-select>
-              </template>
-            </v-list-item>
-
-            <v-list-item v-if="availablePlayers.length === 0">
-              <v-list-item-title class="text-center text-medium-emphasis">
-                No players available
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
+                 <!-- Destination Selector (Only visible when selected) -->
+                 <div v-if="isPlayerSelected(player)" class="mt-2 pt-2 border-t">
+                    <v-select
+                      :model-value="getPlayerReceiver(player)"
+                      :items="availableDestinations"
+                      item-title="name"
+                      item-value="id"
+                      label="Send to"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="asset-destination-select"
+                      bg-color="white"
+                      @update:model-value="(value) => updatePlayerReceiver(player, value)"
+                    >
+                       <template #item="{ props, item }">
+                          <v-list-item v-bind="props" :title="item.raw.name">
+                             <template #prepend>
+                                <v-avatar size="20" class="mr-2">
+                                   <v-img v-if="item.raw.logo" :src="item.raw.logo" />
+                                   <span v-else class="text-caption">{{ item.raw.name.charAt(0) }}</span>
+                                </v-avatar>
+                             </template>
+                          </v-list-item>
+                       </template>
+                    </v-select>
+                 </div>
+               </v-list-item>
+             </template>
+             
+             <v-list-item v-else class="text-center py-8">
+               <v-list-item-title class="text-medium-emphasis">No players available</v-list-item-title>
+             </v-list-item>
+           </v-list>
         </v-window-item>
 
         <!-- Picks Tab -->
-        <v-window-item value="picks">
-          <v-list density="compact">
-            <v-list-item
-              v-for="pick in availablePicks"
-              :key="pick.id"
-              class="pick-item"
-              :class="{ 'selected': isPickSelected(pick) }"
-            >
-              <template #prepend>
-                <v-checkbox
-                  :model-value="isPickSelected(pick)"
-                  density="compact"
-                  hide-details
-                  @update:model-value="(val) => togglePick(pick, val)"
-                />
-              </template>
+        <v-window-item value="picks" class="fill-height">
+          <v-list density="compact" class="pa-0">
+             <template v-if="availablePicks.length > 0">
+               <v-list-item
+                 v-for="pick in availablePicks"
+                 :key="pick.id"
+                 :active="isPickSelected(pick)"
+                 active-color="primary"
+                 class="asset-item py-2"
+                 lines="two"
+               >
+                 <template #prepend>
+                   <v-checkbox-btn
+                     :model-value="isPickSelected(pick)"
+                     color="primary"
+                     class="mr-2"
+                     @update:model-value="togglePick(pick)"
+                   />
+                 </template>
 
-              <v-list-item-title>
-                {{ pick.display_name || `${pick.year} Round ${pick.round}` }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                <PickProtectionBadge
-                  v-if="getPickProtection(pick) && getPickProtection(pick) !== 'unprotected'"
-                  :protection="getPickProtection(pick)"
-                  :value="getPickProtectionValue(pick)"
-                />
-                <span v-else class="text-caption text-medium-emphasis">Unprotected</span>
-              </v-list-item-subtitle>
+                 <v-list-item-title class="font-weight-medium">
+                   {{ pick.draft_year || pick.year }} Round {{ pick.round_number || pick.round }}
+                 </v-list-item-title>
+                 
+                 <v-list-item-subtitle class="d-flex flex-wrap gap-1 align-center mt-1">
+                   <v-chip size="x-small" label variant="outlined" color="secondary" class="mr-1">
+                      via {{ getOriginalTeamName(pick) }}
+                   </v-chip>
+                   <PickProtectionBadge
+                      v-if="hasProtection(pick)"
+                      :protection-type="getPickProtectionType(pick)"
+                      :range-start="getPickProtectionRangeStart(pick)"
+                      :range-end="getPickProtectionRangeEnd(pick)"
+                   />
+                 </v-list-item-subtitle>
 
-              <template #append>
-                <div class="d-flex align-center gap-2">
-                  <v-btn
-                    v-if="isPickSelected(pick)"
-                    icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="openProtectionModal(pick)"
-                  >
-                    <v-icon size="small">shield</v-icon>
-                  </v-btn>
-                  <v-select
-                    v-if="isPickSelected(pick)"
-                    :model-value="getPickReceiver(pick)"
-                    :items="availableDestinations"
-                    item-title="name"
-                    item-value="id"
-                    density="compact"
-                    hide-details
-                    variant="outlined"
-                    style="min-width: 150px;"
-                    @update:model-value="(value) => updatePickReceiver(pick, value)"
-                  >
-                    <template #prepend-inner>
-                      <v-icon size="small">arrow_right_alt</v-icon>
-                    </template>
-                  </v-select>
-                </div>
-              </template>
-            </v-list-item>
+                 <!-- Destination & Protection Actions (Visible when selected) -->
+                 <div v-if="isPickSelected(pick)" class="mt-2 pt-2 border-t">
+                    <div class="d-flex gap-2 mb-2">
+                       <v-btn
+                          block
+                          variant="tonal"
+                          size="small"
+                          prepend-icon="shield"
+                          color="secondary"
+                          @click="openProtectionModal(pick)"
+                       >
+                          {{ hasProtection(pick) ? 'Edit Protection' : 'Add Protection' }}
+                       </v-btn>
+                    </div>
+                    <v-select
+                      :model-value="getPickReceiver(pick)"
+                      :items="availableDestinations"
+                      item-title="name"
+                      item-value="id"
+                      label="Send to"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="asset-destination-select"
+                      bg-color="white"
+                      @update:model-value="(value) => updatePickReceiver(pick, value)"
+                    >
+                        <template #item="{ props, item }">
+                          <v-list-item v-bind="props" :title="item.raw.name">
+                             <template #prepend>
+                                <v-avatar size="20" class="mr-2">
+                                   <v-img v-if="item.raw.logo" :src="item.raw.logo" />
+                                   <span v-else class="text-caption">{{ item.raw.name.charAt(0) }}</span>
+                                </v-avatar>
+                             </template>
+                          </v-list-item>
+                       </template>
+                    </v-select>
+                 </div>
+               </v-list-item>
+             </template>
 
-            <v-list-item v-if="availablePicks.length === 0">
-              <v-list-item-title class="text-center text-medium-emphasis">
-                No picks available
-              </v-list-item-title>
-            </v-list-item>
+             <v-list-item v-else class="text-center py-8">
+               <v-list-item-title class="text-medium-emphasis">No picks available</v-list-item-title>
+             </v-list-item>
           </v-list>
         </v-window-item>
+
       </v-window>
     </v-card-text>
-  </v-card>
 
-  <!-- Pick Protection Modal -->
-  <PickProtectionModal
-    v-model="protectionModalOpen"
-    :pick="selectedPickForProtection"
-    @save="handleProtectionSave"
-  />
+    <!-- Pick Protection Modal -->
+    <PickProtectionModal
+      v-model="protectionModalOpen"
+      :pick="selectedPickForProtection"
+      @save="handleProtectionSave"
+    />
+  </v-card>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { Team, Player, Pick, TeamImpact, CreateTradeAssetData } from '@/types/trade';
-import TeamCapDisplay from './TeamCapDisplay.vue';
 import PickProtectionBadge from './PickProtectionBadge.vue';
 import PickProtectionModal from './PickProtectionModal.vue';
 
@@ -261,6 +293,13 @@ const availableDestinations = computed(() => {
   return props.availableTeams.filter((t) => t.id !== props.teamId);
 });
 
+// Cap space calculations
+const salaryCap = computed(() => props.leagueSettings?.SALARY_CAP || 130000000);
+const currentSalary = computed(() => props.impact?.new_salary ?? props.team.total_salary ?? 0);
+const availableCapSpace = computed(() => salaryCap.value - currentSalary.value);
+const capUsagePercentage = computed(() => Math.min((currentSalary.value / salaryCap.value) * 100, 100));
+const isOverCap = computed(() => currentSalary.value > salaryCap.value);
+
 // Get contract ID for player
 function getContractId(player: Player): number {
   return player.contract?.id || (player as any).contract_id || player.id;
@@ -281,185 +320,241 @@ function isPickSelected(pick: Pick): boolean {
   );
 }
 
-// Get player receiver
-function getPlayerReceiver(player: Player): number | undefined {
+// Get default receiver (first available other team)
+function getDefaultReceiver(): number {
+  return availableDestinations.value.length > 0 ? availableDestinations.value[0].id : 0;
+}
+
+// Get current receiver for player asset
+function getPlayerReceiver(player: Player): number {
   const contractId = getContractId(player);
   const asset = props.selectedAssets.find(
     a => a.asset_type === 'player' && a.player === contractId
   );
-  return asset?.receiving_team;
+  return asset ? asset.receiving_team : getDefaultReceiver();
 }
 
-// Get pick receiver
-function getPickReceiver(pick: Pick): number | undefined {
+// Get current receiver for pick asset
+function getPickReceiver(pick: Pick): number {
   const asset = props.selectedAssets.find(
     a => a.asset_type === 'pick' && a.pick === pick.id
   );
-  return asset?.receiving_team;
+  return asset ? asset.receiving_team : getDefaultReceiver();
 }
 
-// Get pick protection
-function getPickProtection(pick: Pick): string | undefined {
-  const asset = props.selectedAssets.find(
-    a => a.asset_type === 'pick' && a.pick === pick.id
-  );
-  return (asset as any)?.protection_type || 
-         (asset as any)?.pick_detail?.protection_type || 
-         'unprotected';
+// Helper for team name
+function getOriginalTeamName(pickDetail: any): string {
+  if (pickDetail.original_team_name) return pickDetail.original_team_name;
+  if (pickDetail.original_team && typeof pickDetail.original_team === 'object') return pickDetail.original_team.name;
+  return `Team ${typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team}`;
 }
 
-// Get pick protection value
-function getPickProtectionValue(pick: Pick): number | undefined {
-  const asset = props.selectedAssets.find(
-    a => a.asset_type === 'pick' && a.pick === pick.id
-  );
-  return (asset as any)?.protection_value || 
-         (asset as any)?.pick_detail?.protection_value;
+// Format currency
+function formatCurrency(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value}`;
 }
 
 // Toggle player selection
-function togglePlayer(player: Player, selected: boolean) {
-  if (selected) {
-    // Add player - need contract ID
-    const contractId = getContractId(player);
-    if (!player.contract || !contractId || contractId === player.id) {
-      // If no contract, we can't trade this player
-      console.warn('Player has no contract, cannot add to trade', player);
-      return;
-    }
-    if (availableDestinations.value.length === 0) {
-      console.warn('No available destination teams');
-      return;
-    }
-    const asset: CreateTradeAssetData = {
-      asset_type: 'player',
-      giving_team: props.teamId,
-      receiving_team: availableDestinations.value[0].id, // Default to first available team
-      player: contractId, // Contract ID for backend
-      player_detail: player,
-    };
-    emit('add-asset', asset);
-  } else {
-    // Remove player - find by contract ID
-    const contractId = getContractId(player);
+function togglePlayer(player: Player) {
+  const isSelected = isPlayerSelected(player);
+  const contractId = getContractId(player);
+
+  if (isSelected) {
+    // Remove
     const asset = props.selectedAssets.find(
       a => a.asset_type === 'player' && a.player === contractId
     );
     if (asset) {
       emit('remove-asset', asset);
     }
+  } else {
+    // Add
+    emit('add-asset', {
+      asset_type: 'player',
+      giving_team: props.teamId,
+      receiving_team: getDefaultReceiver(),
+      player: contractId,
+      player_detail: player,
+    });
+  }
+}
+
+// Update player receiver
+function updatePlayerReceiver(player: Player, receivingTeamId: number) {
+  const contractId = getContractId(player);
+  const asset = props.selectedAssets.find(
+    a => a.asset_type === 'player' && a.player === contractId
+  );
+  
+  if (asset) {
+    emit('update-asset', {
+      ...asset,
+      receiving_team: receivingTeamId,
+    });
   }
 }
 
 // Toggle pick selection
-function togglePick(pick: Pick, selected: boolean) {
-  if (selected) {
-    if (availableDestinations.value.length === 0) {
-      console.warn('No available destination teams');
-      return;
-    }
-    const asset: CreateTradeAssetData = {
-      asset_type: 'pick',
-      giving_team: props.teamId,
-      receiving_team: availableDestinations.value[0].id, // Default to first available team
-      pick: pick.id,
-      pick_detail: pick,
-    };
-    emit('add-asset', asset);
-  } else {
+function togglePick(pick: Pick) {
+  const isSelected = isPickSelected(pick);
+
+  if (isSelected) {
+    // Remove
     const asset = props.selectedAssets.find(
       a => a.asset_type === 'pick' && a.pick === pick.id
     );
     if (asset) {
       emit('remove-asset', asset);
     }
-  }
-}
-
-// Update player receiver
-function updatePlayerReceiver(player: Player, receiverId: number) {
-  const contractId = getContractId(player);
-  const asset = props.selectedAssets.find(
-    a => a.asset_type === 'player' && a.player === contractId
-  );
-  if (asset) {
-    const updated: CreateTradeAssetData = {
-      ...asset,
-      receiving_team: receiverId,
-    };
-    emit('update-asset', updated);
+  } else {
+    // Add
+    emit('add-asset', {
+      asset_type: 'pick',
+      giving_team: props.teamId,
+      receiving_team: getDefaultReceiver(),
+      pick: pick.id,
+      pick_detail: pick,
+      // Initialize protection fields on the asset data structure
+      // These will be populated if protection is configured later
+      // but need to be present for type consistency
+    } as any);
   }
 }
 
 // Update pick receiver
-function updatePickReceiver(pick: Pick, receiverId: number) {
+function updatePickReceiver(pick: Pick, receivingTeamId: number) {
   const asset = props.selectedAssets.find(
     a => a.asset_type === 'pick' && a.pick === pick.id
   );
+  
   if (asset) {
-    const updated: CreateTradeAssetData = {
+    emit('update-asset', {
       ...asset,
-      receiving_team: receiverId,
-    };
-    emit('update-asset', updated);
+      receiving_team: receivingTeamId,
+    });
   }
 }
 
-// Open protection modal
+// Protection helpers
 function openProtectionModal(pick: Pick) {
-  selectedPickForProtection.value = pick;
+  // Get current protection from selected asset if exists
+  const asset = props.selectedAssets.find(
+    a => a.asset_type === 'pick' && a.pick === pick.id
+  );
+  
+  // If not selected yet, select it first
+  if (!asset) {
+    togglePick(pick);
+    // Need to wait for parent to update prop? 
+    // Ideally parent handles update and we just emit, 
+    // but for modal we need current state.
+    // Let's assume we can just pass the pick and defaults
+  }
+  
+  // We pass the raw pick to the modal, but we'll need to 
+  // overlay any existing protection configuration from the selected asset
+  if (asset) {
+    // Create a temporary object merging pick info with asset protection info
+    selectedPickForProtection.value = {
+      ...pick,
+      protection_type: (asset as any).protection_type || pick.protection_type,
+      protection_value: (asset as any).protection_value || pick.protection_value,
+      // Add other protection fields if needed
+    };
+  } else {
+    selectedPickForProtection.value = pick;
+  }
+  
   protectionModalOpen.value = true;
 }
 
-// Handle protection save
-function handleProtectionSave(protection: { type: string; value?: number }) {
+function handleProtectionSave(protectionData: any) {
+  if (!selectedPickForProtection.value) return;
+  
+  const pickId = selectedPickForProtection.value.id;
   const asset = props.selectedAssets.find(
-    a => a.asset_type === 'pick' && a.pick === selectedPickForProtection.value?.id
+    a => a.asset_type === 'pick' && a.pick === pickId
   );
-  if (asset && selectedPickForProtection.value) {
-    const updated: CreateTradeAssetData = {
+  
+  if (asset) {
+    emit('update-asset', {
       ...asset,
       pick_detail: {
-        ...selectedPickForProtection.value,
-        protection_type: protection.type as any,
-        protection_value: protection.value,
+        ...asset.pick_detail!,
+        protection_type: protectionData.type,
+        protection_value: protectionData.value,
+        // protection_range_start: protectionData.rangeStart,
+        // protection_range_end: protectionData.rangeEnd,
       },
-      // Also store protection at top level for easy access
-      protection_type: protection.type as any,
-      protection_value: protection.value,
-    } as any;
-    emit('update-asset', updated);
+      // Also update top-level properties for easier access
+      protection_type: protectionData.type,
+      protection_value: protectionData.value,
+    } as any);
   }
+  
   protectionModalOpen.value = false;
-  selectedPickForProtection.value = null;
 }
 
-// Format salary
-function formatSalary(salary: number): string {
-  if (salary >= 1000000) {
-    return `${(salary / 1000000).toFixed(1)}M`;
+function hasProtection(pick: Pick): boolean {
+  const asset = props.selectedAssets.find(a => a.asset_type === 'pick' && a.pick === pick.id);
+  if (asset && (asset as any).protection_type && (asset as any).protection_type !== 'none') {
+    return true;
   }
-  if (salary >= 1000) {
-    return `${(salary / 1000).toFixed(0)}K`;
-  }
-  return salary.toString();
+  return !!(pick.protection_type && pick.protection_type !== 'none');
 }
+
+function getPickProtectionType(pick: Pick): string {
+  const asset = props.selectedAssets.find(a => a.asset_type === 'pick' && a.pick === pick.id);
+  if (asset && (asset as any).protection_type) {
+    return (asset as any).protection_type;
+  }
+  return pick.protection_type || 'unprotected';
+}
+
+function getPickProtectionRangeStart(pick: Pick): number | undefined {
+  // Simplified - specific fields would need to be on asset/pick
+  return undefined; 
+}
+
+function getPickProtectionRangeEnd(pick: Pick): number | undefined {
+  return undefined;
+}
+
 </script>
 
 <style scoped>
 .team-asset-selector {
-  min-width: 400px;
-  max-width: 500px;
-  height: 100%;
+  transition: box-shadow 0.2s;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.player-item.selected,
-.pick-item.selected {
-  background-color: rgba(var(--v-theme-primary), 0.1);
+.team-asset-selector:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
 }
 
-.gap-2 {
-  gap: 8px;
+.asset-item {
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.5);
+  transition: background-color 0.2s;
 }
+
+.asset-item:hover {
+  background-color: rgba(var(--v-theme-primary), 0.03);
+}
+
+.asset-item--active {
+  background-color: rgba(var(--v-theme-primary), 0.05);
+}
+
+.border-t {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
 </style>
-
