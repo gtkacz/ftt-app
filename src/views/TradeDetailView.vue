@@ -1,243 +1,253 @@
 <template>
-  <v-container fluid class="trade-detail-view">
+  <v-container fluid class="trade-detail-view bg-grey-lighten-5 fill-height align-start">
     <!-- Loading State -->
-    <div v-if="loading.currentTrade" class="text-center pa-8">
-      <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="text-h6 text-medium-emphasis mt-4">Loading trade details...</p>
+    <div v-if="loading.currentTrade" class="d-flex justify-center align-center w-100 h-50">
+      <div class="text-center">
+        <v-progress-circular indeterminate color="primary" size="64" />
+        <p class="text-h6 text-medium-emphasis mt-4">Loading trade details...</p>
+      </div>
     </div>
 
     <!-- Trade Content -->
     <template v-else-if="currentTrade">
-      <!-- Header -->
-      <v-row>
-        <v-col cols="12">
-          <v-card>
-            <v-card-title class="d-flex align-center">
-              <v-btn icon variant="text" @click="handleBack">
-                <v-icon>arrow_back</v-icon>
-              </v-btn>
-              <span class="ml-2">Trade #{{ currentTrade.id }}</span>
-              <v-spacer />
+      <div class="w-100 mw-1200 mx-auto">
+        <!-- Header Section -->
+        <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between mb-6 gap-4">
+          <div>
+            <v-btn
+              variant="text"
+              prepend-icon="arrow_back"
+              class="px-0 mb-2"
+              :ripple="false"
+              @click="handleBack"
+            >
+              Back to Overview
+            </v-btn>
+            
+            <div class="d-flex align-center flex-wrap gap-3">
+              <h1 class="text-h4 font-weight-bold">Trade #{{ currentTrade.id }}</h1>
+              
+              <v-chip
+                :color="getStatusColor(computedStatus)"
+                variant="flat"
+                label
+                class="font-weight-bold text-uppercase"
+              >
+                {{ getStatusDisplay(computedStatus) || 'Unknown' }}
+              </v-chip>
+
+              <v-chip
+                v-if="currentTrade.parent"
+                color="warning"
+                variant="tonal"
+                size="small"
+                label
+              >
+                Counteroffer
+              </v-chip>
+              
               <v-chip
                 v-if="isReadOnly"
                 color="grey"
-                variant="tonal"
+                variant="outlined"
                 size="small"
-                class="mr-2"
               >
                 <v-icon start size="small">visibility</v-icon>
                 View Only
               </v-chip>
-              <v-chip :color="getStatusColor(computedStatus)" variant="flat">
-                {{ getStatusDisplay(computedStatus) || 'Unknown' }}
-              </v-chip>
-            </v-card-title>
-            <v-card-subtitle v-if="currentTrade.created_at" class="pt-2">
-              Created {{ formatDate(currentTrade.created_at) }}
-              by {{ getTeamName(currentTrade.proposing_team || currentTrade.sender?.id) }}
-              <span v-if="currentTrade.parent" class="ml-2">
-                <v-chip size="x-small" color="warning" variant="tonal">
-                  Counteroffer
-                </v-chip>
-              </span>
-            </v-card-subtitle>
-          </v-card>
-        </v-col>
-      </v-row>
+            </div>
+            
+            <div class="text-subtitle-1 text-medium-emphasis mt-1">
+              Proposed by <strong class="text-high-emphasis">{{ getTeamName(currentTrade.proposing_team || currentTrade.sender?.id) }}</strong>
+              on {{ formatDate(currentTrade.created_at) }}
+            </div>
+          </div>
 
-      <!-- Trade Assets Display (Read-Only) -->
-      <v-row>
-        <v-col cols="12">
-          <v-card>
-            <v-card-title class="d-flex align-center">
-              <v-icon start>swap_horiz</v-icon>
-              Trade Details
-            </v-card-title>
-            <v-divider />
-            <v-card-text>
-              <TradeSummaryPanel
-                :teams="displayTeams"
-                :assets="transformedAssets"
-                :validation="null"
-              />
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Status Information (for read-only trades) -->
-      <v-row v-if="isReadOnly && currentTrade">
-        <v-col cols="12">
-          <v-card>
-            <v-card-title class="d-flex align-center">
-              <v-icon start>info</v-icon>
-              Trade Status
-            </v-card-title>
-            <v-divider />
-            <v-card-text>
-              <div class="status-info">
-                <div v-if="currentTrade.done" class="status-item">
-                  <v-icon color="success" size="small" class="mr-2">done_all</v-icon>
-                  <span>This trade has been finalized</span>
-                </div>
-                <div v-else-if="computedStatus === 'rejected'" class="status-item">
-                  <v-icon color="error" size="small" class="mr-2">cancel</v-icon>
-                  <span>This trade was rejected</span>
-                </div>
-                <div v-else-if="computedStatus === 'vetoed'" class="status-item">
-                  <v-icon color="error" size="small" class="mr-2">gavel</v-icon>
-                  <span>This trade was vetoed by commissioners</span>
-                </div>
-                <div v-else-if="computedStatus === 'accepted'" class="status-item">
-                  <v-icon color="warning" size="small" class="mr-2">schedule</v-icon>
-                  <span>Waiting for commissioner approval</span>
-                </div>
-                <div v-else-if="computedStatus === 'waiting_acceptance'" class="status-item">
-                  <v-icon color="info" size="small" class="mr-2">schedule</v-icon>
-                  <span>Waiting for other participants to respond</span>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Notes -->
-      <v-row v-if="currentTrade.notes">
-        <v-col cols="12">
-          <v-card>
-            <v-card-title class="d-flex align-center">
-              <v-icon start>note</v-icon>
-              Notes
-            </v-card-title>
-            <v-divider />
-            <v-card-text>
-              <p>{{ currentTrade.notes }}</p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Commissioner Approval Section (if waiting_approval) -->
-      <v-row v-if="currentTrade.status === 'waiting_approval'">
-        <v-col cols="12">
-          <CommissionerApprovalSection
-            :trade="currentTrade"
-            :approval-status="currentTrade.approval_status"
-            :approvals="currentTrade.approvals"
-            @vote="handleVote"
-          />
-        </v-col>
-      </v-row>
-
-      <!-- Trade Timeline -->
-      <v-row>
-        <v-col cols="12">
-          <TradeTimeline
-            :trade-id="currentTrade.id"
-            :history="displayedTimeline"
-            :loading="loadingTimeline"
-          />
-        </v-col>
-      </v-row>
-
-      <!-- Action Buttons -->
-      <v-row v-if="showActions">
-        <v-col cols="12">
-          <v-card>
-            <v-card-text class="d-flex gap-2">
-              <!-- Recipient Actions (for proposed trades) -->
-              <template v-if="currentTrade.status === 'proposed' && canRespond">
-                <v-btn
-                  color="success"
-                  size="large"
-                  :loading="responding"
-                  @click="handleAccept"
-                >
-                  <v-icon start>check</v-icon>
-                  Accept Trade
-                </v-btn>
-                <v-btn
-                  color="warning"
-                  size="large"
-                  variant="outlined"
-                  @click="handleCounter"
-                >
-                  <v-icon start>edit</v-icon>
-                  Counter Offer
-                </v-btn>
-                <v-btn
-                  color="error"
-                  size="large"
-                  variant="outlined"
-                  :loading="responding"
-                  @click="handleReject"
-                >
-                  <v-icon start>close</v-icon>
-                  Reject Trade
-                </v-btn>
-              </template>
-
-              <!-- Admin Execute Action (for approved trades) -->
-              <template v-if="currentTrade.status === 'approved' && isAdmin">
-                <v-btn
-                  color="primary"
-                  size="large"
-                  :loading="executing"
-                  @click="handleExecute"
-                >
-                  <v-icon start>done_all</v-icon>
-                  Execute Trade
-                </v-btn>
-              </template>
-
-              <v-spacer />
-
-              <!-- Back Button -->
-              <v-btn
-                variant="text"
+          <!-- Desktop Actions -->
+          <div v-if="showActions" class="d-none d-md-flex align-center gap-2">
+            <!-- Recipient Actions -->
+            <template v-if="currentTrade.status === 'proposed' && canRespond">
+               <v-btn
+                color="error"
+                variant="outlined"
                 size="large"
-                @click="handleBack"
+                prepend-icon="close"
+                :loading="responding"
+                @click="handleReject"
               >
-                Back to Overview
+                Reject
               </v-btn>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+              <v-btn
+                color="warning"
+                variant="outlined"
+                size="large"
+                prepend-icon="edit"
+                @click="handleCounter"
+              >
+                Counter
+              </v-btn>
+              <v-btn
+                color="success"
+                variant="flat"
+                size="large"
+                prepend-icon="check"
+                elevation="2"
+                :loading="responding"
+                @click="handleAccept"
+              >
+                Accept Trade
+              </v-btn>
+            </template>
+
+            <!-- Admin Actions -->
+            <template v-if="currentTrade.status === 'approved' && isAdmin">
+              <v-btn
+                color="primary"
+                size="large"
+                prepend-icon="done_all"
+                elevation="2"
+                :loading="executing"
+                @click="handleExecute"
+              >
+                Execute Trade
+              </v-btn>
+            </template>
+          </div>
+        </div>
+
+        <!-- Mobile Actions (Sticky Bottom or just inline) -->
+        <div v-if="showActions" class="d-flex d-md-none flex-column gap-2 mb-6">
+           <template v-if="currentTrade.status === 'proposed' && canRespond">
+              <v-btn block color="success" size="large" prepend-icon="check" @click="handleAccept" :loading="responding">Accept Trade</v-btn>
+              <div class="d-flex gap-2">
+                <v-btn class="flex-grow-1" color="warning" variant="outlined" prepend-icon="edit" @click="handleCounter">Counter</v-btn>
+                <v-btn class="flex-grow-1" color="error" variant="outlined" prepend-icon="close" @click="handleReject" :loading="responding">Reject</v-btn>
+              </div>
+           </template>
+           <template v-if="currentTrade.status === 'approved' && isAdmin">
+              <v-btn block color="primary" size="large" prepend-icon="done_all" @click="handleExecute" :loading="executing">Execute Trade</v-btn>
+           </template>
+        </div>
+
+        <!-- Main Trade Summary Panel -->
+        <div class="mb-6">
+          <TradeSummaryPanel
+            :teams="displayTeams"
+            :assets="transformedAssets"
+            :validation="null"
+          />
+        </div>
+
+        <!-- Secondary Info Grid -->
+        <v-row>
+          <!-- Details Column -->
+          <v-col cols="12" lg="5">
+            <div class="d-flex flex-column gap-4">
+              
+              <!-- Status & Info Card -->
+              <v-card elevation="1" border>
+                <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold">
+                  <v-icon start color="primary" size="small">info</v-icon>
+                  Status Details
+                </v-card-title>
+                <v-divider />
+                <v-card-text>
+                  <div class="status-info">
+                    <div v-if="currentTrade.done" class="d-flex align-center text-success">
+                      <v-icon size="small" class="mr-2">done_all</v-icon>
+                      <span>This trade has been finalized.</span>
+                    </div>
+                    <div v-else-if="computedStatus === 'rejected'" class="d-flex align-center text-error">
+                      <v-icon size="small" class="mr-2">cancel</v-icon>
+                      <span>This trade was rejected.</span>
+                    </div>
+                    <div v-else-if="computedStatus === 'vetoed'" class="d-flex align-center text-error">
+                      <v-icon size="small" class="mr-2">gavel</v-icon>
+                      <span>This trade was vetoed by commissioners.</span>
+                    </div>
+                    <div v-else-if="computedStatus === 'accepted'" class="d-flex align-center text-warning">
+                      <v-icon size="small" class="mr-2">schedule</v-icon>
+                      <span>Waiting for commissioner approval.</span>
+                    </div>
+                    <div v-else-if="computedStatus === 'waiting_acceptance'" class="d-flex align-center text-info">
+                      <v-icon size="small" class="mr-2">schedule</v-icon>
+                      <span>Waiting for other participants to respond.</span>
+                    </div>
+                    
+                    <!-- Notes Section inside Status Card -->
+                    <div v-if="currentTrade.notes" class="mt-4 pt-4 border-t">
+                      <div class="text-caption text-medium-emphasis font-weight-bold mb-1">NOTES</div>
+                      <p class="text-body-2">{{ currentTrade.notes }}</p>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+
+              <!-- Commissioner Approval Section -->
+              <div v-if="currentTrade.status === 'waiting_approval'">
+                <CommissionerApprovalSection
+                  :trade="currentTrade"
+                  :approval-status="currentTrade.approval_status"
+                  :approvals="currentTrade.approvals"
+                  @vote="handleVote"
+                />
+              </div>
+            </div>
+          </v-col>
+
+          <!-- Timeline Column -->
+          <v-col cols="12" lg="7">
+             <v-card elevation="1" border class="h-100">
+               <TradeTimeline
+                  :trade-id="currentTrade.id"
+                  :history="displayedTimeline"
+                  :loading="loadingTimeline"
+               />
+             </v-card>
+          </v-col>
+        </v-row>
+      </div>
     </template>
 
     <!-- Error State -->
-    <div v-else class="text-center pa-8">
-      <v-icon size="64" color="error">error</v-icon>
-      <p class="text-h6 text-medium-emphasis mt-4">Trade not found</p>
-      <v-btn class="mt-4" @click="handleBack">Back to Overview</v-btn>
+    <div v-else class="d-flex justify-center align-center w-100 h-50">
+      <div class="text-center">
+        <v-icon size="64" color="error" class="mb-4">error_outline</v-icon>
+        <h3 class="text-h5 mb-2">Trade Not Found</h3>
+        <p class="text-body-1 text-medium-emphasis mb-6">The trade you are looking for does not exist or you don't have permission to view it.</p>
+        <v-btn color="primary" variant="flat" @click="handleBack">Back to Overview</v-btn>
+      </div>
     </div>
 
     <!-- Response Dialog -->
     <v-dialog v-model="responseDialog.show" max-width="500px">
       <v-card>
-        <v-card-title>
+        <v-card-title class="pt-4 px-4">
           {{ responseDialog.title }}
         </v-card-title>
-        <v-card-text>
+        <v-card-text class="px-4">
+          <p class="mb-4 text-body-2 text-medium-emphasis">
+             Are you sure you want to {{ responseDialog.type }} this trade? You can add an optional message below.
+          </p>
           <v-textarea
             v-model="responseDialog.message"
             label="Message (optional)"
             variant="outlined"
             rows="3"
-            placeholder="Add a message..."
+            placeholder="Add a message for the other teams..."
+            hide-details
           />
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="p-4">
           <v-spacer />
           <v-btn variant="text" @click="closeResponseDialog">Cancel</v-btn>
           <v-btn
             :color="responseDialog.color"
+            variant="flat"
             :loading="responding"
             @click="confirmResponse"
           >
-            Confirm
+            Confirm {{ responseDialog.type === 'accept' ? 'Acceptance' : 'Rejection' }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -793,18 +803,24 @@ onMounted(async () => {
 
 <style scoped>
 .trade-detail-view {
-  padding-bottom: 50px;
+  min-height: 100vh;
+}
+
+.mw-1200 {
+  max-width: 1200px;
 }
 
 .gap-2 {
   gap: 8px;
 }
+.gap-3 {
+  gap: 12px;
+}
+.gap-4 {
+  gap: 16px;
+}
 
-.status-info {
-  .status-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 0;
-  }
+.border-t {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>

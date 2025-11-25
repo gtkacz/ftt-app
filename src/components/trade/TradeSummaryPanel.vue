@@ -1,187 +1,162 @@
 <template>
-  <v-card class="trade-summary-panel">
-    <v-card-title class="d-flex align-center">
-      <v-icon start>swap_horiz</v-icon>
-      Trade Summary
-    </v-card-title>
-
-    <v-divider />
-
-    <v-expansion-panels v-model="openPanels" multiple>
-      <v-expansion-panel
+  <div class="trade-summary-container">
+    <v-row>
+      <v-col
         v-for="summary in teamSummaries"
         :key="summary.teamId"
-        :value="summary.teamId"
+        cols="12"
+        md="6"
+        class="d-flex flex-column"
       >
-        <v-expansion-panel-title>
-          <div class="d-flex align-center w-100">
-            <v-avatar v-if="summary.team.logo" size="32" class="mr-3">
-              <v-img :src="summary.team.logo" />
-            </v-avatar>
-            <span class="font-weight-medium">{{ summary.team.name }}</span>
-            <v-spacer />
-            <div class="d-flex gap-2 mr-4">
-              <v-chip
-                v-if="summary.netSalary !== 0"
-                :color="summary.netSalary < 0 ? 'success' : 'error'"
-                size="small"
-                variant="flat"
-              >
-                <v-icon start size="small">
-                  {{ summary.netSalary < 0 ? 'arrow_downward' : 'arrow_upward' }}
-                </v-icon>
-                {{ formatCurrency(Math.abs(summary.netSalary)) }}
-              </v-chip>
-              <v-chip
-                v-if="summary.netPlayers !== 0"
-                :color="summary.netPlayers > 0 ? 'primary' : 'warning'"
-                size="small"
-                variant="flat"
-              >
-                <v-icon start size="small">
-                  {{ summary.netPlayers > 0 ? 'arrow_upward' : 'arrow_downward' }}
-                </v-icon>
-                {{ Math.abs(summary.netPlayers) }} player{{ Math.abs(summary.netPlayers) !== 1 ? 's' : '' }}
-              </v-chip>
-            </div>
-          </div>
-        </v-expansion-panel-title>
+        <v-card class="flex-grow-1 d-flex flex-column h-100 team-card" elevation="2">
+          <!-- Team Header -->
+          <v-card-item class="py-3 bg-surface-light">
+            <template #prepend>
+              <v-avatar v-if="summary.team.logo" size="40" class="mr-2 border">
+                <v-img :src="summary.team.logo" cover />
+              </v-avatar>
+              <v-avatar v-else size="40" color="primary" class="mr-2">
+                <span class="text-h6 text-white">{{ summary.team.name.charAt(0) }}</span>
+              </v-avatar>
+            </template>
+            <v-card-title class="text-h6 font-weight-bold">
+              {{ summary.team.name }}
+            </v-card-title>
+            <v-card-subtitle>
+              Acquires
+            </v-card-subtitle>
+          </v-card-item>
 
-        <v-expansion-panel-text>
-          <v-row>
-            <!-- Receiving Column -->
-            <v-col cols="12" md="6">
-              <div class="summary-section">
-                <h4 class="text-subtitle-2 mb-2 d-flex align-center">
-                  <v-icon color="success" size="small" class="mr-1">arrow_downward</v-icon>
-                  Receiving
-                </h4>
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="asset in summary.receiving"
-                    :key="asset.id || `${asset.asset_type}-${asset.player || asset.pick}`"
-                    class="px-0"
-                  >
-                    <template #prepend>
-                      <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                        {{ asset.asset_type === 'player' ? 'person' : 'star' }}
-                      </v-icon>
-                    </template>
+          <v-divider />
 
-                    <v-list-item-title v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.full_name || asset.player_detail.name || `${asset.player_detail.first_name || ''} ${asset.player_detail.last_name || ''}`.trim() || 'Unknown Player' }}
-                    </v-list-item-title>
-                    <v-list-item-title v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                      {{ asset.pick_detail.draft_year || asset.pick_detail.year || '' }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round || '' }}
+          <!-- Assets List -->
+          <v-list class="flex-grow-1 py-0" lines="two">
+            <template v-if="summary.receiving.length > 0">
+              <div v-for="(asset, index) in summary.receiving" :key="asset.id || index">
+                <v-divider v-if="index > 0" inset />
+                
+                <!-- Player Asset -->
+                <v-list-item v-if="asset.asset_type === 'player' && asset.player_detail" class="py-3">
+                  <template #prepend>
+                    <v-avatar color="primary-lighten-4" class="mr-3">
+                      <v-icon color="primary">person</v-icon>
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title class="font-weight-bold text-body-1">
+                    {{ getPlayerName(asset.player_detail) }}
+                  </v-list-item-title>
+
+                  <v-list-item-subtitle class="d-flex align-center mt-1">
+                    <span class="text-body-2">{{ asset.player_detail.position || 'POS' }}</span>
+                    <span class="mx-2">•</span>
+                    <span class="text-body-2">{{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || 'NBA Team' }}</span>
+                  </v-list-item-subtitle>
+                  
+                  <!-- Optional: Salary info if available in player_detail or contract -->
+                   <template #append>
+                     <div v-if="asset.player_detail.contract?.salary" class="text-caption font-weight-medium">
+                       {{ formatCurrency(asset.player_detail.contract.salary) }}
+                     </div>
+                   </template>
+                </v-list-item>
+
+                <!-- Pick Asset -->
+                <v-list-item v-else-if="asset.asset_type === 'pick' && asset.pick_detail" class="py-3">
+                  <template #prepend>
+                    <v-avatar color="amber-lighten-4" class="mr-3">
+                      <v-icon color="amber-darken-2">star</v-icon>
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title class="font-weight-bold text-body-1">
+                    {{ asset.pick_detail.draft_year || asset.pick_detail.year }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round }}
+                  </v-list-item-title>
+
+                  <v-list-item-subtitle class="mt-1">
+                    <div class="d-flex flex-wrap gap-2 align-center">
+                      <span class="text-body-2">From {{ getTeamName(asset.giving_team) }}</span>
                       <PickProtectionBadge
-                        v-if="getPickProtectionType(asset.pick_detail) && getPickProtectionType(asset.pick_detail) !== 'none' && getPickProtectionType(asset.pick_detail) !== 'unprotected'"
+                        v-if="hasProtection(asset.pick_detail)"
                         :protection-type="getPickProtectionType(asset.pick_detail)"
                         :range-start="getPickProtectionRangeStart(asset.pick_detail)"
                         :range-end="getPickProtectionRangeEnd(asset.pick_detail)"
                         :rollover-year="getPickProtectionRolloverYear(asset.pick_detail)"
                       />
-                    </v-list-item-title>
-
-                    <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.primary_position || asset.player_detail.position || '' }} - {{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || asset.player_detail.team_name || '' }}
-                    </v-list-item-subtitle>
-                    <v-list-item-subtitle v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                      From {{ getTeamName(asset.giving_team) }}
-                      <span v-if="asset.pick_detail.original_team_name || asset.pick_detail.original_team">
-                        (Originally {{ asset.pick_detail.original_team_name || (typeof asset.pick_detail.original_team === 'object' ? asset.pick_detail.original_team.name : '') }})
-                      </span>
-                    </v-list-item-subtitle>
-                  </v-list-item>
-
-                  <v-list-item v-if="summary.receiving.length === 0" class="px-0">
-                    <v-list-item-title class="text-caption text-medium-emphasis">
-                      No assets received
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
+                    </div>
+                    <div v-if="asset.pick_detail.original_team" class="text-caption text-medium-emphasis mt-1">
+                      Originally {{ typeof asset.pick_detail.original_team === 'object' ? asset.pick_detail.original_team.name : 'Team ' + asset.pick_detail.original_team }}
+                    </div>
+                  </v-list-item-subtitle>
+                </v-list-item>
               </div>
-            </v-col>
+            </template>
+            
+            <v-list-item v-else class="py-8 text-center">
+              <v-list-item-title class="text-grey">No assets received</v-list-item-title>
+            </v-list-item>
+          </v-list>
 
-            <!-- Giving Column -->
-            <v-col cols="12" md="6">
-              <div class="summary-section">
-                <h4 class="text-subtitle-2 mb-2 d-flex align-center">
-                  <v-icon color="warning" size="small" class="mr-1">arrow_upward</v-icon>
-                  Giving
-                </h4>
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="asset in summary.giving"
-                    :key="asset.id || `${asset.asset_type}-${asset.player || asset.pick}`"
-                    class="px-0"
-                  >
-                    <template #prepend>
-                      <v-icon size="small" :color="asset.asset_type === 'player' ? 'primary' : 'secondary'">
-                        {{ asset.asset_type === 'player' ? 'person' : 'star' }}
-                      </v-icon>
-                    </template>
+          <v-divider />
 
-                    <v-list-item-title v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.full_name || asset.player_detail.name || `${asset.player_detail.first_name || ''} ${asset.player_detail.last_name || ''}`.trim() || 'Unknown Player' }}
-                    </v-list-item-title>
-                    <v-list-item-title v-else-if="asset.asset_type === 'pick' && asset.pick_detail">
-                      {{ asset.pick_detail.draft_year || asset.pick_detail.year || '' }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round || '' }}
-                      <PickProtectionBadge
-                        v-if="getPickProtectionType(asset.pick_detail) && getPickProtectionType(asset.pick_detail) !== 'none' && getPickProtectionType(asset.pick_detail) !== 'unprotected'"
-                        :protection-type="getPickProtectionType(asset.pick_detail)"
-                        :range-start="getPickProtectionRangeStart(asset.pick_detail)"
-                        :range-end="getPickProtectionRangeEnd(asset.pick_detail)"
-                        :rollover-year="getPickProtectionRolloverYear(asset.pick_detail)"
-                      />
-                    </v-list-item-title>
+          <!-- Impact Summary Footer -->
+          <v-sheet color="grey-lighten-4" class="px-4 py-3">
+             <div class="d-flex align-center justify-space-between mb-2">
+               <span class="text-subtitle-2 font-weight-bold text-uppercase text-medium-emphasis">Net Impact</span>
+             </div>
+             
+             <div class="d-flex gap-3">
+               <!-- Cap Space Impact -->
+               <v-chip
+                 v-if="summary.netSalary !== 0"
+                 :color="summary.netSalary < 0 ? 'success' : 'error'"
+                 variant="flat"
+                 size="small"
+                 class="font-weight-bold"
+               >
+                 <v-icon start size="small">
+                   {{ summary.netSalary < 0 ? 'add_circle' : 'remove_circle' }}
+                 </v-icon>
+                 {{ summary.netSalary < 0 ? 'Save' : 'Add' }} {{ formatCurrency(Math.abs(summary.netSalary)) }}
+               </v-chip>
+               <v-chip v-else color="grey" variant="tonal" size="small">
+                 No Cap Change
+               </v-chip>
 
-                    <v-list-item-subtitle v-if="asset.asset_type === 'player' && asset.player_detail">
-                      {{ asset.player_detail.primary_position || asset.player_detail.position || '' }} - {{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || asset.player_detail.team_name || '' }}
-                    </v-list-item-subtitle>
-                    <v-list-item-subtitle v-else-if="asset.asset_type === 'pick'">
-                      To {{ getTeamName(asset.receiving_team) }}
-                    </v-list-item-subtitle>
-                  </v-list-item>
-
-                  <v-list-item v-if="summary.giving.length === 0" class="px-0">
-                    <v-list-item-title class="text-caption text-medium-emphasis">
-                      No assets given
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </div>
-            </v-col>
-          </v-row>
-
-          <!-- Impact Summary (if available) -->
-          <v-divider v-if="summary.impact" class="my-3" />
-          <v-row v-if="summary.impact" dense>
-            <v-col cols="12">
-              <div class="text-caption text-medium-emphasis">
-                <strong>Impact:</strong>
-                Cap {{ summary.impact.net_salary < 0 ? 'relief' : 'increase' }} of {{ formatCurrency(Math.abs(summary.impact.net_salary)) }},
-                {{ Math.abs(summary.impact.net_players) }} player{{ Math.abs(summary.impact.net_players) !== 1 ? 's' : '' }}
-                {{ summary.impact.net_players > 0 ? 'gained' : 'lost' }}
-              </div>
-              <div class="text-caption text-medium-emphasis mt-1">
-                New cap: {{ formatCurrency(summary.impact.new_salary) }} / {{ formatCurrency(summary.impact.salary_cap) }}
-                ({{ ((summary.impact.new_salary / summary.impact.salary_cap) * 100).toFixed(1) }}%)
-              </div>
-            </v-col>
-          </v-row>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
-
-    <v-card-text v-if="teamSummaries.length === 0" class="text-center text-medium-emphasis">
-      <v-icon size="48" color="grey-lighten-1">swap_horiz</v-icon>
-      <p class="mt-2">No assets in trade yet</p>
-    </v-card-text>
-  </v-card>
+               <!-- Roster Spot Impact -->
+               <v-chip
+                 v-if="summary.netPlayers !== 0"
+                 :color="summary.netPlayers < 0 ? 'success' : 'warning'"
+                 variant="flat"
+                 size="small"
+                 class="font-weight-bold"
+               >
+                  <v-icon start size="small">
+                    {{ summary.netPlayers < 0 ? 'person_remove' : 'person_add' }}
+                  </v-icon>
+                  {{ Math.abs(summary.netPlayers) }} Spot{{ Math.abs(summary.netPlayers) !== 1 ? 's' : '' }} {{ summary.netPlayers < 0 ? 'Open' : 'Filled' }}
+               </v-chip>
+                <v-chip v-else color="grey" variant="tonal" size="small">
+                 No Roster Change
+               </v-chip>
+             </div>
+             
+             <!-- Total Cap Preview -->
+             <div v-if="summary.impact" class="mt-3 text-caption d-flex justify-space-between align-center text-medium-emphasis">
+               <span>Post-Trade Cap:</span>
+               <span :class="summary.impact.new_salary > summary.impact.salary_cap ? 'text-error font-weight-bold' : ''">
+                 {{ formatCurrency(summary.impact.new_salary) }} / {{ formatCurrency(summary.impact.salary_cap) }}
+               </span>
+             </div>
+          </v-sheet>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import type { Team, CreateTradeAssetData, TradeAsset, TradeTeamSummary, TeamImpact } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
 
@@ -194,9 +169,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   validation: null,
 });
-
-// Open all panels by default
-const openPanels = ref<number[]>([]);
 
 // Generate team summaries
 const teamSummaries = computed((): TradeTeamSummary[] => {
@@ -224,6 +196,16 @@ function getTeamName(teamId: number): string {
   return team?.name || 'Unknown Team';
 }
 
+function getPlayerName(playerDetail: any): string {
+  return playerDetail.full_name || playerDetail.name || `${playerDetail.first_name || ''} ${playerDetail.last_name || ''}`.trim() || 'Unknown Player';
+}
+
+// Helper to check protection
+function hasProtection(pickDetail: any): boolean {
+  const type = getPickProtectionType(pickDetail);
+  return type !== 'none' && type !== 'unprotected';
+}
+
 // Helper to get pick protection type
 function getPickProtectionType(pickDetail: any): string {
   return pickDetail?.protection || pickDetail?.protection_type || 'unprotected';
@@ -231,35 +213,24 @@ function getPickProtectionType(pickDetail: any): string {
 
 // Helper to get pick protection range start
 function getPickProtectionRangeStart(pickDetail: any): number | undefined {
-  if (pickDetail?.protection_metadata?.range_start !== undefined) {
-    return pickDetail.protection_metadata.range_start;
-  }
-  if (pickDetail?.protection_metadata?.rangeStart !== undefined) {
-    return pickDetail.protection_metadata.rangeStart;
-  }
-  return pickDetail?.protection_range_start;
+  return pickDetail?.protection_metadata?.range_start ?? 
+         pickDetail?.protection_metadata?.rangeStart ?? 
+         pickDetail?.protection_range_start;
 }
 
 // Helper to get pick protection range end
 function getPickProtectionRangeEnd(pickDetail: any): number | undefined {
-  if (pickDetail?.protection_metadata?.range_end !== undefined) {
-    return pickDetail.protection_metadata.range_end;
-  }
-  if (pickDetail?.protection_metadata?.rangeEnd !== undefined) {
-    return pickDetail.protection_metadata.rangeEnd;
-  }
-  return pickDetail?.protection_range_end;
+  return pickDetail?.protection_metadata?.range_end ?? 
+         pickDetail?.protection_metadata?.rangeEnd ?? 
+         pickDetail?.protection_range_end;
 }
 
 // Helper to get pick protection rollover year
 function getPickProtectionRolloverYear(pickDetail: any): number | undefined {
-  if (pickDetail?.protection_metadata?.rollover_year !== undefined) {
-    return pickDetail.protection_metadata.rollover_year;
-  }
-  if (pickDetail?.protection_metadata?.rolloverYear !== undefined) {
-    return pickDetail.protection_metadata.rolloverYear;
-  }
-  return pickDetail?.pick_rollover_year || pickDetail?.rollover_year;
+  return pickDetail?.protection_metadata?.rollover_year ?? 
+         pickDetail?.protection_metadata?.rolloverYear ?? 
+         pickDetail?.pick_rollover_year ?? 
+         pickDetail?.rollover_year;
 }
 
 // Format currency
@@ -272,30 +243,20 @@ function formatCurrency(value: number): string {
   }
   return `$${value}`;
 }
-
-// Auto-open all panels when summaries are available
-watch(teamSummaries, (summaries) => {
-  if (summaries.length > 0) {
-    const panelIds = summaries.map((s) => s.teamId);
-    openPanels.value = panelIds;
-  }
-}, { immediate: true, deep: true });
 </script>
 
 <style scoped>
-.trade-summary-panel {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-}
-
-.summary-section {
-  padding: 8px;
-  border-radius: 4px;
-  background-color: rgba(var(--v-theme-surface-variant), 0.3);
-}
-
 .gap-2 {
   gap: 8px;
+}
+.gap-3 {
+  gap: 12px;
+}
+.team-card {
+  transition: transform 0.2s;
+}
+.team-card:hover {
+  /* Subtle lift on hover for desktop */
+  transform: translateY(-2px);
 }
 </style>
