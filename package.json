@@ -1,22 +1,22 @@
 {
   "name": "fantasy-trash-talk",
   "private": true,
-  "version": "4.0.2",
+  "version": "5.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "prod": "vite --mode production",
+    "icons:build": "node scripts/subset-material-symbols.mjs",
     "lintbuild": "vue-tsc -b && vite build",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
+    "@fontsource-variable/space-grotesk": "^5.2.5",
     "axios": "^1.10.0",
     "axios-auth-refresh": "^3.3.6",
+    "dayjs": "^1.11.13",
     "material-symbols": "^0.33.0",
-    "moment": "^2.30.1",
-    "moment-timezone": "^0.6.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.4.1",
     "sass": "^1.89.2",
@@ -30,10 +30,8 @@
     "rollup-plugin-visualizer": "^6.0.3",
     "typescript": "^5.8.3",
     "vite": "^7.0.5",
-    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-pwa": "^1.0.1",
     "vite-plugin-vuetify": "^2.1.1",
-    "vue-cli-plugin-vuetify": "~2.5.8",
     "vue-tsc": "^3.0.2"
   }
 }

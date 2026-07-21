@@ -1,26 +1,44 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useTheme } from "vuetify";
-import { onMounted } from "vue";
+
+const STORAGE_KEY = "theme";
+
+/** Keep the browser/PWA status bar color in sync with the app background. */
+function syncThemeColorMeta(background: string) {
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((meta) => meta.remove());
+  const meta = document.createElement("meta");
+  meta.name = "theme-color";
+  meta.content = background;
+  document.head.appendChild(meta);
+}
 
 export const useThemeStore = defineStore("theme", () => {
   const theme = useTheme();
-  const isDark = ref(localStorage.getItem("theme") === "dark");
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const savedTheme = localStorage.getItem(STORAGE_KEY);
 
-  onMounted(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      isDark.value = savedTheme === "dark";
-      theme.change(isDark.value ? "dark" : "light");
-    } else {
-      theme.change("light");
+  // Explicit user choice wins; otherwise follow the system
+  const isDark = ref(savedTheme ? savedTheme === "dark" : systemDark.matches);
+
+  const applyTheme = () => {
+    theme.change(isDark.value ? "dark" : "light");
+    syncThemeColorMeta(theme.current.value.colors.background);
+  };
+
+  watch(isDark, applyTheme, { immediate: true });
+
+  systemDark.addEventListener("change", (event) => {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      isDark.value = event.matches;
     }
   });
 
   const toggleTheme = () => {
     isDark.value = !isDark.value;
-    theme.change(isDark.value ? "dark" : "light");
-    localStorage.setItem("theme", isDark.value ? "dark" : "light");
+    localStorage.setItem(STORAGE_KEY, isDark.value ? "dark" : "light");
   };
 
   return {

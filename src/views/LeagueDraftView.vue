@@ -1,30 +1,31 @@
 <template>
 	<div class="page-view">
-		<div class="page-header">
+		<div class="page-header draft-header">
+			<p class="eyebrow">League war room</p>
 			<h1 class="page-title">League Draft</h1>
-			<!-- <p class="page-subtitle">Lorem ipsum dolor sit amet</p> -->
+			<p class="page-subtitle">Follow the lottery, manage your queue, and track every pick from one board.</p>
 		</div>
 
-		<v-card>
+		<v-card class="draft-workspace" variant="flat">
 			<!-- If loading show loader -->
-			<v-tabs v-model="tab" bg-color="primary" density="comfortable" color="secondary" :disabled="loading"
-				mandatory>
+			<v-tabs v-model="tab" class="draft-tabs" density="comfortable" color="secondary" :disabled="loading"
+				mandatory grow>
 				<v-tab value="lottery">Lottery</v-tab>
 				<v-tab value="draft">Draft</v-tab>
 			</v-tabs>
 			<v-progress-linear v-if="loading" indeterminate class="mb-4" color="secondary" />
 
-			<v-card-text v-else>
+			<v-card-text v-else class="draft-workspace__body">
 				<v-tabs-window v-model="tab">
 					<v-tabs-window-item value="lottery">
-						<v-sheet>
-							<v-row align="center" justify="center" v-if="!isLotteryHappened">
+						<v-sheet class="draft-surface">
+							<v-row align="center" justify="center" v-if="!isLotteryHappened" class="draft-state">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column ga-2">
 										<span>The lottery will start in</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
-										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
-											@click="fetchAllData" class="mt-4" :loading="loading" icon>
+										<v-btn size="small" variant="tonal" color="info" aria-label="Refresh draft"
+											title="Refresh" @click="fetchAllData" class="mt-4 draft-icon-action" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm
@@ -37,8 +38,8 @@
 							<v-divider class="my-4" v-if="!isLotteryHappened" />
 							<v-row align="center" justify="center">
 								<v-col v-for="team in sortedTeams" :key="team.id" cols="12" md="6" lg="4">
-									<v-card link :variant="isDark ? 'elevated' : 'tonal'" color="primary" class="pa-4"
-										v-ripple>
+									<v-card :variant="isDark ? 'elevated' : 'tonal'" color="primary"
+										class="pa-4 draft-team-card">
 										<template #title>
 											<div class="d-flex align-center justify-start ga-2">
 												<span class="font-weight-black">{{ team.name
@@ -61,11 +62,11 @@
 						</v-sheet>
 					</v-tabs-window-item>
 					<v-tabs-window-item value="draft">
-						<v-sheet v-if="isLotteryHappened">
+						<v-sheet v-if="isLotteryHappened" class="draft-surface">
 							<v-container fluid v-if="!isDraftStarted">
 								<v-row align="center" justify="center" class="w-100 flex-column">
 									<span>The draft will start in</span>
-									<countdown :value="moment(draftData.starts_at).unix()" timestamp
+									<countdown :value="dayjs(draftData.starts_at).unix()" timestamp
 										@expired="startDraft" />
 									<v-btn v-if="isStaff" color="primary" @click="startDraft" v-confirm class="mt-4"
 										:loading="loading">
@@ -75,7 +76,7 @@
 							</v-container>
 							<v-container fluid>
 								<!-- Navigation buttons for draft -->
-								<v-container fluid class="ga-8 d-flex flex-column align-center justify-center"
+								<v-container fluid class="draft-control ga-8 d-flex flex-column align-center justify-center"
 									v-if="isDraftStarted && !draftData?.is_completed">
 									<div>
 										<div class="d-flex justify-center flex-column align-center text-center">
@@ -97,8 +98,8 @@
 									<DraftQueue v-if="authStore.user?.team?.id"
 										:draftable-players-raw="getDraftablePlayers" :team-id="authStore.user?.team?.id"
 										:draft-id="draftData?.id" />
-									<div class="d-flex flex-column flex-lg-row ga-2 justify-center align-center">
-										<v-btn color="primary" variant="tonal" prepend-icon="skip_next"
+									<div class="draft-actions d-flex flex-column flex-lg-row ga-2 justify-center align-center">
+										<v-btn color="info" variant="tonal" prepend-icon="skip_next"
 											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn" rounded>
 											Go to Next Pick
 										</v-btn>
@@ -110,37 +111,38 @@
 										<!-- <v-btn color="warning" variant="tonal" prepend-icon="compress"
 											@click="collapsePastRounds"
 											:disabled="!hasPastRoundsToCollapse || loadingMoreRounds" class="pick-btn" rounded
-											v-tooltip="'Collapse past rounds'">
+											title="Collapse past rounds">
 											Collapse Past Rounds
 										</v-btn> -->
 									</div>
 									<div justify="center" align="center">
-										<v-btn size="small" variant="tonal" v-tooltip="'Refresh'" color="primary"
-											@click="fetchAllData" :loading="loading" icon>
+										<v-btn size="small" variant="tonal" color="info" aria-label="Refresh draft"
+											title="Refresh" @click="fetchAllData" class="draft-icon-action" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 									</div>
 								</v-container>
-								<v-container v-if="draftData?.is_completed" class="text-center">
+								<v-container v-if="draftData?.is_completed" class="draft-complete text-center">
 									<h3 class="text-h3">The {{ currentDate.year() }} {{ draftData?.is_league_draft ?
 										'league' : '' }} draft
 										has been completed.</h3>
 									<p class="text-caption">You can still view the draft results below.</p>
 								</v-container>
 								<!-- Collapsed rounds section - shows divider for collapsed rounds with load button -->
-								<v-container v-for="(round, index) in visibleRounds" :key="round.roundNumber">
+								<v-container v-for="(round, index) in visibleRounds" :key="round.roundNumber"
+									class="draft-round">
 									<v-row align="center" class="my-4 w-100">
 										<v-col class="text-center">
 											<v-btn size="small" variant="tonal" color="info"
 												@click="loadCollapsedRounds" :loading="loadingMoreRounds"
 												:disabled="loadingMoreRounds" class="round-btn mb-4"
 												v-if="collapsedRoundsCount > 0 && index === 0"
-												v-tooltip="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`"
+												:title="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`"
 												rounded>
 												Load Past Rounds
 											</v-btn>
 											<labeled-divider>
-												<h2 class="text-h5 text-center text-on-background">Round {{
+												<h2 class="text-h5 text-center draft-round-title">Round {{
 													round.roundNumber }}</h2>
 											</labeled-divider>
 										</v-col>
@@ -148,8 +150,8 @@
 
 									<v-row>
 										<v-col v-for="pick in round.picks" :key="pick?.pick.id" cols="12" md="6" lg="4">
-											<v-card link :variant="isDark ? 'elevated' : 'tonal'"
-												:color="getPickCardColor(pick?.pick)" class="pa-4" v-ripple
+											<v-card :variant="isDark ? 'elevated' : 'tonal'"
+												:color="getPickCardColor(pick?.pick)" class="pa-4 draft-pick-card"
 												:id="`pick-${pick?.pick.overall_pick}`" rounded>
 												<template #title>
 													<div class="d-flex align-center justify-start ga-2">
@@ -157,8 +159,8 @@
 															pick?.team?.name }}</span>
 														<v-icon icon="attribution" size="small" variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
-														<v-icon size="small" icon="smart_toy"
-															v-if="pick?.pick.is_auto_pick" v-tooltip="'Auto-picked'" />
+																<v-icon size="small" icon="smart_toy"
+																	v-if="pick?.pick.is_auto_pick" title="Auto-picked" />
 													</div>
 												</template>
 												<template #append>
@@ -189,8 +191,8 @@
 														<v-chip-group column>
 															<v-chip
 																v-for="futurePick in getTeamFuturePicks(pick.team.id, round.roundNumber)"
-																:key="futurePick.id" size="small"
-																v-tooltip="`Round ${futurePick.pick__round_number} - Pick #${futurePick.pick_number}`"
+																		:key="futurePick.id" size="small" class="future-pick-chip"
+																		:title="`Round ${futurePick.pick__round_number} - Pick #${futurePick.pick_number}`"
 																@click="navigateToPick(futurePick.overall_pick)">
 																#{{ futurePick.overall_pick }}
 															</v-chip>
@@ -207,16 +209,16 @@
 									<v-row align="center">
 										<v-col>
 											<labeled-divider>
-												<div class="d-flex ga-2">
-													<v-btn rounded size="small" variant="tonal" color="primary"
+														<div class="round-actions d-flex ga-2">
+													<v-btn rounded size="small" variant="tonal" color="info"
 														@click="loadNextRound" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds"
-														v-tooltip="`Load Round ${nextRoundNumber}`" class="round-btn">
+														:title="`Load Round ${nextRoundNumber}`" class="round-btn">
 														Load Next Round
 													</v-btn>
 													<v-btn rounded size="small" variant="tonal" color="info"
 														@click="loadAllRounds" :loading="loadingMoreRounds"
-														:disabled="loadingMoreRounds" v-tooltip="`Load All Rounds`"
+														:disabled="loadingMoreRounds" title="Load all rounds"
 														class="round-btn">
 														Load All Rounds
 													</v-btn>
@@ -257,13 +259,13 @@
 
 <script setup lang="ts">
 import api from '@/api/axios';
-import PlayerDraftDialog from '@/components/core/PlayerDraftDialog.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
-import DraftQueue from '@/components/core/DraftQueue.vue';
-import moment from 'moment';
-import momentTz from 'moment-timezone';
-import { computed, onMounted, ref, watch } from 'vue';
+import dayjs from '@/utils/dayjs';
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue';
+
+const DraftQueue = defineAsyncComponent(() => import('@/components/core/DraftQueue.vue'))
+const PlayerDraftDialog = defineAsyncComponent(() => import('@/components/core/PlayerDraftDialog.vue'))
 
 const authStore = useAuthStore()
 const isStaff = computed(() => {
@@ -278,12 +280,12 @@ const dialogAction = ref('Draft')
 const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
-const currentDate = moment()
-const lotteryStartsAt = momentTz.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').unix()
+const currentDate = dayjs()
+const lotteryStartsAt = dayjs.tz('2025-07-18 12:00:00', 'America/Sao_Paulo').unix()
 
 // New reactive refs for round loading functionality
 const showRoundsUpTo = ref(1)
-const showRoundsFrom = ref(1)
+const showRoundsFrom = ref(0)
 const loadingMoreRounds = ref(false)
 const hasSetInitialRoundsFrom = ref(false)
 
@@ -293,7 +295,7 @@ const isLotteryHappened = computed(() => {
 const tab = ref(isLotteryHappened.value ? 'draft' : 'lottery')
 
 const isDraftStarted = computed(() => {
-	return isLotteryHappened.value && draftData.value && moment(draftData.value.starts_at).isSameOrBefore(currentDate)
+	return isLotteryHappened.value && draftData.value && dayjs(draftData.value.starts_at).isSameOrBefore(currentDate)
 })
 
 const sortedTeams = computed(() => {
@@ -368,11 +370,11 @@ const nextRoundNumber = computed(() => {
 })
 
 const hasPastRoundsToCollapse = computed(() => {
-	return showRoundsUpTo.value > 1
+	return showRoundsFrom.value > 0
 })
 
 const collapsedRoundsCount = computed(() => {
-	return showRoundsFrom.value - 1
+	return showRoundsFrom.value
 })
 
 const allPicksSorted = computed(() => {
@@ -399,7 +401,7 @@ const myNextUnmadePick = computed(() => {
 
 watch(showRoundsUpTo, (newValue) => {
 	if (!hasSetInitialRoundsFrom.value) {
-		showRoundsFrom.value = Math.max(1, newValue - 1)
+		showRoundsFrom.value = Math.max(0, newValue - 2)
 		hasSetInitialRoundsFrom.value = true
 	}
 }, { immediate: true })
@@ -419,11 +421,8 @@ watch(nextUnmadePick, (newPick) => {
 const loadNextRound = async () => {
 	if (hasMoreRoundsToLoad.value) {
 		loadingMoreRounds.value = true
-
-		// Simulate loading delay for better UX
-		await new Promise(resolve => setTimeout(resolve, 500))
-
 		showRoundsUpTo.value += 1
+		await nextTick()
 		loadingMoreRounds.value = false
 	}
 }
@@ -431,12 +430,9 @@ const loadNextRound = async () => {
 const loadAllRounds = async () => {
 	if (hasMoreRoundsToLoad.value) {
 		loadingMoreRounds.value = true
-
-		// Simulate loading delay for better UX
-		await new Promise(resolve => setTimeout(resolve, 800))
-
 		showRoundsFrom.value = 0
 		showRoundsUpTo.value = draftRounds.value.length
+		await nextTick()
 		loadingMoreRounds.value = false
 	}
 }
@@ -444,16 +440,16 @@ const loadAllRounds = async () => {
 const collapsePastRounds = async () => {
 	if (showRoundsFrom.value < showRoundsUpTo.value) {
 		loadingMoreRounds.value = true
-		await new Promise(resolve => setTimeout(resolve, 500))
 
 		// Collapse up to the round before the current pick, but keep at least 1 round visible
 		if (nextUnmadePick.value) {
 			const currentRound = nextUnmadePick.value?.pick.pick__round_number
-			showRoundsFrom.value = Math.max(1, Math.min(currentRound, showRoundsUpTo.value))
+			showRoundsFrom.value = Math.max(0, Math.min(currentRound - 1, showRoundsUpTo.value - 1))
 		} else {
 			showRoundsFrom.value = Math.min(showRoundsFrom.value + 1, showRoundsUpTo.value)
 		}
 
+		await nextTick()
 		loadingMoreRounds.value = false
 	}
 }
@@ -461,8 +457,8 @@ const collapsePastRounds = async () => {
 const loadCollapsedRounds = async () => {
 	if (hasPastRoundsToCollapse.value) {
 		loadingMoreRounds.value = true
-		await new Promise(resolve => setTimeout(resolve, 500))
 		showRoundsFrom.value = 0
+		await nextTick()
 		loadingMoreRounds.value = false
 	}
 }
@@ -556,43 +552,15 @@ const navigateToPick = async (overallPick: number) => {
 	if (targetRound > showRoundsUpTo.value) {
 		loadingMoreRounds.value = true
 		showRoundsUpTo.value = targetRound
-
-		// Wait for DOM to update with new rounds
-		await new Promise(resolve => setTimeout(resolve, 100))
+		await nextTick()
 		loadingMoreRounds.value = false
-
-		// Additional wait to ensure rendering is complete
-		await new Promise(resolve => setTimeout(resolve, 200))
 	}
+	await nextTick()
 
 	const pickElement = document.getElementById(`pick-${overallPick}`)
 
 	if (pickElement) {
-		// Scroll to the element
 		pickElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-		// Wait for scroll to complete
-		await new Promise<void>((resolve) => {
-			let timeoutId: number
-
-			const onScrollEnd = () => {
-				clearTimeout(timeoutId)
-				window.removeEventListener('scrollend', onScrollEnd)
-				resolve()
-			}
-
-			// Use scrollend event if available (modern browsers)
-			if ('onscrollend' in window) {
-				window.addEventListener('scrollend', onScrollEnd, { once: true })
-				// Fallback timeout in case scrollend doesn't fire
-				timeoutId = setTimeout(onScrollEnd, 1000)
-			} else {
-				// Fallback for older browsers - estimate scroll duration
-				timeoutId = setTimeout(resolve, 800)
-			}
-		})
-
-		// Add highlight effect after scroll completes
 		pickElement.classList.add('animate__animated', 'animate__tada')
 
 		setTimeout(() => {
@@ -638,11 +606,119 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.draft-header {
+	max-width: 760px;
+}
+
+.draft-workspace {
+	overflow: hidden;
+	border: 1px solid var(--surface-border);
+	border-radius: $border-radius-xl;
+	background: rgb(var(--v-theme-surface));
+	box-shadow: $shadow-md;
+}
+
+.draft-tabs {
+	border-bottom: 1px solid var(--surface-border);
+	background: rgba(var(--v-theme-primary), 0.18);
+
+	:deep(.v-tab) {
+		min-height: 54px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+	}
+}
+
+.draft-workspace__body {
+	padding: clamp(16px, 3vw, 28px);
+}
+
+.draft-surface {
+	background: transparent;
+}
+
+.draft-state,
+.draft-control,
+.draft-complete {
+	margin-bottom: 20px;
+	padding: clamp(24px, 5vw, 44px);
+	border: 1px solid var(--surface-border);
+	border-radius: $border-radius-lg;
+	background: rgba(var(--v-theme-on-surface), 0.025);
+}
+
+.draft-team-card,
+.draft-pick-card {
+	border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+	box-shadow: none;
+}
+
+.draft-pick-card {
+	scroll-margin-top: 96px;
+}
+
+.draft-workspace :deep(.v-card-title) {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.draft-round {
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.draft-complete .text-h3 {
+	font-size: clamp(1.65rem, 5vw, 3rem) !important;
+	line-height: 1.12;
+}
+
 .pick-btn {
 	width: 200px;
+	min-height: 44px;
 }
 
 .round-btn {
 	width: 150px;
+	min-height: 44px;
+}
+
+.draft-icon-action {
+	width: 44px;
+	height: 44px;
+}
+
+.draft-round-title {
+	color: rgb(var(--v-theme-on-surface));
+}
+
+.draft-workspace :deep(.future-pick-chip) {
+	min-width: 44px;
+	min-height: 44px;
+}
+
+@media (max-width: $breakpoint-sm) {
+	.draft-workspace__body {
+		padding: 14px 12px 18px;
+	}
+
+	.draft-state,
+	.draft-control,
+	.draft-complete {
+		padding: 22px 16px;
+	}
+
+	.draft-actions,
+	.round-actions {
+		width: 100%;
+	}
+
+	.pick-btn,
+	.round-btn {
+		width: 100%;
+	}
+
+	.round-actions {
+		flex-direction: column;
+	}
 }
 </style>

@@ -1,24 +1,25 @@
 <template>
-  <!-- TODO: REMOVE FALSE CHECK -->
-  <span class="nav-item-content disabled" v-if="disabled && !(user && user.is_superuser && false)">
+  <span class="nav-item-content disabled" v-if="disabled" role="link" aria-disabled="true"
+    :aria-label="`${label} — coming soon`" :title="expanded ? 'Coming soon' : `${label} — coming soon`">
     <v-icon class="nav-icon" :icon="icon" theme="outlined" />
     <span v-if="expanded" class="nav-item-label">{{ label }}</span>
   </span>
-  <router-link :to="to" class="nav-item" :class="{ active: isActive }" custom
-    v-slot="{ navigate, isActive: linkIsActive }" v-else-if="!commission_only || (user && user.is_staff)">
-    <div class="nav-item-content" @click="navigate" :class="{ active: linkIsActive && to.name !== '404', expanded }">
+  <router-link :to="to" class="nav-item" custom v-slot="{ href, navigate, isActive }"
+    v-else-if="!commission_only || user?.is_staff">
+    <a :href="href" class="nav-item-content" :class="{ active: isActive, expanded }" :title="expanded ? undefined : label"
+      :aria-label="label" :aria-current="isActive ? 'page' : undefined" @click="navigate">
       <v-icon class="nav-icon" :icon="icon" theme="outlined" />
       <transition name="fade">
         <span v-if="expanded" class="nav-item-label">{{ label }}</span>
       </transition>
-    </div>
+    </a>
   </router-link>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 interface Props {
   icon: string
@@ -29,16 +30,9 @@ interface Props {
   disabled?: boolean
 }
 
-const props = defineProps<Props>()
-const route = useRoute()
-const router = useRouter()
-
-const user = computed(() => localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null)
-
-const isActive = computed(() => {
-  const { href } = router.resolve(props.to)
-  return href === route.fullPath && route.name !== '404'
-})
+defineProps<Props>()
+const authStore = useAuthStore()
+const user = computed(() => authStore.user)
 </script>
 
 <style lang="scss" scoped></style>

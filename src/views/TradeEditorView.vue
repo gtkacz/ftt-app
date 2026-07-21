@@ -1,41 +1,38 @@
 <template>
-  <v-container fluid class="trade-editor-view">
+  <v-container fluid class="trade-editor-view page-view pa-0">
     <!-- Header -->
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex align-center">
-            <v-btn icon variant="text" @click="handleCancel">
-              <v-icon>arrow_back</v-icon>
-            </v-btn>
-            <span class="ml-2">{{ isCounteroffer ? 'Create Counteroffer' : 'Create New Trade' }}</span>
-            <v-spacer />
-          </v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
+    <header class="trade-editor-header page-header">
+      <v-btn icon variant="tonal" aria-label="Back to trade overview" @click="handleCancel">
+        <v-icon>arrow_back</v-icon>
+      </v-btn>
+      <div>
+        <p class="eyebrow">Trade desk</p>
+        <h1 class="page-title">{{ isCounteroffer ? 'Create Counteroffer' : 'Build a New Trade' }}</h1>
+        <p class="page-subtitle">Choose the teams, route each asset, then validate the deal before proposing it.</p>
+      </div>
+    </header>
 
     <!-- Team Selection Section -->
     <v-row>
       <v-col cols="12">
-        <v-card>
+        <v-card class="trade-setup-card" variant="flat">
           <v-card-title>Teams in Trade</v-card-title>
           <v-card-text>
             <div class="d-flex flex-wrap gap-2 align-center">
               <v-chip
                 v-for="teamId in selectedTeamIds"
                 :key="teamId"
-                :color="teamId === userTeamId ? 'primary' : 'default'"
-                closable
-                :disabled="teamId === userTeamId"
+                :color="teamId === userTeamId ? 'info' : 'default'"
+                :closable="teamId !== userTeamId"
                 @click:close="removeTeam(teamId)"
               >
                 {{ getTeamName(teamId) }}
                 <v-icon v-if="teamId === userTeamId" start size="small">person</v-icon>
               </v-chip>
               <v-btn
-                color="primary"
+                color="secondary"
                 variant="outlined"
+                class="trade-add-team"
                 @click="showTeamSelector = true"
               >
                 <v-icon start>add</v-icon>
@@ -104,10 +101,10 @@
     <!-- Actions -->
     <v-row>
       <v-col cols="12">
-        <v-card>
-          <v-card-text class="d-flex gap-2">
+        <v-card class="trade-actions-card" variant="flat">
+          <v-card-text class="trade-editor-actions d-flex gap-2">
             <v-btn
-              color="primary"
+              color="secondary"
               size="large"
               :loading="submitting"
               :disabled="!canPropose"
@@ -145,7 +142,7 @@
         <v-card-title class="d-flex align-center py-3 px-4 border-b">
           <span class="text-h6">Add Team to Trade</span>
           <v-spacer />
-          <v-btn icon variant="text" size="small" @click="showTeamSelector = false">
+          <v-btn icon variant="text" size="small" aria-label="Close team selector" @click="showTeamSelector = false">
             <v-icon>close</v-icon>
           </v-btn>
         </v-card-title>
@@ -821,11 +818,33 @@ onMounted(async () => {
   padding-bottom: 100px;
 }
 
+.trade-editor-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 850px;
+
+  .eyebrow {
+    margin-top: 4px;
+  }
+}
+
+.trade-setup-card,
+.trade-actions-card {
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 14px 36px rgba(4, 10, 24, 0.12);
+}
+
 .team-grid-container {
   overflow-x: auto;
   overflow-y: visible;
   padding: 16px 0;
   margin: 0 -12px;
+  scroll-padding-inline: 12px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
 }
 
 .team-grid {
@@ -835,8 +854,16 @@ onMounted(async () => {
   min-width: min-content;
 }
 
+.team-grid :deep(.team-asset-selector) {
+  scroll-snap-align: start;
+}
+
 .gap-2 {
   gap: 8px;
+}
+
+.trade-add-team {
+  min-height: 44px;
 }
 
 .sticky-search {
@@ -862,5 +889,33 @@ onMounted(async () => {
 
 .min-width-0 {
   min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .trade-editor-view {
+    padding-bottom: 24px;
+  }
+
+  .trade-editor-header {
+    gap: 11px;
+  }
+
+  .trade-editor-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    padding: 16px;
+
+    .v-btn:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .v-spacer {
+      display: none;
+    }
+  }
+
+  .team-grid-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

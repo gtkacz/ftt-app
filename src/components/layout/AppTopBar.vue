@@ -1,23 +1,26 @@
 <template>
-  <header class="app-top-bar">
+  <header class="app-top-bar" :class="{ 'with-navigation': withNavigation }">
     <div class="top-bar-content">
-      <!-- Spacer -->
+      <router-link :to="{ name: 'home' }" class="top-bar-brand d-md-none">
+        <app-logo size="28px" :reactive="false" />
+        <span class="top-bar-brand__name">FTT</span>
+      </router-link>
+
+      <div class="top-bar-context d-none d-md-flex">
+        <span class="top-bar-context__eyebrow">League workspace</span>
+        <span class="top-bar-context__title">{{ teamName }}</span>
+      </div>
+
       <div class="spacer"></div>
 
-      <!-- User Actions -->
       <div class="user-actions">
-        <!-- Theme Toggle -->
         <theme-changer />
-
-        <!-- Notifications -->
         <notification-menu />
-
-        <!-- User Profile Menu -->
         <v-menu offset-y>
           <template #activator="{ props }">
-            <v-btn icon variant="text" v-bind="props" class="action-btn">
+            <v-btn icon variant="text" v-bind="props" class="action-btn" aria-label="Open account menu">
               <v-avatar size="32" color="secondary">
-                <span class="text-h7">{{ initials }}</span>
+                <span class="avatar-initials">{{ initials }}</span>
               </v-avatar>
             </v-btn>
           </template>
@@ -58,20 +61,24 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationMenu from '@/components/core/NotificationMenu.vue'
 
+defineProps<{
+  withNavigation?: boolean
+}>()
+
 const router = useRouter()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
+const teamName = computed(() => user.value?.team?.name || 'Fantasy Trash Talk')
 
 const initials = computed(() => {
-  const name = user.value ? user.value.first_name + ' ' + user.value.last_name : '';
-  if (!user || name.length < 2) {
-    return '?'
+  const parts = [user.value?.first_name, user.value?.last_name].filter(Boolean) as string[]
+  if (parts.length === 0) {
+    return user.value?.username?.slice(0, 2).toUpperCase() || '?'
   }
-  let splitted = name.split(' ')
-  if (splitted.length == 1) {
-    return splitted[0][0].toUpperCase() + splitted[0][1].toLowerCase()
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase()
   }
-  return (splitted[0][0] + splitted[splitted.length - 1][0]).toUpperCase()
+  return (parts[0][0] + parts.at(-1)![0]).toUpperCase()
 })
 
 const navigateToProfile = () => {
@@ -90,13 +97,20 @@ const handleLogout = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 65px;
-  background-color: transparent;
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  height: calc(#{$top-bar-height} + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  background-color: rgba(var(--v-theme-background), 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   z-index: 1000;
 
-  @media (max-width: 768px) {
-    left: 0;
+  &.with-navigation {
+    left: $navigation-rail-width;
+  }
+
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    height: calc(#{$top-bar-height-mobile} + env(safe-area-inset-top));
   }
 }
 
@@ -104,11 +118,50 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 clamp(16px, 2.5vw, 32px);
+  padding-left: max(clamp(16px, 2.5vw, 32px), env(safe-area-inset-left));
+  padding-right: max(clamp(16px, 2.5vw, 32px), env(safe-area-inset-right));
 }
 
-.mobile-menu-btn {
-  margin-right: 16px;
+.top-bar-context {
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+
+  &__eyebrow {
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    overflow: hidden;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.95rem;
+    font-weight: 650;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.top-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: rgb(var(--v-theme-on-surface));
+  }
 }
 
 .spacer {
@@ -127,5 +180,12 @@ const handleLogout = () => {
   &:hover {
     background-color: rgba(var(--v-theme-secondary), 0.1);
   }
+}
+
+.avatar-initials {
+  color: rgb(var(--v-theme-on-secondary));
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 </style>

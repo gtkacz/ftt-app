@@ -1,5 +1,7 @@
 import { h } from "vue";
+import type { CSSProperties } from "vue";
 import type { IconAliases, IconProps, IconSet } from "vuetify";
+import { materialSymbolCodepoints } from "./material-symbol-codepoints";
 
 const aliases: IconAliases = {
   collapse: "keyboard_arrow_up",
@@ -43,12 +45,26 @@ const aliases: IconAliases = {
   treeviewCollapse: "arrow_drop_down",
   treeviewExpand: "arrow_right",
   eyeDropper: "colorize",
+  upload: "upload",
+  color: "palette",
+  command: "keyboard_command_key",
+  ctrl: "keyboard_control_key",
+  space: "space_bar",
+  shift: "shift",
+  alt: "keyboard_option_key",
+  enter: "keyboard_return",
+  arrowup: "arrow_upward",
+  arrowdown: "arrow_downward",
+  arrowleft: "arrow_back",
+  arrowright: "arrow_forward",
+  backspace: "backspace",
 };
 
 interface ExtendedIconProps extends IconProps {
   variant?: "outlined" | "sharp" | "rounded";
   filled?: boolean | number | "";
   emphasis?: "low" | "default" | "high";
+  style?: CSSProperties & { "--md-icon-opsz"?: number };
 }
 
 const mds: IconSet = {
@@ -57,25 +73,34 @@ const mds: IconSet = {
     const emphasisClass = props.emphasis
       ? `material-symbols-${props.emphasis}-emphasis`
       : "material-symbols-default-emphasis";
+    const isFilled =
+      props.filled === "" || props.filled === true || props.filled === 1;
     const classes = {
       "material-symbols": true,
       [variantClass]: true,
-      "material-symbols-filled": props.filled === "" || props.filled || true,
+      "material-symbols-filled": isFilled,
     };
     if (emphasisClass) {
       classes[emphasisClass] = true;
     }
+    const iconName = String(props.icon);
+    const glyph = materialSymbolCodepoints[iconName] ?? materialSymbolCodepoints.help;
+
+    if (import.meta.env.DEV && !materialSymbolCodepoints[iconName]) {
+      console.warn(`[icons] Missing Material Symbol subset entry: ${iconName}`);
+    }
     // Set opsz from fontSize if one is supplied, i.e. by <v-icon size="32" />
-    if (props.style?.fontSize) {
-      const opsz = parseInt(props.style?.fontSize) || 24;
-      props.style["--md-icon-opsz"] = Math.min(Math.max(20, opsz), 48);
+    const style = props.style ? { ...props.style } : undefined;
+    if (style?.fontSize) {
+      const opsz = parseInt(String(style.fontSize)) || 24;
+      style["--md-icon-opsz"] = Math.min(Math.max(20, opsz), 48);
     }
     return h(props.tag, {
       ...props,
       class: classes,
-      // style: `font-variation-settings: ${fontVariationSettings}`,
-      innerHTML: props.icon,
-    });
+      style,
+      "data-icon": iconName,
+    }, glyph);
   },
 };
 

@@ -1,4 +1,11 @@
-/* icons.css */
+@font-face {
+  font-family: "FTT Material Symbols Rounded";
+  font-style: normal;
+  font-weight: 300;
+  font-display: block;
+  src: url("../assets/fonts/material-symbols-rounded-subset.woff2") format("woff2");
+}
+
 :root {
   --md-icon-fill: 0;
   --md-icon-weight: 300;
@@ -9,6 +16,20 @@
 }
 
 .material-symbols {
+  display: inline-block;
+  font-family: "FTT Material Symbols Rounded";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: normal;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-variation-settings: "FILL" var(--md-icon-fill),
     "wght" var(--md-icon-weight), "GRAD" var(--md-icon-grad),
     "opsz" var(--md-icon-opsz);

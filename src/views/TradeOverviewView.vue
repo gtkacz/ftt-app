@@ -1,34 +1,24 @@
 <template>
-  <v-container fluid class="trade-overview-view">
-    <!-- Header -->
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex align-center">
-            <v-icon start>swap_horiz</v-icon>
-            Trade Center
-            <v-spacer />
-            <v-btn
-              color="primary"
-              @click="createNewTrade"
-            >
-              <v-icon start>add</v-icon>
-              Create New Trade
-            </v-btn>
-          </v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
+  <div class="trade-overview-view page-view">
+    <header class="trade-header page-header">
+      <div>
+        <p class="eyebrow">Deal room</p>
+        <h1 class="page-title">Trade Center</h1>
+        <p class="page-subtitle">Build offers, follow negotiations and keep every league deal moving.</p>
+      </div>
+      <v-btn class="trade-header__create" color="secondary" size="large" prepend-icon="add"
+        @click="createNewTrade">
+        Create trade
+      </v-btn>
+    </header>
 
-    <!-- Status Tabs -->
-    <v-row>
-      <v-col cols="12">
-        <v-card>
+    <section class="trade-workspace surface-card">
           <v-tabs
             v-model="activeTab"
-            color="primary"
-            align-tabs="center"
+            color="secondary"
+            align-tabs="start"
             show-arrows
+            class="trade-tabs"
           >
             <v-tab value="waiting_acceptance">
               <v-icon start>schedule</v-icon>
@@ -167,17 +157,16 @@
               </v-window-item>
             </v-window>
           </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    </section>
 
     <!-- FAB for mobile -->
     <v-btn
       class="fab-create"
-      color="primary"
+      color="secondary"
       size="large"
       icon
       elevation="8"
+      aria-label="Create trade"
       @click="createNewTrade"
     >
       <v-icon>add</v-icon>
@@ -340,7 +329,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -703,16 +692,47 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .trade-overview-view {
-  padding-bottom: 100px; /* Space for FAB */
+  display: grid;
+  gap: 20px;
+}
+
+.trade-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 4px;
+}
+
+.trade-workspace {
+  overflow: hidden;
+}
+
+.trade-tabs {
+  border-bottom: 1px solid var(--surface-border);
+  background: rgba(var(--v-theme-on-surface), 0.018);
+
+  :deep(.v-tab) {
+    min-height: 54px;
+    font-size: 0.78rem;
+    font-weight: 680;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  :deep(.v-slide-group__content) {
+    min-width: max-content;
+  }
 }
 
 .fab-create {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 100;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: calc(#{$bottom-nav-height} + 18px + env(safe-area-inset-bottom));
+  z-index: 1004;
+  box-shadow: 0 12px 28px rgba(var(--v-theme-secondary), 0.28) !important;
 }
 
 /* Hide FAB on larger screens where header button is visible */
@@ -730,7 +750,7 @@ onMounted(async () => {
 
 .trade-window-container {
   overflow: visible !important;
-  padding: 16px !important;
+  padding: clamp(14px, 2vw, 24px) !important;
 }
 
 .trade-window-container :deep(.v-window) {
@@ -749,7 +769,7 @@ onMounted(async () => {
 
 /* Dialog Styles */
 .dialog-card {
-  border-radius: 12px;
+  border-radius: $border-radius-lg;
   overflow: hidden;
 }
 
@@ -772,7 +792,7 @@ onMounted(async () => {
 
 .info-alert,
 .warning-alert {
-  border-radius: 8px;
+  border-radius: $border-radius-md;
 }
 
 .dialog-actions {
@@ -785,8 +805,7 @@ onMounted(async () => {
   text-transform: none;
   letter-spacing: 0.3px;
   min-width: 120px;
-  width: 25%;
-  transition: all 0.2s;
+  transition: transform $transition-fast, box-shadow $transition-fast;
 }
 
 .action-btn:hover {
@@ -828,6 +847,71 @@ onMounted(async () => {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .trade-header {
+    display: block;
+  }
+
+  .trade-header__create {
+    display: none;
+  }
+
+  .trade-tabs :deep(.v-tab) {
+    min-width: auto;
+    padding: 0 14px;
+  }
+
+  .dialog-header,
+  .dialog-content {
+    padding: 18px;
+  }
+
+  .dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+
+    .v-spacer {
+      display: none;
+    }
+
+    .action-btn {
+      width: 100%;
+      min-width: 0;
+      margin: 0 !important;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-xs) {
+  .trade-tabs :deep(.v-tab) {
+    min-height: 50px;
+    padding: 0 12px;
+    font-size: 0.72rem;
+  }
+
+  .trade-window-container {
+    padding: 12px !important;
+  }
+
+  .dialog-header {
+    padding: 16px;
+
+    .v-avatar {
+      display: none;
+    }
+  }
+
+  .dialog-content {
+    padding: 14px;
+  }
+
+  .dialog-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

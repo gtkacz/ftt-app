@@ -8,9 +8,9 @@
         md="6"
         class="d-flex flex-column"
       >
-        <v-card class="flex-grow-1 d-flex flex-column h-100 team-card" elevation="2">
+        <v-card class="flex-grow-1 d-flex flex-column h-100 team-card" variant="flat">
           <!-- Team Header -->
-          <v-card-item class="py-3 bg-surface-light">
+          <v-card-item class="team-card__header py-3">
             <template #prepend>
               <v-avatar v-if="summary.team.logo" size="40" class="mr-2 border">
                 <v-img :src="summary.team.logo" cover />
@@ -38,8 +38,8 @@
                 <!-- Player Asset -->
                 <v-list-item v-if="asset.asset_type === 'player' && asset.player_detail" class="py-3">
                   <template #prepend>
-                    <v-avatar color="primary-lighten-4" class="mr-3">
-                      <v-icon color="primary">person</v-icon>
+                    <v-avatar color="info" variant="tonal" class="mr-3">
+                      <v-icon color="info">person</v-icon>
                     </v-avatar>
                   </template>
 
@@ -100,7 +100,7 @@
           <v-divider />
 
           <!-- Impact Summary Footer -->
-          <v-sheet color="grey-lighten-4" class="px-4 py-3">
+          <v-sheet class="team-card__impact px-4 py-3">
              <div class="d-flex align-center justify-space-between mb-2">
                <span class="text-subtitle-2 font-weight-bold text-uppercase text-medium-emphasis">Net Impact</span>
              </div>
@@ -278,10 +278,23 @@ function formatCurrency(value: number): string {
   gap: 12px;
 }
 .team-card {
-  transition: transform 0.2s;
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 10px 30px rgba(4, 10, 24, 0.1);
+  transition: transform 0.2s, border-color 0.2s;
 }
-.team-card:hover {
-  /* Subtle lift on hover for desktop */
-  transform: translateY(-2px);
+
+.team-card__header,
+.team-card__impact {
+  background: rgba(var(--v-theme-on-surface), 0.035);
+}
+
+@media (hover: hover) {
+  .team-card:hover {
+    border-color: var(--surface-border-strong);
+    transform: translateY(-2px);
+  }
 }
 </style>

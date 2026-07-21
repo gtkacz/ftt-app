@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid class="trade-detail-view bg-grey-lighten-5 fill-height align-start">
+  <v-container fluid class="trade-detail-view page-view pa-0">
     <!-- Loading State -->
-    <div v-if="loading.currentTrade" class="d-flex justify-center align-center w-100 h-50">
+    <div v-if="loading.currentTrade" class="state-panel surface-card w-100">
       <div class="text-center">
         <v-progress-circular indeterminate color="primary" size="64" />
         <p class="text-h6 text-medium-emphasis mt-4">Loading trade details...</p>
@@ -17,15 +17,15 @@
             <v-btn
               variant="text"
               prepend-icon="arrow_back"
-              class="px-0 mb-2"
+              class="trade-detail-back px-0 mb-2"
               :ripple="false"
               @click="handleBack"
             >
               Back to Overview
             </v-btn>
             
-            <div class="d-flex align-center flex-wrap gap-3">
-              <h1 class="text-h4 font-weight-bold">Trade #{{ currentTrade.id }}</h1>
+            <div class="trade-detail-heading d-flex align-center flex-wrap gap-3">
+              <h1 class="page-title">Trade #{{ currentTrade.id }}</h1>
               
               <v-chip
                 :color="getStatusColor(computedStatus)"
@@ -145,9 +145,9 @@
             <div class="d-flex flex-column gap-4">
               
               <!-- Status & Info Card -->
-              <v-card elevation="1" border>
+              <v-card class="trade-detail-card" variant="flat">
                 <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold">
-                  <v-icon start color="primary" size="small">info</v-icon>
+                  <v-icon start color="info" size="small">info</v-icon>
                   Status Details
                 </v-card-title>
                 <v-divider />
@@ -197,7 +197,7 @@
 
           <!-- Timeline Column -->
           <v-col cols="12" lg="7">
-             <v-card elevation="1" border class="h-100">
+             <v-card variant="flat" class="trade-detail-card h-100">
                <TradeTimeline
                   :trade-id="currentTrade.id"
                   :history="displayedTimeline"
@@ -210,12 +210,12 @@
     </template>
 
     <!-- Error State -->
-    <div v-else class="d-flex justify-center align-center w-100 h-50">
+    <div v-else class="trade-detail-empty surface-card w-100">
       <div class="text-center">
         <v-icon size="64" color="error" class="mb-4">error_outline</v-icon>
         <h3 class="text-h5 mb-2">Trade Not Found</h3>
         <p class="text-body-1 text-medium-emphasis mb-6">The trade you are looking for does not exist or you don't have permission to view it.</p>
-        <v-btn color="primary" variant="flat" @click="handleBack">Back to Overview</v-btn>
+        <v-btn color="secondary" variant="flat" @click="handleBack">Back to Overview</v-btn>
       </div>
     </div>
 
@@ -803,7 +803,7 @@ onMounted(async () => {
 
 <style scoped>
 .trade-detail-view {
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 .mw-1200 {
@@ -822,5 +822,43 @@ onMounted(async () => {
 
 .border-t {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.trade-detail-card {
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 10px 30px rgba(4, 10, 24, 0.1);
+}
+
+.trade-detail-empty {
+  display: grid;
+  place-items: center;
+  min-height: min(520px, 60dvh);
+  padding: 40px 20px;
+}
+
+.trade-detail-back {
+  min-height: 44px;
+}
+
+@media (max-width: 600px) {
+  .trade-detail-heading {
+    align-items: flex-start !important;
+  }
+
+  .trade-detail-view :deep(.v-dialog .v-card-actions) {
+    display: grid;
+    gap: 8px;
+  }
+
+  .trade-detail-view :deep(.v-dialog .v-card-actions .v-spacer) {
+    display: none;
+  }
+
+  .trade-detail-view :deep(.v-dialog .v-card-actions .v-btn) {
+    width: 100%;
+  }
 }
 </style>

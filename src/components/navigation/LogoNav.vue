@@ -1,6 +1,6 @@
 <template>
   <div class="nav-logo-content" :class="{ expanded }">
-    <app-logo class="logo-icon" />
+    <app-logo class="logo-icon" :reactive="false" />
     <transition name="fade">
       <span v-if="expanded" class="logo-label">{{ label }}</span>
     </transition>
@@ -8,18 +8,16 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
+defineProps<{
   label: string
   expanded: boolean
-}
-const props = defineProps<Props>()
-const { label, expanded } = props
+}>()
 </script>
 
 <style scoped lang="scss">
 .nav-logo-content {
   position: relative;
-  width: 64px;
+  width: $navigation-rail-width;
   height: 40px;
   display: flex;
   align-items: center;
@@ -44,7 +42,7 @@ const { label, expanded } = props
 
 .logo-label {
   position: absolute;
-  left: 64px;
+  left: 66px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: bolder;
   white-space: nowrap;

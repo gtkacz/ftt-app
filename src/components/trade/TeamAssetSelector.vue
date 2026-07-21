@@ -46,7 +46,7 @@
     <v-tabs
       v-model="activeTab"
       density="compact"
-      color="primary"
+      color="secondary"
       grow
     >
       <v-tab value="players">
@@ -110,7 +110,7 @@
                       variant="outlined"
                       hide-details
                       class="asset-destination-select"
-                      bg-color="white"
+                      bg-color="surface"
                       @update:model-value="(value) => updatePlayerReceiver(player, value)"
                     >
                        <template #item="{ props, item }">
@@ -195,7 +195,7 @@
                       variant="outlined"
                       hide-details
                       class="asset-destination-select"
-                      bg-color="white"
+                      bg-color="surface"
                       @update:model-value="(value) => updatePickReceiver(pick, value)"
                     >
                         <template #item="{ props, item }">
@@ -530,12 +530,16 @@ function getPickProtectionRangeEnd(pick: Pick): number | undefined {
 
 <style scoped>
 .team-asset-selector {
+  flex: 0 0 350px;
+  max-width: calc(100vw - 54px);
   transition: box-shadow 0.2s;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.team-asset-selector:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+@media (hover: hover) {
+  .team-asset-selector:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+  }
 }
 
 .asset-item {

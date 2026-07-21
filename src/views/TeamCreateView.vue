@@ -1,90 +1,134 @@
 <template>
-	<v-container fluid class="fill-height ">
-		<v-row align="center" justify="center">
-			<v-col cols="12" sm="8" md="6" lg="4">
-				<v-card rounded="xl" class="pa-8 login-card">
-					<v-card-title class="text-h4 text-center pb-2">
-						<v-row align="center" justify="center" no-gutters><app-logo size="3ch" /></v-row>
-						<v-row align="center" justify="center">Create Team</v-row>
-					</v-card-title>
-					<v-card-subtitle class="text-center pb-4">
-						You must create a team to start playing.
-					</v-card-subtitle>
+  <AuthShell brand-to="/create-team" brand-label="Fantasy Trash Talk team setup" compact-on-mobile>
+    <div class="team-setup">
+      <div class="team-setup__icon" aria-hidden="true">
+        <v-icon icon="add_business" size="30" />
+      </div>
+      <p class="eyebrow">One last step</p>
+      <h2>Name your franchise</h2>
+      <p class="team-setup__intro">
+        Create your team identity now. You can refine the logo and roster once you enter the league.
+      </p>
 
-					<v-form @submit.prevent="handleCreateTeam" v-model="formValid">
-						<v-text-field rounded v-model="teamName" label="Team Name" variant="outlined"
-							append-inner-icon="account_box" :rules="[rules.required]" class="mb-3" color="secondary" />
+      <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" class="team-setup__alert">
+        {{ errorMessage }}
+      </v-alert>
 
-						<v-file-input rounded v-model="teamIcon" accept="image/*" label="Team Icon" prepend-icon=""
-							append-inner-icon="image" show-size truncate-length="15" color="primary" variant="outlined"
-							clearable single-line />
-						<!-- <v-row align="center" justify="center" class="mb-6">
-							<v-avatar size="48" class="mb-2" v-if="iconPreview">
-								<img :src="iconPreview" alt="Team Icon Preview" />
-							</v-avatar>
-							<v-avatar size="96" class="mb-2" v-else>
-								<v-icon size="48">hide_image</v-icon>
-							</v-avatar>
+      <v-form v-model="formValid" class="team-setup__form" @submit.prevent="handleCreateTeam">
+        <v-text-field v-model.trim="teamName" label="Team name" autocomplete="organization"
+          append-inner-icon="badge" :rules="[rules.required]" hide-details="auto" />
 
-						</v-row> -->
-						<v-btn type="submit" block size="large" :loading="authStore.isLoading"
-							:disabled="!formValid || authStore.isLoading" color="secondary" rounded="xl" class="my-4">
-							Create
-						</v-btn>
-					</v-form>
-				</v-card>
-			</v-col>
-		</v-row>
-	</v-container>
+        <v-file-input v-model="teamIcon" accept="image/png,image/jpeg,image/webp" label="Team logo (optional)"
+          prepend-icon="" append-inner-icon="add_photo_alternate" show-size clearable hide-details="auto" />
+
+        <p class="team-setup__hint">
+          <v-icon icon="info" size="17" />
+          PNG, JPG or WebP works best with a square image.
+        </p>
+
+        <v-btn type="submit" block size="large" height="52" :loading="isLoading"
+          :disabled="!formValid || isLoading" color="secondary">
+          Create team
+          <v-icon icon="arrow_forward" end />
+        </v-btn>
+      </v-form>
+    </div>
+  </AuthShell>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useAuthStore } from "@/stores/auth";
-import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import AuthShell from '@/components/auth/AuthShell.vue'
+import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore();
-const router = useRouter();
-const user = authStore.user;
+const authStore = useAuthStore()
+const router = useRouter()
 
-const teamName = ref('');
-const teamIcon = ref<File | null>(null);
-const formValid = ref(false);
-const isLoading = ref(false);
+const teamName = ref('')
+const teamIcon = ref<File | null>(null)
+const formValid = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
 const rules = {
-	required: (v: string) => !!v || 'This field is required',
-};
+  required: (value: string) => !!value || 'Enter a team name',
+}
 
-// const iconPreview = computed(() => {
-// 	if (teamIcon.value) return URL.createObjectURL(teamIcon.value);
-// 	return null;
-// });
+async function handleCreateTeam() {
+  if (!formValid.value || isLoading.value) return
 
-const handleCreateTeam = async () => {
-	if (!formValid.value) return;
-	isLoading.value = true;
+  const ownerId = authStore.user?.id
+  if (!ownerId) {
+    errorMessage.value = 'Your account could not be loaded. Sign in again and retry.'
+    return
+  }
 
-	const payload = new FormData();
-	payload.append('owner', user.id);
-	payload.append('name', teamName.value);
-	if (teamIcon.value) payload.append('icon', teamIcon.value);
+  isLoading.value = true
+  errorMessage.value = ''
 
-	try {
-		await authStore.createTeam(payload);
-		router.push('/');
-	} catch (error) {
-		console.error('Failed to create team:', error);
-	} finally {
-		isLoading.value = false;
-	}
-	isLoading.value = false;
-};
+  const payload = new FormData()
+  payload.append('owner', String(ownerId))
+  payload.append('name', teamName.value)
+  if (teamIcon.value) payload.append('icon', teamIcon.value)
+
+  try {
+    await authStore.createTeam(payload)
+    await router.push({ name: 'home' })
+  } catch (error) {
+    console.error('Failed to create team:', error)
+    errorMessage.value = 'We could not create your team. Check the details and try again.'
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
-.login-card {
-	background-color: transparent;
-	border: 1px solid rgb(var(--v-theme-on-surface));
+.team-setup__icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(var(--v-theme-secondary), 0.32);
+  border-radius: 18px;
+  color: rgb(var(--v-theme-secondary));
+  background: rgba(var(--v-theme-secondary), 0.1);
+}
+
+.team-setup h2 {
+  margin: 0;
+  color: rgb(var(--v-theme-on-surface));
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.team-setup__intro {
+  margin: 12px 0 0;
+  color: rgb(var(--v-theme-on-surface-variant));
+  line-height: 1.6;
+}
+
+.team-setup__alert {
+  margin-top: 22px;
+}
+
+.team-setup__form {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.team-setup__hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: -6px 2px 2px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 </style>

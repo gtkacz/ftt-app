@@ -1,25 +1,31 @@
 <template>
-  <img src="@/assets/logo.png" :width="logoSize" :height="logoSize" alt="Fantasy Trash Talk"
-    :class="{ 'app-logo': isReactive }" :style="{ width: logoSize, height: logoSize }" />
+  <img src="@/assets/logo.png" :width="size" :height="size" alt="Fantasy Trash Talk"
+    :class="{ 'app-logo--reactive': reactive }" :style="{ width: size, height: size }" />
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+withDefaults(defineProps<{
   size?: string;
   reactive?: boolean;
-}>();
-
-const logoSize = props.size || '32px';
-const isReactive = props.reactive || true;
+}>(), {
+  size: '32px',
+  reactive: true,
+});
 </script>
 
 <style lang="scss" scoped>
-.app-logo {
+.app-logo--reactive {
   transition: transform 0.3s ease;
   z-index: 2;
 
   &:hover {
     transform: scale(1.1);
+  }
+}
+
+@media (hover: none) {
+  .app-logo--reactive:hover {
+    transform: none;
   }
 }
 </style>

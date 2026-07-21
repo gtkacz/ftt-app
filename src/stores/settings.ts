@@ -85,6 +85,7 @@ export const useSettingsStore = defineStore('settings', {
      * Check if cache is still valid
      */
     isCacheValid(): boolean {
+      if (!this.lastFetched) return false;
       return SettingsService.isCacheValid();
     },
   },

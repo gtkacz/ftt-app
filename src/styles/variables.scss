@@ -2,11 +2,11 @@
 
 // Colors
 $primary-color: #0f183e;
-$secondary-color: #ff9000;
-$background-light: #ffffff;
-$background-dark: #121212;
+$secondary-color: #ff9518;
+$background-light: #f5f7fb;
+$background-dark: #070a16;
 $surface-light: #ffffff;
-$surface-dark: #1e1e1e;
+$surface-dark: #11172a;
 
 // Spacing
 $spacing-xs: 4px;
@@ -17,25 +17,32 @@ $spacing-xl: 32px;
 $spacing-xxl: 48px;
 
 // Border radius
-$border-radius-sm: 4px;
-$border-radius-md: 8px;
-$border-radius-lg: 12px;
-$border-radius-xl: 16px;
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 18px;
+$border-radius-xl: 24px;
 
 // Shadows
-$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-$shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-$shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
-$shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.1);
+$shadow-sm: 0 1px 2px rgba(7, 10, 22, 0.08), 0 4px 14px rgba(7, 10, 22, 0.04);
+$shadow-md: 0 8px 24px rgba(7, 10, 22, 0.1);
+$shadow-lg: 0 16px 40px rgba(7, 10, 22, 0.14);
+$shadow-xl: 0 28px 72px rgba(7, 10, 22, 0.2);
 
 // Transitions
-$transition-fast: 0.15s ease;
-$transition-normal: 0.3s ease;
-$transition-slow: 0.5s ease;
+$transition-fast: 0.14s cubic-bezier(0.2, 0, 0, 1);
+$transition-normal: 0.24s cubic-bezier(0.2, 0, 0, 1);
+$transition-slow: 0.4s cubic-bezier(0.2, 0, 0, 1);
 
 // Breakpoints
 $breakpoint-xs: 600px;
 $breakpoint-sm: 768px;
-$breakpoint-md: 1024px;
+$breakpoint-md: 960px; // Matches Vuetify's md threshold (mobileBreakpoint)
 $breakpoint-lg: 1280px;
 $breakpoint-xl: 1920px;
+
+// App shell dimensions
+$top-bar-height: 64px;
+$top-bar-height-mobile: 56px;
+$bottom-nav-height: 68px;
+$navigation-rail-width: 72px;
+$content-max-width: 1440px;

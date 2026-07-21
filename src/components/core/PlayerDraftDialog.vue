@@ -1,8 +1,9 @@
 <template>
 	<div>
 		<!-- Player avatar for other teams with player -->
-		<v-avatar v-if="player && ((!isStaff && team.id !== userTeamId) || disabled)" size="40" class="cursor-pointer"
-			@click="showPlayerDialog = true">
+		<v-avatar v-if="player && ((!isStaff && team.id !== userTeamId) || disabled)" size="44" class="cursor-pointer"
+			role="button" tabindex="0" :aria-label="`View ${playerFullName}`" @click="showPlayerDialog = true"
+			@keydown.enter="showPlayerDialog = true" @keydown.space.prevent="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template #error>
 					<v-icon size="40">account_circle</v-icon>
@@ -11,15 +12,16 @@
 		</v-avatar>
 
 		<!-- Draft button for user's team -->
-		<v-btn v-else-if="(team.id === userTeamId || isStaff) && pick?.is_current" icon variant="outlined" size="small"
-			@click="showDraftDialog = true" v-tooltip="'Draft a player'">
+		<v-btn v-else-if="(team.id === userTeamId || isStaff) && pick?.is_current" icon variant="outlined"
+			class="draft-player-action" aria-label="Draft a player" title="Draft a player" @click="showDraftDialog = true">
 			<v-icon>person_add</v-icon>
 		</v-btn>
 
 
 		<!-- Player avatar for user's team with player -->
-		<v-avatar v-else-if="player && pick?.is_pick_made" size="40" class="cursor-pointer"
-			@click="showPlayerDialog = true">
+		<v-avatar v-else-if="player && pick?.is_pick_made" size="44" class="cursor-pointer"
+			role="button" tabindex="0" :aria-label="`View ${playerFullName}`" @click="showPlayerDialog = true"
+			@keydown.enter="showPlayerDialog = true" @keydown.space.prevent="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template #error>
 					<v-icon size="40">account_circle</v-icon>
@@ -43,10 +45,11 @@
 				<v-card-title>
 					Draft a Player
 					<v-btn v-if="team.id === userTeamId || isStaff" variant="tonal" icon
-						@click="showDraftDialog = false">
+						aria-label="Close draft dialog" @click="showDraftDialog = false">
 						<v-icon icon="smart_toy" />
 					</v-btn>
-					<v-btn variant="text" icon @click="showDraftDialog = false" class="float-right">
+					<v-btn variant="text" icon aria-label="Close draft dialog"
+						@click="showDraftDialog = false" class="float-right">
 						<v-icon>close</v-icon>
 					</v-btn>
 				</v-card-title>
@@ -66,9 +69,10 @@
 <script setup lang="ts">
 import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
-import { computed, ref } from 'vue';
-import PlayersTable from '@/components/core/PlayersTable.vue';
-import PlayerCard from '@/components/core/PlayerCard.vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
+
+const PlayerCard = defineAsyncComponent(() => import('@/components/core/PlayerCard.vue'))
+const PlayersTable = defineAsyncComponent(() => import('@/components/core/PlayersTable.vue'))
 
 // Props
 const props = withDefaults(defineProps<{
@@ -77,7 +81,7 @@ const props = withDefaults(defineProps<{
 		[key: string]: any
 	}
 	draftablePlayers: any[]
-	player?: object | null
+	player?: any | null
 	pick?: any
 	disabled: boolean
 }>(), {
@@ -85,7 +89,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-	'player-selected': (player: any) => void
+	'player-selected': [player: any]
 }>();
 
 // State
@@ -131,5 +135,10 @@ const onDraftPlayer = (playerId: number) => {
 <style scoped lang="scss">
 .cursor-pointer {
 	cursor: pointer;
+}
+
+.draft-player-action {
+	width: 44px;
+	height: 44px;
 }
 </style>

@@ -1,19 +1,30 @@
 <template>
-  <v-progress-circular v-if="loading" indeterminate color="primary" />
-  <v-container v-else fluid class="dashboard-container">
+  <div v-if="loading" class="state-panel dashboard-loading">
+    <div>
+      <v-progress-circular indeterminate color="secondary" size="48" width="4" />
+      <p>Building your team dashboard…</p>
+    </div>
+  </div>
+  <v-container v-else fluid class="dashboard-container page-view pa-0">
     <!-- Team Header -->
     <v-row>
       <v-col cols="12">
-        <v-card class="team-header pa-4" elevation="4">
-          <v-card-text>
-            <div class="d-flex align-center">
-              <v-avatar size="80" class="me-4">
+        <v-card class="team-header" variant="flat">
+          <div class="team-header__court" aria-hidden="true" />
+          <v-card-text class="team-header__content">
+            <div class="team-header__identity">
+              <v-avatar size="76" class="team-header__avatar">
                 <v-img :src="simulatedTeamData.avatar || defaultAvatar" alt="Team Avatar"></v-img>
               </v-avatar>
               <div>
-                <h1 class="text-h3 font-weight-bold text-white">{{ simulatedTeamData.name }}</h1>
-                <p class="text-h6 text-grey-lighten-2">@{{ simulatedTeamData.owner_username }}</p>
+                <p class="eyebrow">Team command center</p>
+                <h1>{{ simulatedTeamData.name }}</h1>
+                <p class="team-header__manager">Managed by @{{ simulatedTeamData.owner_username }}</p>
               </div>
+            </div>
+            <div class="team-header__summary">
+              <small>Current roster</small>
+              <strong>{{ simulatedTeamData.total_players }} players · ${{ simulatedTeamData.total_salary }}M</strong>
             </div>
           </v-card-text>
         </v-card>
@@ -30,18 +41,15 @@
           </v-card-title>
           <v-card-text>
             <v-row>
-              <v-col cols="6" md="3">
-                <v-autocomplete rounded :items="availableFreeAgents"
-                  :item-title="(item) => item.header ? item.header : `${item.first_name} ${item.last_name} (${item.primary_position}) - $${item.contract?.salary}M`"
-                  :item-value="(item) => item.header || item.divider ? null : item" label="Select Player"
-                  variant="outlined" clearable clear-on-select autocomplete="off"
-                  @update:model-value="(player) => player && addSimulatedPlayer(player)">
+              <v-col cols="12" md="4">
+                <v-autocomplete v-model="playerSelection" rounded :items="availableFreeAgents"
+                  :item-title="formatPlayerTitle" item-value="id" label="Select Player" return-object
+                  variant="outlined" clearable autocomplete="off" no-data-text="No eligible players found"
+                  class="player-simulation-select" v-combobox-label="'Select a player to simulate'"
+                  :menu-props="{ maxWidth: 520 }" @update:model-value="handlePlayerSelection">
                   <template v-slot:item="{ props, item }">
-                    <v-list-subheader v-if="item.raw.header" :key="item.raw.header">
-                      {{ item.raw.header }}
-                    </v-list-subheader>
-                    <v-divider v-else-if="item.raw.divider" :key="'divider'"></v-divider>
-                    <v-list-item v-else v-bind="props">
+                    <v-list-item v-bind="props"
+                      :subtitle="item.raw.contract?.team === 0 ? 'Free agent' : 'Other team roster'">
                       <template v-slot:prepend>
                         <v-chip :color="getPositionColor(item.raw.primary_position)" size="small">
                           {{ item.raw.primary_position }}
@@ -54,7 +62,7 @@
                   </template>
                 </v-autocomplete>
               </v-col>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="8">
                 <div v-if="simulatedPlayers.length > 0">
                   <v-card-text class="pa-0 mb-2">Simulated Additions:</v-card-text>
                   <div class="d-flex flex-wrap align-center gap-2">
@@ -65,7 +73,7 @@
                         <v-img :src="player.photo || '/placeholder-player.png'"
                           :alt="`${player.first_name} ${player.last_name}`" cover>
                           <template #error>
-                            <v-icon size="24">account</v-icon>
+                            <v-icon size="24">account_circle</v-icon>
                           </template>
                         </v-img>
                       </v-avatar>
@@ -82,8 +90,8 @@
 
     <!-- Overview Cards -->
     <v-row class="my-4">
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3" max-height="150">
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -106,8 +114,8 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3" max-height="150">
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -131,8 +139,8 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3" max-height="150">
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -149,14 +157,14 @@
                   </v-chip>
                 </div>
               </div>
-              <v-icon color="purple" size="40">trophy</v-icon>
+              <v-icon color="info" size="40">trophy</v-icon>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="3" class="stat-card pa-3" max-height="150">
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="3" class="stat-card pa-3">
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
@@ -192,7 +200,7 @@
                   <v-card-title class="text-h6 pb-2">
                     {{ lineup.name }}
                     <v-spacer></v-spacer>
-                    <v-chip color="primary" variant="tonal" size="small">
+                    <v-chip color="info" variant="tonal" size="small">
                       {{ lineup.totalFpts.toFixed(1) }} Total FPTS
                     </v-chip>
                     <v-chip v-if="leagueStats && index === 0" variant="tonal" size="small" color="secondary"
@@ -268,7 +276,7 @@
                     <v-img :src="player.photo || '/placeholder-player.png'"
                       :alt="`${player.first_name} ${player.last_name}`" cover>
                       <template #error>
-                        <v-icon size="24">account</v-icon>
+                        <v-icon size="24">account_circle</v-icon>
                       </template>
                     </v-img>
                   </v-avatar>{{ player.first_name }} {{ player.last_name
@@ -295,7 +303,7 @@
                   <v-chip :color="position.color" variant="tonal">
                     {{ position.name }} ({{ position.count }})
                   </v-chip>
-                  <v-chip color="primary" variant="outlined" size="small">
+                  <v-chip color="info" variant="outlined" size="small">
                     {{ position.capPercentage }}% of cap
                   </v-chip>
                 </div>
@@ -460,7 +468,7 @@
               <v-col cols="6">
                 <div class="d-flex justify-space-between">
                   <span>Team Options:</span>
-                  <v-chip color="purple" variant="tonal" size="small">{{ contractStats.teamOptions }}</v-chip>
+                  <v-chip color="secondary" variant="tonal" size="small">{{ contractStats.teamOptions }}</v-chip>
                 </div>
               </v-col>
             </v-row>
@@ -486,7 +494,7 @@
                         <v-chip v-if="player.contract.is_rfa" color="info" variant="tonal" size="x-small" class="ml-2">
                           RFA
                         </v-chip>
-                        <v-chip v-if="player.contract.is_to" color="purple" variant="tonal" size="x-small" class="ml-2">
+                        <v-chip v-if="player.contract.is_to" color="secondary" variant="tonal" size="x-small" class="ml-2">
                           TO
                         </v-chip>
                       </v-list-item-title>
@@ -513,7 +521,7 @@
                         <v-chip v-if="player.contract.is_rfa" color="info" variant="tonal" size="x-small" class="ml-2">
                           RFA
                         </v-chip>
-                        <v-chip v-if="player.contract.is_to" color="purple" variant="tonal" size="x-small" class="ml-2">
+                        <v-chip v-if="player.contract.is_to" color="secondary" variant="tonal" size="x-small" class="ml-2">
                           TO
                         </v-chip>
                       </v-list-item-title>
@@ -599,7 +607,7 @@
             <div v-for="year in Object.keys(draftPicks).sort()" :key="year" class="mb-4">
               <div class="d-flex justify-space-between align-center mb-2">
                 <v-card-subtitle class="pa-0 text-h6">{{ year }} Draft</v-card-subtitle>
-                <v-chip color="primary" variant="tonal">
+                <v-chip color="info" variant="tonal">
                   {{ draftPicks[year].length }} picks
                 </v-chip>
               </div>
@@ -682,7 +690,7 @@
                 <v-list-item class="px-0">
                   <v-list-item-title>Experience:</v-list-item-title>
                   <template v-slot:append>
-                    <v-chip color="purple" variant="tonal" size="small">{{ teamMetrics.avgExperience.toFixed(1) }}
+                    <v-chip color="secondary" variant="tonal" size="small">{{ teamMetrics.avgExperience.toFixed(1) }}
                       yrs</v-chip>
                   </template>
                 </v-list-item>
@@ -708,8 +716,24 @@
 
 <script setup lang="ts">
 import api from '@/api/axios';
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+function applyComboboxLabel(element: HTMLElement, label: string) {
+  const combobox = element.matches('[role="combobox"]')
+    ? element
+    : element.querySelector<HTMLElement>('[role="combobox"]');
+  combobox?.setAttribute('aria-label', label);
+}
+
+const vComboboxLabel = {
+  mounted(element: HTMLElement, binding: { value: string }) {
+    applyComboboxLabel(element, binding.value);
+  },
+  updated(element: HTMLElement, binding: { value: string }) {
+    applyComboboxLabel(element, binding.value);
+  },
+};
 
 const loading = ref(true);
 const route = useRoute();
@@ -780,29 +804,15 @@ const teamData = ref<TeamData>({
 const freeAgents = ref<Player[]>([])
 const simulatedPlayers = ref<Player[]>([])
 const leagueTeams = ref<TeamData[]>([])
+const playerSelection = ref<Player | null>(null)
 
 const availableFreeAgents = computed(() => {
   const addedPlayerIds = simulatedPlayers.value.map(p => Math.abs(p.id))
-  const available = freeAgents.value.filter(agent => !addedPlayerIds.includes(agent.id))
-
-  const freeAgentsOnly = available.filter(player => !player.contract || player.contract?.team === 0)
-  const otherTeamPlayers = available.filter(player => player.contract && player.contract?.team !== 0)
-
-  const result = []
-
-  if (freeAgentsOnly.length > 0) {
-    result.push({ header: 'Free Agents' })
-    result.push(...freeAgentsOnly)
-  }
-
-  if (otherTeamPlayers.length > 0) {
-    if (result.length > 0) result.push({ divider: true })
-    result.push({ header: "Other Team's Players" })
-    result.push(...otherTeamPlayers)
-  }
-
-  return result
+  return freeAgents.value.filter(agent => !addedPlayerIds.includes(agent.id))
 })
+
+const formatPlayerTitle = (player: Player) =>
+  `${player.first_name} ${player.last_name} (${player.primary_position}) · $${player.contract.salary}M`
 
 const allPlayers = computed(() => [
   ...teamData.value.players,
@@ -857,9 +867,9 @@ const getPlayerExperience = (metadata: string): number => {
 
 const getPositionColor = (position: string): string => {
   switch (position) {
-    case 'G': return 'blue'
-    case 'F': return 'green'
-    case 'C': return 'red'
+    case 'G': return 'info'
+    case 'F': return 'success'
+    case 'C': return 'danger'
     default: return 'grey'
   }
 }
@@ -1297,6 +1307,14 @@ const addSimulatedPlayer = (player: Player) => {
   simulatedPlayers.value.push(simulatedPlayer)
 }
 
+const handlePlayerSelection = async (player: Player | null) => {
+  if (!player) return
+
+  addSimulatedPlayer(player)
+  await nextTick()
+  playerSelection.value = null
+}
+
 const removeSimulatedPlayer = (playerId: number) => {
   simulatedPlayers.value = simulatedPlayers.value.filter(p => p.id !== playerId)
 }
@@ -1323,7 +1341,7 @@ const fetchFreeAgents = async (): Promise<Player[]> => {
 
   const players = raw_data.filter(player => {
     return !player.contract || Object.keys(player.contract).length === 0
-      || (player.contract && player.contract.team !== teamId)
+      || (player.contract && Number(player.contract.team) !== Number(teamId))
   }) as Player[]
 
   // For players with no contract, set a default contract structure
@@ -1368,11 +1386,107 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .dashboard-container {
-  min-height: 100vh;
+  min-height: 100%;
+}
+
+.dashboard-loading {
+  color: rgb(var(--v-theme-on-surface-variant));
+
+  > div {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+  }
+
+  p {
+    margin: 0;
+  }
 }
 
 .team-header {
-  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(var(--v-theme-secondary), 0.18), transparent 18rem),
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.96), rgba(var(--v-theme-surface), 0.96));
+
+  &__court {
+    position: absolute;
+    top: 50%;
+    right: clamp(-90px, -5vw, -20px);
+    z-index: -1;
+    width: clamp(220px, 30vw, 420px);
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    transform: translateY(-50%);
+  }
+
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: clamp(24px, 4vw, 42px) !important;
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+
+    > div {
+      min-width: 0;
+    }
+  }
+
+  &__avatar {
+    flex: 0 0 auto;
+    border: 1px solid rgba(var(--v-theme-secondary), 0.34);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  h1 {
+    overflow-wrap: anywhere;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.85rem, 4vw, 3.5rem);
+    font-weight: 760;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  &__manager {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.9rem;
+  }
+
+  &__summary {
+    display: grid;
+    flex: 0 0 auto;
+    gap: 3px;
+    min-width: 210px;
+    padding: 15px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: $border-radius-md;
+    color: #fff;
+    background: rgba(7, 10, 22, 0.28);
+
+    small {
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-size: 0.88rem;
+    }
+  }
 
   .v-card-text {
     color: white;
@@ -1380,9 +1494,12 @@ onMounted(async () => {
 }
 
 .stat-card {
-  transition: transform 0.2s ease-in-out;
+  height: 100%;
+  transition: transform $transition-fast;
+}
 
-  &:hover {
+@media (hover: hover) {
+  .stat-card:hover {
     transform: translateY(-2px);
   }
 }
@@ -1390,6 +1507,82 @@ onMounted(async () => {
 .v-expansion-panels {
   .v-expansion-panel {
     margin-bottom: 8px;
+  }
+}
+
+.dashboard-container > .v-row > .v-col > .v-card:not(.team-header) {
+  height: 100%;
+  border-color: var(--surface-border);
+  background: rgb(var(--v-theme-surface));
+}
+
+.dashboard-container :deep(.v-card-title) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+.dashboard-container :deep(.v-chip) {
+  max-width: 100%;
+}
+
+.dashboard-container :deep(.v-chip--link) {
+  min-height: 44px;
+}
+
+.player-simulation-select :deep(.v-field__append-inner .v-icon[role="button"]) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .team-header__content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .team-header__summary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-container :deep(.v-card-title) {
+    font-size: 1rem;
+  }
+
+  .dashboard-container :deep(.v-chip__content) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: $breakpoint-xs) {
+  .team-header__content {
+    padding: 22px 20px !important;
+  }
+
+  .team-header__identity {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-container :deep(.v-card) {
+    border-radius: 16px;
+  }
+
+  .dashboard-container :deep(.v-card-title) {
+    padding: 16px 14px 10px;
+  }
+
+  .dashboard-container :deep(.v-card-text) {
+    padding: 14px;
+  }
+
+  .dashboard-container :deep(.text-body-2 > .v-col) {
+    flex: 0 0 50%;
+    max-width: 50%;
   }
 }
 </style>

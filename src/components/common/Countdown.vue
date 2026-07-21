@@ -1,6 +1,6 @@
 <template>
 	<div :class="[containerClass, { 'text-danger': isExpired, 'frozen': frozen }]" :style="{ width: widthPx }"
-		v-tooltip="actualDate">
+		:title="actualDate">
 		<!-- LABEL SLOT -->
 		<slot name="label" :formatted-time="formattedTime" :is-expired="isExpired" :is-frozen="frozen">
 			<!-- default label -->
@@ -29,7 +29,7 @@ import {
 	watch,
 	nextTick,
 } from 'vue'
-import moment from 'moment'
+import dayjs from '@/utils/dayjs'
 
 const props = withDefaults(
 	defineProps<{
@@ -65,14 +65,14 @@ const widthPx = ref<string>('auto')
 
 const actualDate = computed(() => {
 	return props.timestamp
-		? moment.unix(props.value).format('YYYY-MM-DD HH:mm')
-		: moment().add(props.value, 'seconds').format('YYYY-MM-DD HH:mm')
+		? dayjs.unix(props.value).format('YYYY-MM-DD HH:mm')
+		: dayjs().add(props.value, 'second').format('YYYY-MM-DD HH:mm')
 })
 
 // compute remaining seconds (for both timestamp and plain‑seconds modes)
 const computedSeconds = computed(() => {
 	if (props.timestamp) {
-		const diff = moment.unix(props.value).diff(moment(), 'seconds', true)
+		const diff = dayjs.unix(props.value).diff(dayjs(), 'second', true)
 		return Math.max(0, Math.ceil(diff))
 	}
 	return props.value

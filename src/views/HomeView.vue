@@ -1,91 +1,591 @@
 <template>
-  <div class="home-view">
-    <div class="welcome-container">
-      <div class="welcome-content">
-        <div class="welcome-icon">
-          <app-logo size="288px" class="animate__animated animate__fadeInDown" />
+  <div class="home-view page-view">
+    <section class="home-hero">
+      <div class="home-hero__court" aria-hidden="true">
+        <span />
+      </div>
+
+      <div class="home-hero__copy">
+        <p class="eyebrow">Front office online</p>
+        <h1>{{ greeting }}, <span>{{ firstName }}</span>.</h1>
+        <p>
+          Your league is ready. Check the roster, scout the player pool, or start working the next deal.
+        </p>
+
+        <div class="home-hero__actions">
+          <router-link :to="teamRoute" class="home-button home-button--primary">
+            Open my roster
+            <v-icon icon="arrow_forward" size="20" />
+          </router-link>
+          <router-link :to="{ name: 'trade-overview' }" class="home-button home-button--quiet">
+            Trade center
+          </router-link>
+        </div>
+      </div>
+
+      <aside class="team-spotlight" aria-label="Current team">
+        <div class="team-spotlight__topline">
+          <span class="team-spotlight__status"><i aria-hidden="true" /> Active team</span>
+          <span class="team-spotlight__season">League HQ</span>
         </div>
 
-        <h1 class="welcome-title animate__animated animate__fadeInUp">
-          Welcome to <span class="highlight">Fantasy Trash Talk</span>, {{ user.first_name || 'Guest' }}!
-        </h1>
+        <div class="team-spotlight__identity">
+          <v-avatar size="72" color="primary" class="team-spotlight__avatar">
+            <v-img v-if="user?.team?.avatar" :src="user.team.avatar" :alt="`${teamName} avatar`" cover />
+            <app-logo v-else size="48px" :reactive="false" />
+          </v-avatar>
+          <div>
+            <small>Your franchise</small>
+            <h2>{{ teamName }}</h2>
+            <p>@{{ user?.username }}</p>
+          </div>
+        </div>
 
-        <!-- <p class="welcome-subtitle animate__animated animate__fadeIn">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit
-        </p> -->
+        <router-link :to="{ name: 'dashboard', params: { id: teamId } }" class="team-spotlight__dashboard">
+          <span>
+            <small>Team command center</small>
+            <strong>Lineups, cap and projections</strong>
+          </span>
+          <v-icon icon="arrow_outward" size="22" />
+        </router-link>
+      </aside>
+    </section>
+
+    <section class="home-section" aria-labelledby="quick-actions-title">
+      <div class="home-section__header">
+        <div>
+          <p class="eyebrow">Quick actions</p>
+          <h2 id="quick-actions-title" class="section-title">What’s the next move?</h2>
+        </div>
+        <p>Everything your front office needs, one tap away.</p>
       </div>
-    </div>
+
+      <div class="quick-grid">
+        <router-link v-for="action in quickActions" :key="action.label" :to="action.to" class="quick-card">
+          <span class="quick-card__icon" :class="`quick-card__icon--${action.tone}`">
+            <v-icon :icon="action.icon" size="25" />
+          </span>
+          <span class="quick-card__content">
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.description }}</small>
+          </span>
+          <v-icon class="quick-card__arrow" icon="arrow_forward" size="20" />
+        </router-link>
+      </div>
+    </section>
+
+    <section v-if="authStore.isStaff" class="commission-callout">
+      <span class="commission-callout__icon"><v-icon icon="manage_accounts" size="24" /></span>
+      <div>
+        <p class="eyebrow">Commissioner tools</p>
+        <h2 class="section-title">Keep the league moving</h2>
+        <p>Review members, settings and pending league actions from the commission desk.</p>
+      </div>
+      <router-link :to="{ name: 'commission' }" class="home-button home-button--quiet">
+        Open commission
+        <v-icon icon="arrow_forward" size="19" />
+      </router-link>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
+const firstName = computed(() => user.value?.first_name || user.value?.username || 'Manager')
+const teamName = computed(() => user.value?.team?.name || 'My team')
+const teamId = computed(() => user.value?.team?.id || '')
+const teamRoute = computed(() => ({ name: 'team', params: { id: teamId.value } }))
+
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+})
+
+const quickActions = computed(() => [
+  {
+    label: 'My team',
+    description: 'Review players, contracts and roster balance.',
+    icon: 'person_play',
+    tone: 'blue',
+    to: teamRoute.value,
+  },
+  {
+    label: 'Player directory',
+    description: 'Scout the league and find the next addition.',
+    icon: 'clinical_notes',
+    tone: 'cyan',
+    to: { name: 'players' },
+  },
+  {
+    label: 'Trade center',
+    description: 'Build offers and track every conversation.',
+    icon: 'handshake',
+    tone: 'orange',
+    to: { name: 'trade-overview' },
+  },
+  {
+    label: 'Team analytics',
+    description: 'Model lineups, cap room and projections.',
+    icon: 'analytics',
+    tone: 'violet',
+    to: { name: 'dashboard', params: { id: teamId.value } },
+  },
+])
 </script>
 
 <style lang="scss" scoped>
 .home-view {
-  min-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: clamp(28px, 4vw, 46px);
 }
 
-.welcome-container {
-  flex: 1;
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 84px);
+  min-height: clamp(430px, 59vh, 620px);
+  overflow: hidden;
+  padding: clamp(28px, 5vw, 72px);
+  border: 1px solid var(--surface-border);
+  border-radius: $border-radius-xl;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(var(--v-theme-secondary), 0.12), transparent 24rem),
+    linear-gradient(145deg, rgba(var(--v-theme-primary), 0.32), rgba(var(--v-theme-surface), 0.96) 62%);
+  box-shadow: $shadow-md;
+}
+
+.home-hero__court {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: 54%;
+    width: 1px;
+    background: rgba(var(--v-theme-on-surface), 0.07);
+  }
+
+  span {
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    width: min(36vw, 470px);
+    aspect-ratio: 1;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.07);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.home-hero__copy {
+  max-width: 760px;
+
+  h1 {
+    max-width: 12ch;
+    margin: 0;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: clamp(2.8rem, 5.7vw, 6rem);
+    font-weight: 790;
+    letter-spacing: -0.065em;
+    line-height: 0.96;
+
+    span {
+      color: rgb(var(--v-theme-secondary));
+    }
+  }
+
+  > p:not(.eyebrow) {
+    max-width: 54ch;
+    margin: 24px 0 0;
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: clamp(1rem, 1.2vw, 1.12rem);
+    line-height: 1.7;
+  }
+}
+
+.home-hero__actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.home-button {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, rgba(15, 24, 62, 0.05) 0%, rgba(255, 144, 0, 0.05) 100%);
-  border-radius: 16px;
-  margin-bottom: 40px;
+  gap: 9px;
+  min-height: 48px;
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  border-radius: $border-radius-md;
+  font-size: 0.9rem;
+  font-weight: 720;
+  transition: transform $transition-fast, border-color $transition-fast, background-color $transition-fast;
+
+  &--primary {
+    color: rgb(var(--v-theme-on-secondary));
+    background: rgb(var(--v-theme-secondary));
+    box-shadow: 0 10px 24px rgba(var(--v-theme-secondary), 0.18);
+  }
+
+  &--quiet {
+    border-color: var(--surface-border-strong);
+    color: rgb(var(--v-theme-on-surface));
+    background: rgba(var(--v-theme-surface), 0.58);
+  }
 }
 
-.welcome-content {
-  text-align: center;
-  max-width: 600px;
+.team-spotlight {
+  position: relative;
+  padding: clamp(22px, 3vw, 30px);
+  border: 1px solid var(--surface-border-strong);
+  border-radius: $border-radius-xl;
+  background: rgba(var(--v-theme-surface), 0.88);
+  box-shadow: $shadow-lg;
 }
 
-.welcome-icon {
-  margin-bottom: 32px;
+.team-spotlight__topline,
+.team-spotlight__identity,
+.team-spotlight__dashboard {
+  display: flex;
+  align-items: center;
+}
 
-  img {
-    transition: transform 0.2s ease;
+.team-spotlight__topline {
+  justify-content: space-between;
+  gap: 12px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
-    &:hover {
-      transform: scale(1.1);
+.team-spotlight__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgb(var(--v-theme-success));
+    box-shadow: 0 0 0 4px rgba(var(--v-theme-success), 0.12);
+  }
+}
+
+.team-spotlight__identity {
+  gap: 16px;
+  margin-top: 28px;
+
+  > div:last-child {
+    min-width: 0;
+  }
+
+  small,
+  p {
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  small {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 650;
+  }
+
+  h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 3px 0;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+  }
+}
+
+.team-spotlight__avatar {
+  flex: 0 0 auto;
+  border: 1px solid rgba(var(--v-theme-secondary), 0.25);
+  background: rgba(var(--v-theme-primary), 0.65) !important;
+}
+
+.team-spotlight__dashboard {
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 26px;
+  padding: 15px 16px;
+  border: 1px solid var(--surface-border);
+  border-radius: $border-radius-md;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgba(var(--v-theme-on-surface), 0.035);
+
+  span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  small {
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.68rem;
+  }
+
+  strong {
+    font-size: 0.82rem;
+    font-weight: 680;
+  }
+}
+
+.home-section {
+  display: grid;
+  gap: 20px;
+}
+
+.home-section__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+
+  > p {
+    max-width: 38ch;
+    margin: 0;
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.9rem;
+    text-align: right;
+  }
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quick-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid var(--surface-border);
+  border-radius: $border-radius-lg;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgb(var(--v-theme-surface));
+  box-shadow: $shadow-sm;
+  transition: transform $transition-fast, border-color $transition-fast, box-shadow $transition-fast;
+}
+
+.quick-card__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+
+  &--blue {
+    color: #8fa4ff;
+    background: rgba(91, 113, 220, 0.14);
+  }
+
+  &--cyan {
+    color: rgb(var(--v-theme-info));
+    background: rgba(var(--v-theme-info), 0.12);
+  }
+
+  &--orange {
+    color: rgb(var(--v-theme-secondary));
+    background: rgba(var(--v-theme-secondary), 0.12);
+  }
+
+  &--violet {
+    color: #c6a7ff;
+    background: rgba(144, 97, 249, 0.13);
+  }
+}
+
+.quick-card__content {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 720;
+  }
+
+  small {
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+}
+
+.quick-card__arrow {
+  color: rgb(var(--v-theme-on-surface-variant));
+  transition: transform $transition-fast, color $transition-fast;
+}
+
+.commission-callout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid rgba(var(--v-theme-secondary), 0.2);
+  border-radius: $border-radius-lg;
+  background: rgba(var(--v-theme-secondary), 0.055);
+
+  p:not(.eyebrow) {
+    margin: 7px 0 0;
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.86rem;
+  }
+}
+
+.commission-callout__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  color: rgb(var(--v-theme-secondary));
+  background: rgba(var(--v-theme-secondary), 0.12);
+}
+
+@media (hover: hover) {
+  .home-button:hover,
+  .quick-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .quick-card:hover {
+    border-color: rgba(var(--v-theme-secondary), 0.28);
+    box-shadow: $shadow-md;
+
+    .quick-card__arrow {
+      color: rgb(var(--v-theme-secondary));
+      transform: translateX(3px);
     }
   }
 }
 
-.welcome-title {
-  font-size: 3rem;
-  font-weight: normal;
-  color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 16px;
-  line-height: 1.2;
-
-  .highlight {
-    color: rgb(var(--v-theme-secondary));
-    font-weight: bolder;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
+@media (max-width: #{$breakpoint-lg - 1px}) {
+  .quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.welcome-subtitle {
-  font-size: 1.25rem;
-  color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 40px;
-  font-weight: 400;
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
 
-  @media (max-width: 768px) {
-    font-size: 1.1rem;
+  .home-hero__copy h1 {
+    max-width: 10ch;
+  }
+
+  .home-hero__court::before,
+  .home-hero__court span {
+    left: 82%;
+  }
+}
+
+@media (max-width: $breakpoint-xs) {
+  .home-view {
+    gap: 30px;
+  }
+
+  .home-hero {
+    gap: 28px;
+    margin: -2px;
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .home-hero__copy h1 {
+    max-width: 11ch;
+    font-size: clamp(2.55rem, 13vw, 3.7rem);
+  }
+
+  .home-hero__copy > p:not(.eyebrow) {
+    margin-top: 18px;
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+
+  .home-hero__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .home-button {
+    width: 100%;
+  }
+
+  .team-spotlight {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .team-spotlight__identity {
+    margin-top: 22px;
+  }
+
+  .home-section__header {
+    display: block;
+
+    > p {
+      margin-top: 8px;
+      text-align: left;
+    }
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .quick-card {
+    min-height: 94px;
+    padding: 15px;
+  }
+
+  .commission-callout {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    .home-button {
+      grid-column: 1 / -1;
+    }
   }
 }
 </style>

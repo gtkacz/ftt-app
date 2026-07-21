@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- Notification Button with Badge -->
-		<v-btn icon variant="text" ref="menuActivator">
+		<v-btn icon variant="text" ref="menuActivator" aria-label="Open notifications">
 			<v-badge :content="unreadCount" :model-value="unreadCount > 0" color="error" overlap>
 				<v-icon>notifications</v-icon>
 			</v-badge>
@@ -9,7 +9,7 @@
 
 		<!-- Notifications Menu -->
 		<v-menu v-model="menuOpen" :activator="menuActivator" location="bottom end" offset="8"
-			:close-on-content-click="false" width="400">
+			:close-on-content-click="false" width="400" max-width="calc(100vw - 24px)">
 			<v-card class="notification-menu">
 				<v-card-title class="d-flex align-center justify-space-between pa-4">
 					<span class="text-h6">Notifications</span>
@@ -343,6 +343,12 @@ onUnmounted(() => {
 
 .notification-item:hover .mark-read-btn {
 	opacity: 1;
+}
+
+@media (hover: none) {
+	.mark-read-btn {
+		opacity: 1;
+	}
 }
 
 .redirect-icon {

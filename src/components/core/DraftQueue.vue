@@ -3,7 +3,7 @@
 		<v-menu v-model="menuOpen" :close-on-content-click="false" attach transition="fade-transition" max-width="800"
 			max-height="600">
 			<template #activator="{ props }">
-				<v-btn v-bind="props" variant="outlined" prepend-icon="queue"
+				<v-btn v-bind="props" variant="outlined" prepend-icon="queue" class="draft-queue-trigger"
 					:color="queuePlayers.length > 0 ? 'primary' : undefined" rounded>
 					<v-badge :content="queuePlayers.length" :model-value="queuePlayers.length > 0" color="success">
 						Draft Queue
@@ -20,8 +20,8 @@
 					<v-card-title class="d-flex align-center justify-space-between pa-6" rounded>
 						<p class="d-flex align-center ga-1">
 							<span>Draft Queue</span>
-							<v-icon icon="help" variant="outlined" filled="false" size="x-small"
-								v-tooltip="'Players in your draft queue will be autopicked for you if they are available at the time of your next pick'" />
+							<v-icon icon="help" filled="false" size="x-small"
+								title="Players in your draft queue will be autopicked when available at your next pick" />
 						</p>
 						<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
 							{{ queuePlayers.length }} player{{ queuePlayers.length !== 1 ? 's' : '' }}
@@ -95,8 +95,8 @@
 										</div>
 
 										<template #append>
-											<v-btn icon size="small" variant="text" color="error"
-												@click="removeFromQueue(index)" v-tooltip="'Remove from queue'">
+											<v-btn icon variant="text" color="error" class="queue-remove-btn"
+												aria-label="Remove from queue" title="Remove from queue" @click="removeFromQueue(index)">
 												<v-icon size="18">close</v-icon>
 											</v-btn>
 										</template>
@@ -110,17 +110,17 @@
 
 					<v-card-actions class="justify-space-between pa-4">
 						<v-btn @click="discardChanges" icon variant="text" color="grey" class="action-btn"
-							:disabled="!hasChanges" v-tooltip="'Discard Changes'">
+							:disabled="!hasChanges" aria-label="Discard changes" title="Discard changes">
 							<v-icon>undo</v-icon>
 						</v-btn>
 						<div class="d-flex ga-2">
 							<v-btn @click="clearQueue" icon color="error" class="action-btn"
-								:disabled="queuePlayers.length === 0" v-tooltip="'Clear Queue'" v-confirm>
+								:disabled="queuePlayers.length === 0" aria-label="Clear queue" title="Clear queue" v-confirm>
 								<v-icon>delete</v-icon>
 							</v-btn>
 							<v-btn @click="saveQueue" icon color="success" variant="tonal" :loading="saving"
 								class="action-btn" :disabled="queuePlayers.length === 0 || !hasChanges"
-								v-tooltip="'Save Queue'" v-confirm>
+								aria-label="Save queue" title="Save queue" v-confirm>
 								<v-icon>save</v-icon>
 							</v-btn>
 						</div>
@@ -131,7 +131,8 @@
 				<template v-else>
 					<v-card-title class="d-flex align-center justify-space-between">
 						<div class="d-flex align-center ga-2">
-							<v-btn @click="showPlayerTable = false" icon size="small" variant="text">
+							<v-btn @click="showPlayerTable = false" icon variant="text" class="queue-back-btn"
+								aria-label="Back to draft queue" title="Back to draft queue">
 								<v-icon>arrow_back</v-icon>
 							</v-btn>
 							<span>Add Player to Queue</span>
@@ -158,11 +159,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import draggable from 'vuedraggable'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import api from '@/api/axios'
-import PlayersTable from '@/components/core/PlayersTable.vue'
 import NbaTeamIcon from './NBATeamIcon.vue'
+
+const draggable = defineAsyncComponent(() => import('vuedraggable'))
+const PlayersTable = defineAsyncComponent(() => import('@/components/core/PlayersTable.vue'))
 
 // Props
 const props = defineProps<{
@@ -234,8 +236,8 @@ const fetchExistingQueue = async () => {
 	loading.value = false
 }
 
-const toggleQueue = async (enabled: boolean) => {
-	if (!queueId.value) return
+const toggleQueue = async (enabled: boolean | null) => {
+	if (enabled === null || !queueId.value) return
 
 	queueToggleLoading.value = true
 	try {
@@ -300,9 +302,9 @@ const discardChanges = () => {
 
 const getPositionColor = (position: string): string => {
 	switch (position) {
-		case 'G': return 'blue'
-		case 'F': return 'green'
-		case 'C': return 'red'
+		case 'G': return 'info'
+		case 'F': return 'success'
+		case 'C': return 'danger'
 		default: return 'grey'
 	}
 }
@@ -355,6 +357,18 @@ onMounted(() => {
 
 .border-t {
 	border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.action-btn,
+.queue-remove-btn,
+.queue-back-btn,
+.draft-queue-trigger {
+	width: 44px;
+	height: 44px;
+}
+
+.draft-queue-trigger {
+	width: auto;
 }
 
 // Drag and drop styles

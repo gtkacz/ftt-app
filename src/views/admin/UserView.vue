@@ -19,8 +19,9 @@
 						<v-col cols="3" class="d-flex justify-end ga-2">
 							<!-- Filter button with menu -->
 							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
-								<template #activator="{ props }" v-tooltip="'Filter users'">
-									<v-btn v-bind="props" icon variant="outlined" size="small"
+								<template #activator="{ props }">
+									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
+										aria-label="Filter users" title="Filter users"
 										:color="hasActiveFilters ? 'primary' : undefined">
 										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
 											color="error">
@@ -31,7 +32,7 @@
 								<v-card min-width="600" density="comfortable" class="pa-4">
 									<template #title class="text-h6">Filters</template>
 									<template #append><v-btn variant="text" icon @click="filterMenu = false"
-											size="small"><v-icon icon="close" /></v-btn></template>
+										class="admin-icon-action" aria-label="Close filters"><v-icon icon="close" /></v-btn></template>
 									<v-divider />
 									<v-card-text>
 										<v-row>
@@ -112,8 +113,8 @@
 									</v-card-text>
 									<v-card-actions>
 										<v-spacer></v-spacer>
-										<v-btn @click="clearFilters" icon variant="outlined" size="small"
-											:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
+										<v-btn @click="clearFilters" icon variant="outlined" class="admin-icon-action"
+											:disabled="!hasActiveFilters" aria-label="Clear all filters" title="Clear all filters">
 											<v-icon icon="filter_alt_off" />
 										</v-btn>
 									</v-card-actions>
@@ -123,8 +124,9 @@
 							<!-- Manage columns button -->
 							<v-menu v-model="columnMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template #activator="{ props }" v-tooltip="'Manage columns'">
-									<v-btn v-bind="props" icon variant="outlined" size="small">
+								<template #activator="{ props }">
+									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
+										aria-label="Manage columns" title="Manage columns">
 										<v-icon icon="view_column" />
 									</v-btn>
 								</template>
@@ -152,7 +154,7 @@
 									<v-card-actions>
 										<v-spacer></v-spacer>
 										<v-btn icon variant="outlined" @click="saveColumnSettings" color="success"
-											size="small"><v-icon icon="check" /></v-btn>
+											class="admin-icon-action" aria-label="Save column settings"><v-icon icon="check" /></v-btn>
 									</v-card-actions>
 								</v-card>
 							</v-menu>
@@ -160,8 +162,9 @@
 							<!-- Settings -->
 							<v-menu v-model="settingsMenu" max-width="500" transition="fade-transition"
 								:close-on-content-click="false" location="bottom">
-								<template #activator="{ props }" v-tooltip="'Settings'">
-									<v-btn v-bind="props" icon variant="outlined" size="small">
+								<template #activator="{ props }">
+									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
+										aria-label="Display settings" title="Display settings">
 										<v-icon icon="settings" />
 									</v-btn>
 								</template>
@@ -212,9 +215,9 @@
 							<div class="font-weight-medium d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
-									v-tooltip="'Administrator'" />
+									title="Administrator" />
 								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
-									v-tooltip="'Commissioner'" />
+									title="Commissioner" />
 							</div>
 							<div class="text-caption text-grey">
 								@{{ item.username }}
@@ -234,9 +237,9 @@
 								class="font-weight-medium text-grey-darken-1 text-decoration-line-through d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
-									v-tooltip="'Administrator'" />
+									title="Administrator" />
 								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
-									v-tooltip="'Commissioner'" />
+									title="Commissioner" />
 							</div>
 							<div class="text-caption text-grey-darken-1 text-decoration-line-through">
 								@{{ item.username }}
@@ -267,19 +270,19 @@
 				<!-- Status badges -->
 				<template #item.status="{ item }">
 					<v-chip-group column>
-						<v-chip v-if="item.is_active" color="success" size="x-small" v-tooltip="'Active'">
+						<v-chip v-if="item.is_active" color="success" size="x-small" title="Active">
 							Active
 						</v-chip>
-						<v-chip v-else color="error" size="x-small" v-tooltip="'Inactive'">
+						<v-chip v-else color="error" size="x-small" title="Inactive">
 							Inactive
 						</v-chip>
-						<v-chip v-if="item.is_approved" color="primary" size="x-small" v-tooltip="'Approved'">
+						<v-chip v-if="item.is_approved" color="primary" size="x-small" title="Approved">
 							Approved
 						</v-chip>
-						<v-chip v-else color="warning" size="x-small" v-tooltip="'Not Approved'">
+						<v-chip v-else color="warning" size="x-small" title="Not Approved">
 							Not Approved
 						</v-chip>
-						<v-chip v-if="item.is_staff" color="warning" size="x-small" v-tooltip="'Commissioner'">
+						<v-chip v-if="item.is_staff" color="warning" size="x-small" title="Commissioner">
 							Commissioner
 						</v-chip>
 					</v-chip-group>
@@ -482,7 +485,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import moment from 'moment'
+import dayjs from '@/utils/dayjs'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 
@@ -677,7 +680,7 @@ const filteredUsers = computed(() => {
 		// Date joined range filter
 		const [djStart, djEnd] = filters.value.dateJoinedRange
 		result = result.filter(user => {
-			const daysAgo = moment().diff(moment(user.date_joined), 'days')
+			const daysAgo = dayjs().diff(dayjs(user.date_joined), 'day')
 			return daysAgo >= djStart && daysAgo <= djEnd
 		})
 
@@ -685,43 +688,43 @@ const filteredUsers = computed(() => {
 		const [llStart, llEnd] = filters.value.lastLoginRange
 		result = result.filter(user => {
 			if (!user.last_login) return llEnd === 365 // Include never logged in users if range extends to max
-			const daysAgo = moment().diff(moment(user.last_login), 'days')
+			const daysAgo = dayjs().diff(dayjs(user.last_login), 'day')
 			return daysAgo >= llStart && daysAgo <= llEnd
 		})
 	} else {
 		// Date joined filters
 		if (filters.value.dateJoinedStart) {
 			result = result.filter(user =>
-				moment(user.date_joined).isSameOrAfter(moment(filters.value.dateJoinedStart))
+				dayjs(user.date_joined).isSameOrAfter(dayjs(filters.value.dateJoinedStart))
 			)
 		}
 		if (filters.value.dateJoinedEnd) {
 			result = result.filter(user =>
-				moment(user.date_joined).isSameOrBefore(moment(filters.value.dateJoinedEnd))
+				dayjs(user.date_joined).isSameOrBefore(dayjs(filters.value.dateJoinedEnd))
 			)
 		}
 
 		// Last login filters
 		if (filters.value.lastLoginStart) {
 			result = result.filter(user =>
-				user.last_login && moment(user.last_login).isSameOrAfter(moment(filters.value.lastLoginStart))
+				user.last_login && dayjs(user.last_login).isSameOrAfter(dayjs(filters.value.lastLoginStart))
 			)
 		}
 		if (filters.value.lastLoginEnd) {
 			result = result.filter(user =>
-				user.last_login && moment(user.last_login).isSameOrBefore(moment(filters.value.lastLoginEnd))
+				user.last_login && dayjs(user.last_login).isSameOrBefore(dayjs(filters.value.lastLoginEnd))
 			)
 		}
 
 		// Updated at filters
 		if (filters.value.lastLoginStart) {
 			result = result.filter(user =>
-				user.updated_at && moment(user.updated_at).isSameOrAfter(moment(filters.value.lastLoginStart))
+				user.updated_at && dayjs(user.updated_at).isSameOrAfter(dayjs(filters.value.lastLoginStart))
 			)
 		}
 		if (filters.value.lastLoginEnd) {
 			result = result.filter(user =>
-				user.updated_at && moment(user.updated_at).isSameOrBefore(moment(filters.value.lastLoginEnd))
+				user.updated_at && dayjs(user.updated_at).isSameOrBefore(dayjs(filters.value.lastLoginEnd))
 			)
 		}
 	}
@@ -821,7 +824,7 @@ const viewUser = (user) => {
 const formatDate = (dateString) => {
 	if (!dateString) return ''
 
-	const date = moment(dateString)
+	const date = dayjs(dateString)
 
 	if (useRelativeDates.value) {
 		return date.fromNow()
@@ -1008,6 +1011,11 @@ onMounted(() => {
 
 .items-per-page-select {
 	max-width: 150px;
+}
+
+.admin-icon-action {
+	width: 44px;
+	height: 44px;
 }
 
 :deep(.v-data-table tbody tr) {

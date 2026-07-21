@@ -1,6 +1,6 @@
 <template>
 	<v-container fluid class="pa-0">
-		<v-card class="pa-4 bg-surface-variant" elevation="10">
+		<v-card class="players-explorer" variant="flat">
 			<!-- Loading state -->
 			<v-progress-linear v-if="loading" indeterminate class="mb-4" />
 
@@ -8,33 +8,31 @@
 			<v-expand-transition>
 				<v-container fluid v-if="!loading" class="pa-0">
 					<slot name="action-row">
-						<v-row class="mb-4" align="center" justify="center">
-							<!-- Search bar - 75% width -->
+						<v-row class="player-toolbar mb-4" align="center" no-gutters>
 							<slot name="search">
-								<v-col cols="9">
-									<v-text-field rounded v-model="search" prepend-inner-icon="search"
-										label="Search players..." single-line hide-details clearable density="compact"
-										variant="outlined" class="search-field"></v-text-field>
+								<v-col cols="12" md="9" class="player-toolbar__search">
+									<v-text-field v-model="search" prepend-inner-icon="search"
+										label="Search players..." single-line hide-details clearable
+										variant="outlined" class="search-field" aria-label="Search players"></v-text-field>
 								</v-col>
 							</slot>
 
-							<!-- Icon buttons - 25% width -->
 							<slot name="extra-actions">
-								<v-spacer />
-								<v-col class="d-flex justify-end ga-2">
+								<v-col cols="12" md="3" class="player-toolbar__actions d-flex justify-end ga-2">
 									<!-- Filter button with menu -->
 									<v-menu rounded v-model="filterMenu" :close-on-content-click="false"
 										location="bottom">
-										<template #activator="{ props }" v-tooltip="'Filter players'">
-											<v-btn v-bind="props" icon variant="outlined" size="small"
-												:color="hasActiveFilters ? 'primary' : undefined">
+									<template #activator="{ props }">
+										<v-btn v-bind="props" icon variant="outlined" aria-label="Filter players" title="Filter players"
+											:color="hasActiveFilters ? 'primary' : undefined">
 												<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
 													color="error">
 													<v-icon icon="filter_alt" />
 												</v-badge>
 											</v-btn>
 										</template>
-										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
+									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
+										class="players-menu-card pa-4">
 											<template #title class="text-h6">Filters<v-divider
 													class="my-4" /></template>
 											<template #text>
@@ -146,8 +144,8 @@
 											</template>
 											<template #actions>
 												<v-spacer></v-spacer>
-												<v-btn @click="clearFilters" icon variant="outlined" size="small"
-													:disabled="!hasActiveFilters" v-tooltip="'Clear all filters'">
+												<v-btn @click="clearFilters" icon variant="outlined"
+											:disabled="!hasActiveFilters" aria-label="Clear all filters" title="Clear all filters">
 													<v-icon icon="filter_alt_off" />
 												</v-btn>
 											</template>
@@ -157,12 +155,13 @@
 									<!-- Manage columns button -->
 									<v-menu rounded v-model="columnMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
-										<template #activator="{ props }" v-tooltip="'Manage columns'">
-											<v-btn v-bind="props" icon variant="outlined" size="small">
+									<template #activator="{ props }">
+										<v-btn v-bind="props" icon variant="outlined" aria-label="Manage table columns" title="Manage columns">
 												<v-icon icon="view_column" />
 											</v-btn>
 										</template>
-										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
+									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
+										class="players-menu-card pa-4">
 											<template #title>Manage Columns<v-divider class="my-4" /></template>
 											<template #text>
 												<v-list>
@@ -188,7 +187,7 @@
 											<template #actions>
 												<v-spacer></v-spacer>
 												<v-btn icon variant="outlined" @click="saveColumnSettings"
-													color="success" size="small"><v-icon icon="check" /></v-btn>
+													color="success" aria-label="Save column settings"><v-icon icon="check" /></v-btn>
 											</template>
 										</v-card>
 									</v-menu>
@@ -196,12 +195,13 @@
 									<!-- Settings -->
 									<v-menu rounded v-model="settingsMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
-										<template #activator="{ props }" v-tooltip="'Display settings'">
-											<v-btn v-bind="props" icon variant="outlined" size="small">
+									<template #activator="{ props }">
+										<v-btn v-bind="props" icon variant="outlined" aria-label="Open display settings" title="Display settings">
 												<v-icon icon="settings" />
 											</v-btn>
 										</template>
-										<v-card rounded="lg" width="500" density="comfortable" class="pa-4">
+									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
+										class="players-menu-card pa-4">
 											<v-card-title>Display Settings</v-card-title>
 											<v-divider />
 											<v-card-text>
@@ -246,11 +246,13 @@
 			</v-expand-transition>
 
 			<!-- Data table -->
-			<v-data-table v-if="!loading" :headers="activeHeaders" :items="sortedFilteredPlayers" :search="search"
-				:custom-filter="customSearch" fixed-header fixed-footer height="calc(100vh - 200px)" :loading="loading"
+			<v-data-table v-if="!loading" :headers="responsiveHeaders" :items="sortedFilteredPlayers" :search="search"
+				:custom-filter="customSearch" :fixed-header="!smAndDown" :fixed-footer="!smAndDown"
+				:height="smAndDown ? undefined : 'calc(100dvh - 260px)'" :loading="loading"
 				:no-data-text="'No players found'" :no-results-text="'No matching players'" density="comfortable"
-				class="elevation-1 pa-4 bg-surface-variant" hide-no-data hover sort-asc-icon="arrow_drop_up"
+				class="players-table" hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
+				:row-props="playerRowProps"
 				@click:row="(event, { item }) => selectPlayer(item)">
 
 				<!-- Player photo and name -->
@@ -260,7 +262,7 @@
 							<v-img :src="item.photo || '/placeholder-player.png'"
 								:alt="`${item.first_name} ${item.last_name}`" cover>
 								<template #error>
-									<v-icon size="40">account</v-icon>
+									<v-icon size="40">account_circle</v-icon>
 								</template>
 							</v-img>
 						</v-avatar>
@@ -290,13 +292,13 @@
 				<!-- Position -->
 				<template #item.primary_position="{ item }">
 					<div class="d-flex align-center gap-1" v-if="item.primary_position" column>
-						<v-chip variant="tonal" :color="getPositionColor(item.primary_position)"
-							v-tooltip="getPositionTooltip(item.primary_position)">
+					<v-chip variant="tonal" :color="getPositionColor(item.primary_position)"
+							:title="getPositionTooltip(item.primary_position)">
 							{{ item.primary_position }}
 						</v-chip>
 						<v-chip v-if="item.secondary_position" variant="tonal"
 							:color="getPositionColor(item.secondary_position)"
-							v-tooltip="getPositionTooltip(item.secondary_position)">
+							:title="getPositionTooltip(item.secondary_position)">
 							{{ item.secondary_position }}
 						</v-chip>
 						<span v-if="!item.primary_position && !item.secondary_position" class="text-grey">—</span>
@@ -323,13 +325,13 @@
 				<!-- Status badges -->
 				<template #item.status="{ item }">
 					<div class="d-flex flex-wrap gap-1">
-						<v-chip v-if="item.contract?.is_rfa" size="x-small" v-tooltip="'Restricted Free Agent'" color="warning">
+						<v-chip v-if="item.contract?.is_rfa" size="x-small" title="Restricted Free Agent" color="warning">
 							Restricted Free Agent
 						</v-chip>
-						<v-chip v-if="item.contract?.is_to" size="x-small" v-tooltip="'Team Option'" color="info">
+						<v-chip v-if="item.contract?.is_to" size="x-small" title="Team Option" color="info">
 							Team Option
 						</v-chip>
-						<v-chip v-if="item.is_ir" size="x-small" v-tooltip="'Injured Reserve'" color="danger">
+						<v-chip v-if="item.is_ir" size="x-small" title="Injured Reserve" color="danger">
 							Injured Reserve
 						</v-chip>
 					</div>
@@ -339,33 +341,31 @@
 				<template #bottom>
 					<slot name="pagination-footer">
 						<v-divider />
-						<v-container fluid class="pa-2 mt-4">
-							<v-row justify="space-between" align="center">
-								<v-col cols="3">
-									<span class="text-caption">
-										Showing {{ paginationText }}
-									</span>
-								</v-col>
-								<v-col cols="6" class="d-flex ga-2">
-									<v-row class="ga-2" align="center" justify="end">
-										<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
-											:item-title="item => item === -1 ? 'All' : item" label="Items per page"
-											density="compact" variant="outlined" hide-details
-											class="items-per-page-select" />
-										<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
-											density="compact">
-											<v-icon icon="first_page" />
-										</v-btn>
-										<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
-											:total-visible="5" density="compact" rounded />
-										<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount"
-											:icon="true" density="compact">
-											<v-icon icon="last_page" />
-										</v-btn>
-									</v-row>
-								</v-col>
-							</v-row>
-						</v-container>
+						<div class="pagination-bar">
+							<span class="pagination-bar__summary">Showing {{ paginationText }}</span>
+							<div class="pagination-bar__controls">
+								<label class="items-per-page-select">
+									<span class="visually-hidden">Items per page</span>
+									<select v-model.number="itemsPerPage" aria-label="Items per page">
+										<option :value="10">10</option>
+										<option :value="25">25</option>
+										<option :value="50">50</option>
+										<option :value="100">100</option>
+										<option :value="-1">All</option>
+									</select>
+								</label>
+								<v-btn variant="text" @click="page = 1" :disabled="page === 1" icon density="compact"
+									class="pagination-edge-button" aria-label="First page">
+									<v-icon icon="first_page" />
+								</v-btn>
+								<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
+									:total-visible="smAndDown ? 3 : 5" density="compact" rounded />
+								<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount" icon
+									density="compact" class="pagination-edge-button" aria-label="Last page">
+									<v-icon icon="last_page" />
+								</v-btn>
+							</div>
+						</div>
 					</slot>
 				</template>
 			</v-data-table>
@@ -375,8 +375,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import api from '@/api/axios'
 import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
+
+const { smAndDown } = useDisplay()
 
 // Props
 const props = defineProps<{
@@ -394,7 +397,7 @@ const players = ref<any[]>(props.players ?? [])
 const loading = ref<boolean>(!props.players)
 const error = ref<string | null>(null)
 const search = ref<string>('')
-const itemsPerPage = ref<number>(25)
+const itemsPerPage = ref<number>(smAndDown.value ? 10 : 25)
 const page = ref<number>(1)
 const settingsMenu = ref<boolean>(false)
 const columnMenu = ref<boolean>(false)
@@ -443,6 +446,12 @@ const editableHeaders = ref([...allHeaders.value])
 // Computed headers based on visibility (excludes hidden columns)
 const activeHeaders = computed(() => {
 	return allHeaders.value.filter(h => h.visible && !h.meta && !h.hidden)
+})
+
+const compactHeaderKeys = new Set(['player', 'relevancy', 'primary_position', 'contract_info'])
+const responsiveHeaders = computed(() => {
+	if (!smAndDown.value) return activeHeaders.value
+	return activeHeaders.value.filter(header => compactHeaderKeys.has(header.key))
 })
 
 // Custom search function to include first name
@@ -680,6 +689,21 @@ const selectPlayer = (player: any) => {
 	emit('player-selected', player)
 }
 
+const playerRowProps = ({ item }: { item: any }) => {
+	const player = item.raw ?? item
+	return {
+		tabindex: 0,
+		role: 'button',
+		'aria-label': `Open ${player.first_name} ${player.last_name}`,
+		onKeydown: (event: KeyboardEvent) => {
+			if (event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault()
+				selectPlayer(player)
+			}
+		},
+	}
+}
+
 const fetchAllPlayers = async () => {
 	loading.value = true
 	error.value = null
@@ -802,9 +826,9 @@ const getSeasonFromYear = (year) => {
 
 const getPositionColor = (position: string): string => {
 	switch (position) {
-		case 'G': return 'blue'
-		case 'F': return 'green'
-		case 'C': return 'red'
+		case 'G': return 'info'
+		case 'F': return 'success'
+		case 'C': return 'danger'
 		default: return 'grey'
 	}
 }
@@ -828,6 +852,40 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.players-explorer {
+	overflow: hidden;
+	padding: clamp(12px, 2vw, 20px);
+	background: rgb(var(--v-theme-surface));
+}
+
+.player-toolbar {
+	row-gap: 12px;
+}
+
+.player-toolbar__search,
+.player-toolbar__actions {
+	padding: 0 !important;
+}
+
+@media (min-width: $breakpoint-md) {
+	.player-toolbar__search {
+		padding-right: 6px !important;
+	}
+
+	.player-toolbar__actions {
+		padding-left: 6px !important;
+	}
+}
+
+.player-toolbar__actions {
+	min-width: 0;
+}
+
+.players-menu-card {
+	max-height: min(78dvh, 680px);
+	overflow-y: auto;
+}
+
 .ga-1 {
 	gap: 4px;
 }
@@ -837,11 +895,37 @@ onMounted(() => {
 }
 
 .items-per-page-select {
-	max-width: 150px;
+	display: inline-flex;
+	width: 92px;
+	min-width: 92px;
+
+	select {
+		width: 100%;
+		min-height: 44px;
+		padding: 0 30px 0 12px;
+		border: 1px solid var(--surface-border-strong);
+		border-radius: 10px;
+		color: rgb(var(--v-theme-on-surface));
+		background: rgb(var(--v-theme-surface));
+		font: inherit;
+		font-size: 0.86rem;
+		cursor: pointer;
+	}
+}
+
+.players-table {
+	border: 1px solid var(--surface-border);
+	border-radius: $border-radius-md;
+	background: transparent;
 }
 
 :deep(.v-data-table tbody tr) {
 	cursor: pointer;
+}
+
+:deep(.v-data-table tbody tr:focus-visible) {
+	outline: 2px solid rgb(var(--v-theme-secondary));
+	outline-offset: -2px;
 }
 
 :deep(.v-data-table tbody tr:hover) {
@@ -861,6 +945,32 @@ onMounted(() => {
 	}
 }
 
+.pagination-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 4px 2px;
+}
+
+.pagination-bar__summary {
+	color: rgb(var(--v-theme-on-surface-variant));
+	font-size: 0.76rem;
+}
+
+.pagination-bar__controls {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px;
+	min-width: 0;
+}
+
+.pagination-bar__controls :deep(.v-btn--icon) {
+	width: 44px;
+	height: 44px;
+}
+
 /* Prevent v-select expansion when chips are selected */
 :deep(.v-select) {
 	.v-field__input {
@@ -870,6 +980,46 @@ onMounted(() => {
 
 	.v-chip {
 		flex-shrink: 0;
+	}
+}
+
+@media (max-width: #{$breakpoint-md - 1px}) {
+	.player-toolbar__actions {
+		justify-content: flex-start !important;
+	}
+
+	.players-explorer {
+		padding: 12px;
+	}
+
+	:deep(.players-table .v-table__wrapper) {
+		overflow-x: auto;
+	}
+
+	:deep(.players-table th),
+	:deep(.players-table td) {
+		padding-right: 10px !important;
+		padding-left: 10px !important;
+	}
+
+	.pagination-bar {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.pagination-bar__controls {
+		justify-content: space-between;
+		width: 100%;
+	}
+}
+
+@media (max-width: 420px) {
+	.pagination-edge-button {
+		display: none;
+	}
+
+	:deep(.v-pagination__item:not(.v-pagination__item--is-active)) {
+		display: none;
 	}
 }
 </style>
