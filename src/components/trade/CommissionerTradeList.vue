@@ -3,14 +3,14 @@
     <!-- Loading State -->
     <div v-if="loading" class="text-center pa-8">
       <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="text-h6 text-medium-emphasis mt-4">Loading trades...</p>
+      <p class="text-h6 text-medium-emphasis mt-4">{{ t('commissionerTradeList.loading') }}</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="trades.length === 0" class="text-center pa-8">
       <v-icon size="64" color="grey-lighten-1">gavel</v-icon>
-      <p class="text-h6 text-medium-emphasis mt-4">No trades pending approval</p>
-      <p class="text-caption">Trades waiting for your approval will appear here</p>
+      <p class="text-h6 text-medium-emphasis mt-4">{{ t('commissionerTradeList.empty.title') }}</p>
+      <p class="text-caption">{{ t('commissionerTradeList.empty.subtitle') }}</p>
     </div>
 
     <!-- Trade Cards -->
@@ -45,7 +45,7 @@
                 class="status-chip"
               >
                 <v-icon start size="small">gavel</v-icon>
-                Pending Approval
+                {{ t('commissionerTradeList.pendingApproval') }}
               </v-chip>
             </div>
             <v-spacer />
@@ -88,7 +88,7 @@
                 class="asset-badge"
               >
                 <v-icon start size="small">person</v-icon>
-                {{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}
+                {{ t('commissionerTradeList.assetBadges.players', { count: getPlayerCount(trade) }, getPlayerCount(trade)) }}
               </v-chip>
               <v-chip
                 v-if="getPickCount(trade) > 0"
@@ -98,7 +98,7 @@
                 class="asset-badge"
               >
                 <v-icon start size="small">star</v-icon>
-                {{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}
+                {{ t('commissionerTradeList.assetBadges.picks', { count: getPickCount(trade) }, getPickCount(trade)) }}
               </v-chip>
             </div>
 
@@ -107,7 +107,7 @@
               <div class="approval-status-header">
                 <div class="d-flex align-center">
                   <v-icon size="small" color="warning" class="mr-2">how_to_vote</v-icon>
-                  <span class="text-subtitle-2 font-weight-medium">Voting Status</span>
+                  <span class="text-subtitle-2 font-weight-medium">{{ t('commissionerTradeList.voting.title') }}</span>
                 </div>
                 <v-chip
                   :color="getApprovalStatusColor(trade.approval_status)"
@@ -118,12 +118,12 @@
                   {{ getApprovalStatusText(trade.approval_status) }}
                 </v-chip>
               </div>
-              
+
               <div class="approval-progress mt-3">
                 <div class="d-flex justify-space-between mb-1">
-                  <span class="text-caption text-medium-emphasis">Progress</span>
+                  <span class="text-caption text-medium-emphasis">{{ t('commissionerTradeList.voting.progress') }}</span>
                   <span class="text-caption font-weight-medium">
-                    {{ trade.approval_status.approve_votes + trade.approval_status.veto_votes }} / {{ trade.approval_status.total_commissioners }} votes
+                    {{ t('commissionerTradeList.voting.votesCount', { count: trade.approval_status.approve_votes + trade.approval_status.veto_votes, total: trade.approval_status.total_commissioners }) }}
                   </span>
                 </div>
                 <v-progress-linear
@@ -136,15 +136,15 @@
                 <div class="vote-counts mt-2">
                   <div class="vote-count-item">
                     <v-icon size="x-small" color="success" class="mr-1">check_circle</v-icon>
-                    <span class="text-caption">{{ trade.approval_status.approve_votes }} approve</span>
+                    <span class="text-caption">{{ t('commissionerTradeList.voting.approveCount', { count: trade.approval_status.approve_votes }) }}</span>
                   </div>
                   <div class="vote-count-item">
                     <v-icon size="x-small" color="error" class="mr-1">block</v-icon>
-                    <span class="text-caption">{{ trade.approval_status.veto_votes }} veto</span>
+                    <span class="text-caption">{{ t('commissionerTradeList.voting.vetoCount', { count: trade.approval_status.veto_votes }) }}</span>
                   </div>
                   <div class="vote-count-item">
                     <v-icon size="x-small" color="warning" class="mr-1">schedule</v-icon>
-                    <span class="text-caption">{{ trade.approval_status.majority_needed }} needed</span>
+                    <span class="text-caption">{{ t('commissionerTradeList.voting.neededCount', { count: trade.approval_status.majority_needed }) }}</span>
                   </div>
                 </div>
               </div>
@@ -163,7 +163,7 @@
                     {{ getUserVote(trade) === 'approve' ? 'check_circle' : 'block' }}
                   </v-icon>
                   <span class="text-caption font-weight-medium">
-                    You {{ getUserVote(trade) === 'approve' ? 'approved' : 'vetoed' }} this trade
+                    {{ getUserVote(trade) === 'approve' ? t('commissionerTradeList.userVote.approved') : t('commissionerTradeList.userVote.vetoed') }}
                   </span>
                 </div>
               </v-alert>
@@ -195,7 +195,7 @@
                 @click="$emit('veto', trade)"
               >
                 <v-icon start size="small">block</v-icon>
-                Veto
+                {{ t('commissionerTradeList.actions.veto') }}
               </v-btn>
               <v-btn
                 size="small"
@@ -207,7 +207,7 @@
                 @click="$emit('approve', trade)"
               >
                 <v-icon start size="small">check_circle</v-icon>
-                Approve
+                {{ t('commissionerTradeList.actions.approve') }}
               </v-btn>
             </template>
           </v-card-actions>
@@ -220,10 +220,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import type { Trade, BackendTradeAssets, ApprovalStatus, TradeAsset } from '@/types/trade';
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 interface Props {
   trades: Trade[];
@@ -434,10 +436,10 @@ function getApprovalStatusColor(status: ApprovalStatus | null): string {
 
 // Get approval status text
 function getApprovalStatusText(status: ApprovalStatus | null): string {
-  if (!status) return 'Pending';
-  if (status.approve_votes >= status.majority_needed) return 'Approved';
-  if (status.veto_votes >= status.majority_needed) return 'Vetoed';
-  return 'In Progress';
+  if (!status) return t('commissionerTradeList.status.pending');
+  if (status.approve_votes >= status.majority_needed) return t('commissionerTradeList.status.approved');
+  if (status.veto_votes >= status.majority_needed) return t('commissionerTradeList.status.vetoed');
+  return t('commissionerTradeList.status.inProgress');
 }
 
 // Get approval progress percentage

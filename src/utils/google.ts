@@ -1,3 +1,5 @@
+import { i18n } from "@/i18n";
+
 const GIS_SRC = "https://accounts.google.com/gsi/client";
 
 export interface GoogleCredentialResponse {
@@ -45,7 +47,7 @@ let loadPromise: Promise<GoogleAccountsId> | null = null;
  * Load the Google Identity Services script once and resolve with its
  * `google.accounts.id` API. Subsequent calls reuse the same in-flight promise.
  */
-export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
+export function loadGoogleIdentity(locale?: string): Promise<GoogleAccountsId> {
   if (window.google?.accounts?.id) {
     return Promise.resolve(window.google.accounts.id);
   }
@@ -54,22 +56,26 @@ export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
     return loadPromise;
   }
 
+  // Google reads the button/prompt display language from this script's `hl` query
+  // param at load time; it can't be changed afterward without reloading the script.
+  const src = locale ? `${GIS_SRC}?hl=${encodeURIComponent(locale)}` : GIS_SRC;
+
   loadPromise = new Promise<GoogleAccountsId>((resolve, reject) => {
     const settle = () => {
       if (window.google?.accounts?.id) {
         resolve(window.google.accounts.id);
       } else {
-        reject(new Error("Google Identity Services loaded but unavailable"));
+        reject(new Error(i18n.global.t("googleIdentity.unavailable")));
       }
     };
 
     const fail = () => {
       loadPromise = null;
-      reject(new Error("Failed to load Google Identity Services"));
+      reject(new Error(i18n.global.t("googleIdentity.loadFailed")));
     };
 
     const existing = document.querySelector<HTMLScriptElement>(
-      `script[src="${GIS_SRC}"]`
+      `script[src="${src}"]`
     );
 
     if (existing) {
@@ -79,7 +85,7 @@ export function loadGoogleIdentity(): Promise<GoogleAccountsId> {
     }
 
     const script = document.createElement("script");
-    script.src = GIS_SRC;
+    script.src = src;
     script.async = true;
     script.defer = true;
     script.onload = settle;

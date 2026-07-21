@@ -1,5 +1,5 @@
 <template>
-	<img :src="logoUrl" :alt="`${team} Logo`" :width="size" :height="size" :class="className" />
+	<img :src="logoUrl" :alt="$t('nbaTeamIcon.logoAlt', { team })" :width="size" :height="size" :class="className" />
 </template>
 
 <script lang="ts">

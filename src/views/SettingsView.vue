@@ -2,20 +2,20 @@
   <div class="settings-page page-view">
     <div class="page-header settings-page__header">
       <div>
-        <p class="eyebrow">Workspace controls</p>
-        <h1 class="page-title">Settings</h1>
-        <p class="page-subtitle">Inspect the league configuration cached for this device.</p>
+        <p class="eyebrow">{{ t('settingsView.header.eyebrow') }}</p>
+        <h1 class="page-title">{{ t('settingsView.header.title') }}</h1>
+        <p class="page-subtitle">{{ t('settingsView.header.subtitle') }}</p>
       </div>
       <div class="settings-page__status" :class="{ 'settings-page__status--cached': settingsStore.isCacheValid }">
         <span aria-hidden="true" />
-        {{ settingsStore.isCacheValid ? 'Cache ready' : 'Live data' }}
+        {{ settingsStore.isCacheValid ? t('settingsView.status.cacheReady') : t('settingsView.status.liveData') }}
       </div>
     </div>
 
     <section v-if="settingsStore.isLoading" class="state-panel surface-card" aria-live="polite">
       <div>
         <v-progress-circular indeterminate color="secondary" size="46" width="4" />
-        <p>Loading workspace settings…</p>
+        <p>{{ t('settingsView.loading') }}</p>
       </div>
     </section>
 
@@ -23,14 +23,14 @@
       <v-card-title class="settings-card__title">
         <span class="settings-card__icon"><v-icon icon="tune" /></span>
         <span>
-          Application settings
-          <small v-if="lastFetchedLabel">Updated {{ lastFetchedLabel }}</small>
+          {{ t('settingsView.card.title') }}
+          <small v-if="lastFetchedLabel">{{ t('settingsView.card.updated', { time: lastFetchedLabel }) }}</small>
         </span>
       </v-card-title>
 
       <v-card-text>
         <v-alert type="info" variant="tonal" density="compact" class="mb-5">
-          Settings remain on this device for 30 minutes, reducing repeat network requests.
+          {{ t('settingsView.card.cacheNotice') }}
         </v-alert>
 
         <dl v-if="settingEntries.length" class="settings-grid">
@@ -42,18 +42,18 @@
 
         <div v-else class="settings-empty">
           <v-icon icon="inbox" size="32" />
-          <p>No application settings were returned.</p>
+          <p>{{ t('settingsView.empty') }}</p>
         </div>
       </v-card-text>
 
       <v-card-actions class="settings-card__actions">
         <v-btn color="secondary" variant="flat" :loading="settingsStore.isLoading" @click="refreshSettings">
           <v-icon icon="refresh" start />
-          Refresh
+          {{ t('settingsView.actions.refresh') }}
         </v-btn>
         <v-btn variant="tonal" @click="clearCache">
           <v-icon icon="delete_sweep" start />
-          Clear cache
+          {{ t('settingsView.actions.clearCache') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -61,18 +61,20 @@
     <section v-else class="settings-fallback surface-card">
       <div class="settings-fallback__icon"><v-icon icon="cloud_off" size="30" /></div>
       <div>
-        <h2>Settings unavailable</h2>
-        <p>{{ errorMessage || 'No settings are available for this workspace yet.' }}</p>
+        <h2>{{ t('settingsView.fallback.title') }}</h2>
+        <p>{{ errorMessage || t('settingsView.fallback.default') }}</p>
       </div>
-      <v-btn color="secondary" :loading="settingsStore.isLoading" @click="loadSettings">Try again</v-btn>
+      <v-btn color="secondary" :loading="settingsStore.isLoading" @click="loadSettings">{{ t('settingsView.actions.tryAgain') }}</v-btn>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 
+const { t } = useI18n()
 const settingsStore = useSettingsStore()
 const errorMessage = ref('')
 
@@ -96,7 +98,7 @@ async function loadSettings() {
     await settingsStore.fetchSettings()
   } catch (error) {
     console.error('Error loading settings:', error)
-    errorMessage.value = 'We could not reach the settings service.'
+    errorMessage.value = t('settingsView.errors.loadFailed')
   }
 }
 
@@ -106,18 +108,18 @@ async function refreshSettings() {
     await settingsStore.fetchSettings(true)
   } catch (error) {
     console.error('Error refreshing settings:', error)
-    errorMessage.value = 'The latest settings could not be loaded.'
+    errorMessage.value = t('settingsView.errors.refreshFailed')
   }
 }
 
 function clearCache() {
   settingsStore.clearCache()
-  errorMessage.value = 'The local cache was cleared. Load settings when you need them again.'
+  errorMessage.value = t('settingsView.errors.cacheCleared')
 }
 
 function formatSettingValue(value: unknown): string {
-  if (typeof value === 'boolean') return value ? 'Enabled' : 'Disabled'
-  if (value === null || value === undefined || value === '') return 'Not set'
+  if (typeof value === 'boolean') return value ? t('settingsView.values.enabled') : t('settingsView.values.disabled')
+  if (value === null || value === undefined || value === '') return t('settingsView.values.notSet')
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
 }

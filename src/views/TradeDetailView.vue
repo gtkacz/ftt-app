@@ -4,7 +4,7 @@
     <div v-if="loading.currentTrade" class="state-panel surface-card w-100">
       <div class="text-center">
         <v-progress-circular indeterminate color="primary" size="64" />
-        <p class="text-h6 text-medium-emphasis mt-4">Loading trade details...</p>
+        <p class="text-h6 text-medium-emphasis mt-4">{{ t('tradeDetailView.loading') }}</p>
       </div>
     </div>
 
@@ -21,19 +21,19 @@
               :ripple="false"
               @click="handleBack"
             >
-              Back to Overview
+              {{ t('tradeDetailView.backToOverview') }}
             </v-btn>
-            
+
             <div class="trade-detail-heading d-flex align-center flex-wrap gap-3">
-              <h1 class="page-title">Trade #{{ currentTrade.id }}</h1>
-              
+              <h1 class="page-title">{{ t('tradeDetailView.header.tradeNumber', { id: currentTrade.id }) }}</h1>
+
               <v-chip
                 :color="getStatusColor(computedStatus)"
                 variant="flat"
                 label
                 class="font-weight-bold text-uppercase"
               >
-                {{ getStatusDisplay(computedStatus) || 'Unknown' }}
+                {{ getStatusDisplay(computedStatus) || t('tradeDetailView.status.unknown') }}
               </v-chip>
 
               <v-chip
@@ -43,9 +43,9 @@
                 size="small"
                 label
               >
-                Counteroffer
+                {{ t('tradeDetailView.status.counteroffer') }}
               </v-chip>
-              
+
               <v-chip
                 v-if="isReadOnly"
                 color="grey"
@@ -53,13 +53,13 @@
                 size="small"
               >
                 <v-icon start size="small">visibility</v-icon>
-                View Only
+                {{ t('tradeDetailView.status.viewOnly') }}
               </v-chip>
             </div>
-            
+
             <div class="text-subtitle-1 text-medium-emphasis mt-1">
-              Proposed by <strong class="text-high-emphasis">{{ getTeamName(currentTrade.proposing_team || currentTrade.sender?.id) }}</strong>
-              on {{ formatDate(currentTrade.created_at) }}
+              {{ t('tradeDetailView.header.proposedBy') }} <strong class="text-high-emphasis">{{ getTeamName(currentTrade.proposing_team || currentTrade.sender?.id) }}</strong>
+              {{ t('tradeDetailView.header.onDate', { date: formatDate(currentTrade.created_at) }) }}
             </div>
           </div>
 
@@ -75,7 +75,7 @@
                 :loading="responding"
                 @click="handleReject"
               >
-                Reject
+                {{ t('tradeDetailView.actions.reject') }}
               </v-btn>
               <v-btn
                 color="warning"
@@ -84,7 +84,7 @@
                 prepend-icon="edit"
                 @click="handleCounter"
               >
-                Counter
+                {{ t('tradeDetailView.actions.counter') }}
               </v-btn>
               <v-btn
                 color="success"
@@ -95,7 +95,7 @@
                 :loading="responding"
                 @click="handleAccept"
               >
-                Accept Trade
+                {{ t('tradeDetailView.actions.acceptTrade') }}
               </v-btn>
             </template>
 
@@ -109,7 +109,7 @@
                 :loading="executing"
                 @click="handleExecute"
               >
-                Execute Trade
+                {{ t('tradeDetailView.actions.executeTrade') }}
               </v-btn>
             </template>
           </div>
@@ -118,14 +118,14 @@
         <!-- Mobile Actions (Sticky Bottom or just inline) -->
         <div v-if="showActions" class="d-flex d-md-none flex-column gap-2 mb-6">
            <template v-if="currentTrade.status === 'proposed' && canRespond">
-              <v-btn block color="success" size="large" prepend-icon="check" @click="handleAccept" :loading="responding">Accept Trade</v-btn>
+              <v-btn block color="success" size="large" prepend-icon="check" @click="handleAccept" :loading="responding">{{ t('tradeDetailView.actions.acceptTrade') }}</v-btn>
               <div class="d-flex gap-2">
-                <v-btn class="flex-grow-1" color="warning" variant="outlined" prepend-icon="edit" @click="handleCounter">Counter</v-btn>
-                <v-btn class="flex-grow-1" color="error" variant="outlined" prepend-icon="close" @click="handleReject" :loading="responding">Reject</v-btn>
+                <v-btn class="flex-grow-1" color="warning" variant="outlined" prepend-icon="edit" @click="handleCounter">{{ t('tradeDetailView.actions.counter') }}</v-btn>
+                <v-btn class="flex-grow-1" color="error" variant="outlined" prepend-icon="close" @click="handleReject" :loading="responding">{{ t('tradeDetailView.actions.reject') }}</v-btn>
               </div>
            </template>
            <template v-if="currentTrade.status === 'approved' && isAdmin">
-              <v-btn block color="primary" size="large" prepend-icon="done_all" @click="handleExecute" :loading="executing">Execute Trade</v-btn>
+              <v-btn block color="primary" size="large" prepend-icon="done_all" @click="handleExecute" :loading="executing">{{ t('tradeDetailView.actions.executeTrade') }}</v-btn>
            </template>
         </div>
 
@@ -148,35 +148,35 @@
               <v-card class="trade-detail-card" variant="flat">
                 <v-card-title class="d-flex align-center text-subtitle-1 font-weight-bold">
                   <v-icon start color="info" size="small">info</v-icon>
-                  Status Details
+                  {{ t('tradeDetailView.statusDetails.title') }}
                 </v-card-title>
                 <v-divider />
                 <v-card-text>
                   <div class="status-info">
                     <div v-if="currentTrade.done" class="d-flex align-center text-success">
                       <v-icon size="small" class="mr-2">done_all</v-icon>
-                      <span>This trade has been finalized.</span>
+                      <span>{{ t('tradeDetailView.statusDetails.finalized') }}</span>
                     </div>
                     <div v-else-if="computedStatus === 'rejected'" class="d-flex align-center text-error">
                       <v-icon size="small" class="mr-2">cancel</v-icon>
-                      <span>This trade was rejected.</span>
+                      <span>{{ t('tradeDetailView.statusDetails.rejected') }}</span>
                     </div>
                     <div v-else-if="computedStatus === 'vetoed'" class="d-flex align-center text-error">
                       <v-icon size="small" class="mr-2">gavel</v-icon>
-                      <span>This trade was vetoed by commissioners.</span>
+                      <span>{{ t('tradeDetailView.statusDetails.vetoed') }}</span>
                     </div>
                     <div v-else-if="computedStatus === 'accepted'" class="d-flex align-center text-warning">
                       <v-icon size="small" class="mr-2">schedule</v-icon>
-                      <span>Waiting for commissioner approval.</span>
+                      <span>{{ t('tradeDetailView.statusDetails.waitingApproval') }}</span>
                     </div>
                     <div v-else-if="computedStatus === 'waiting_acceptance'" class="d-flex align-center text-info">
                       <v-icon size="small" class="mr-2">schedule</v-icon>
-                      <span>Waiting for other participants to respond.</span>
+                      <span>{{ t('tradeDetailView.statusDetails.waitingAcceptance') }}</span>
                     </div>
-                    
+
                     <!-- Notes Section inside Status Card -->
                     <div v-if="currentTrade.notes" class="mt-4 pt-4 border-t">
-                      <div class="text-caption text-medium-emphasis font-weight-bold mb-1">NOTES</div>
+                      <div class="text-caption text-medium-emphasis font-weight-bold mb-1">{{ t('tradeDetailView.statusDetails.notesLabel') }}</div>
                       <p class="text-body-2">{{ currentTrade.notes }}</p>
                     </div>
                   </div>
@@ -213,9 +213,9 @@
     <div v-else class="trade-detail-empty surface-card w-100">
       <div class="text-center">
         <v-icon size="64" color="error" class="mb-4">error_outline</v-icon>
-        <h3 class="text-h5 mb-2">Trade Not Found</h3>
-        <p class="text-body-1 text-medium-emphasis mb-6">The trade you are looking for does not exist or you don't have permission to view it.</p>
-        <v-btn color="secondary" variant="flat" @click="handleBack">Back to Overview</v-btn>
+        <h3 class="text-h5 mb-2">{{ t('tradeDetailView.notFound.title') }}</h3>
+        <p class="text-body-1 text-medium-emphasis mb-6">{{ t('tradeDetailView.notFound.message') }}</p>
+        <v-btn color="secondary" variant="flat" @click="handleBack">{{ t('tradeDetailView.backToOverview') }}</v-btn>
       </div>
     </div>
 
@@ -227,27 +227,27 @@
         </v-card-title>
         <v-card-text class="px-4">
           <p class="mb-4 text-body-2 text-medium-emphasis">
-             Are you sure you want to {{ responseDialog.type }} this trade? You can add an optional message below.
+             {{ t('tradeDetailView.responseDialog.confirmMessage', { action: responseDialog.type === 'accept' ? t('tradeDetailView.responseDialog.actionAccept') : t('tradeDetailView.responseDialog.actionReject') }) }}
           </p>
           <v-textarea
             v-model="responseDialog.message"
-            label="Message (optional)"
+            :label="t('tradeDetailView.responseDialog.messageLabel')"
             variant="outlined"
             rows="3"
-            placeholder="Add a message for the other teams..."
+            :placeholder="t('tradeDetailView.responseDialog.messagePlaceholder')"
             hide-details
           />
         </v-card-text>
         <v-card-actions class="p-4">
           <v-spacer />
-          <v-btn variant="text" @click="closeResponseDialog">Cancel</v-btn>
+          <v-btn variant="text" @click="closeResponseDialog">{{ t('tradeDetailView.actions.cancel') }}</v-btn>
           <v-btn
             :color="responseDialog.color"
             variant="flat"
             :loading="responding"
             @click="confirmResponse"
           >
-            Confirm {{ responseDialog.type === 'accept' ? 'Acceptance' : 'Rejection' }}
+            {{ responseDialog.type === 'accept' ? t('tradeDetailView.responseDialog.confirmAcceptance') : t('tradeDetailView.responseDialog.confirmRejection') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -257,7 +257,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
       <template #actions>
-        <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
+        <v-btn variant="text" @click="snackbar.show = false">{{ t('tradeDetailView.actions.close') }}</v-btn>
       </template>
     </v-snackbar>
   </v-container>
@@ -266,6 +266,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
@@ -279,6 +280,7 @@ import CommissionerApprovalSection from '@/components/trade/CommissionerApproval
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
 
@@ -574,25 +576,25 @@ function getStatusColor(status: string | TradeDisplayStatus): string {
 function getStatusDisplay(status: string | TradeDisplayStatus): string {
   const statusStr = typeof status === 'string' ? status : status;
   const displays: Record<string, string> = {
-    draft: 'Draft',
-    proposed: 'Proposed',
-    waiting_approval: 'Pending Approval',
-    waiting_acceptance: 'Waiting Response',
-    accepted: 'Accepted',
-    approved: 'Approved',
-    vetoed: 'Vetoed',
-    rejected: 'Rejected',
-    completed: 'Completed',
-    unknown: 'Unknown',
+    draft: t('tradeDetailView.status.draft'),
+    proposed: t('tradeDetailView.status.proposed'),
+    waiting_approval: t('tradeDetailView.status.waitingApproval'),
+    waiting_acceptance: t('tradeDetailView.status.waitingAcceptance'),
+    accepted: t('tradeDetailView.status.accepted'),
+    approved: t('tradeDetailView.status.approved'),
+    vetoed: t('tradeDetailView.status.vetoed'),
+    rejected: t('tradeDetailView.status.rejected'),
+    completed: t('tradeDetailView.status.completed'),
+    unknown: t('tradeDetailView.status.unknown'),
   };
   return displays[statusStr] || String(statusStr);
 }
 
 // Get team name
 function getTeamName(teamId: number): string {
-  if (!currentTrade.value) return `Team ${teamId}`;
-  const team = currentTrade.value.teams_detail.find((t) => t.id === teamId);
-  return team?.name || currentTrade.value.proposing_team_detail?.name || `Team ${teamId}`;
+  if (!currentTrade.value) return t('tradeDetailView.header.teamFallback', { id: teamId });
+  const team = currentTrade.value.teams_detail.find((team) => team.id === teamId);
+  return team?.name || currentTrade.value.proposing_team_detail?.name || t('tradeDetailView.header.teamFallback', { id: teamId });
 }
 
 // Format date
@@ -612,7 +614,7 @@ function handleAccept() {
   responseDialog.value = {
     show: true,
     type: 'accept',
-    title: 'Accept Trade',
+    title: t('tradeDetailView.responseDialog.acceptTitle'),
     color: 'success',
     message: '',
   };
@@ -622,7 +624,7 @@ function handleReject() {
   responseDialog.value = {
     show: true,
     type: 'reject',
-    title: 'Reject Trade',
+    title: t('tradeDetailView.responseDialog.rejectTitle'),
     color: 'error',
     message: '',
   };
@@ -633,13 +635,13 @@ async function handleCounter() {
 
   try {
     // Navigate to create page with counteroffer query param
-    router.push({ 
-      name: 'trade-create', 
-      query: { counterofferId: currentTrade.value.id.toString() } 
+    router.push({
+      name: 'trade-create',
+      query: { counterofferId: currentTrade.value.id.toString() }
     });
   } catch (error: any) {
     console.error('Counter error:', error);
-    showSnackbar(error.message || 'Failed to navigate to counteroffer', 'error');
+    showSnackbar(error.message || t('tradeDetailView.messages.counterNavigationFailed'), 'error');
   }
 }
 
@@ -652,7 +654,7 @@ async function confirmResponse() {
     // Find the TradeOffer for the user's team
     const userTeamId = authStore.user?.team?.id;
     if (!userTeamId) {
-      showSnackbar('Unable to determine your team', 'error');
+      showSnackbar(t('tradeDetailView.messages.noTeamFound'), 'error');
       return;
     }
 
@@ -661,7 +663,7 @@ async function confirmResponse() {
     );
 
     if (!userOffer) {
-      showSnackbar('Trade offer not found for your team', 'error');
+      showSnackbar(t('tradeDetailView.messages.offerNotFound'), 'error');
       return;
     }
 
@@ -672,7 +674,9 @@ async function confirmResponse() {
     );
 
     showSnackbar(
-      `Trade ${responseDialog.value.type === 'accept' ? 'accepted' : 'rejected'} successfully`,
+      responseDialog.value.type === 'accept'
+        ? t('tradeDetailView.messages.acceptedSuccess')
+        : t('tradeDetailView.messages.rejectedSuccess'),
       'success'
     );
     closeResponseDialog();
@@ -682,7 +686,7 @@ async function confirmResponse() {
     await fetchTimeline();
   } catch (error: any) {
     console.error('Response error:', error);
-    showSnackbar(error.message || 'Failed to respond to trade', 'error');
+    showSnackbar(error.message || t('tradeDetailView.messages.respondFailed'), 'error');
   } finally {
     responding.value = false;
   }
@@ -703,35 +707,35 @@ async function handleVote(payload: { vote: VoteType; notes?: string }) {
 
   try {
     await tradeStore.voteOnTrade(currentTrade.value.id, payload.vote, payload.notes);
-    showSnackbar('Vote submitted successfully', 'success');
+    showSnackbar(t('tradeDetailView.messages.voteSuccess'), 'success');
 
     // Reload trade details and timeline
     await tradeStore.fetchTradeById(tradeId.value);
     await fetchTimeline();
   } catch (error: any) {
     console.error('Vote error:', error);
-    showSnackbar(error.message || 'Failed to submit vote', 'error');
+    showSnackbar(error.message || t('tradeDetailView.messages.voteFailed'), 'error');
   }
 }
 
 async function handleExecute() {
   if (!currentTrade.value) return;
 
-  if (!confirm('Are you sure you want to execute this trade? This action cannot be undone.')) {
+  if (!confirm(t('tradeDetailView.confirmExecute'))) {
     return;
   }
 
   try {
     executing.value = true;
     await tradeStore.executeTrade(currentTrade.value.id);
-    showSnackbar('Trade executed successfully', 'success');
+    showSnackbar(t('tradeDetailView.messages.executeSuccess'), 'success');
 
     // Reload trade details and timeline
     await tradeStore.fetchTradeById(tradeId.value);
     await fetchTimeline();
   } catch (error: any) {
     console.error('Execute error:', error);
-    showSnackbar(error.message || 'Failed to execute trade', 'error');
+    showSnackbar(error.message || t('tradeDetailView.messages.executeFailed'), 'error');
   } finally {
     executing.value = false;
   }
@@ -783,7 +787,7 @@ watch(tradeId, async (newId) => {
       await fetchTimeline();
     } catch (error) {
       console.error('Failed to load trade:', error);
-      showSnackbar('Failed to load trade details', 'error');
+      showSnackbar(t('tradeDetailView.messages.loadFailed'), 'error');
     }
   }
 });
@@ -796,7 +800,7 @@ onMounted(async () => {
     await fetchTimeline();
   } catch (error) {
     console.error('Failed to load trade:', error);
-    showSnackbar('Failed to load trade details', 'error');
+    showSnackbar(t('tradeDetailView.messages.loadFailed'), 'error');
   }
 });
 </script>

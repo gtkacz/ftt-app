@@ -1,9 +1,13 @@
 <template>
-  <img src="@/assets/logo.png" :width="size" :height="size" alt="Fantasy Trash Talk"
+  <img src="@/assets/logo.png" :width="size" :height="size" :alt="t('appLogo.alt')"
     :class="{ 'app-logo--reactive': reactive }" :style="{ width: size, height: size }" />
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 withDefaults(defineProps<{
   size?: string;
   reactive?: boolean;

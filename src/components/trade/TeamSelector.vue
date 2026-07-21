@@ -7,7 +7,7 @@
           :items="availableTeams"
           item-title="name"
           item-value="id"
-          label="Add Team to Trade"
+          :label="t('teamSelector.addTeamLabel')"
           variant="outlined"
           density="comfortable"
           hide-details
@@ -43,7 +43,7 @@
 
               <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
               <v-list-item-subtitle class="text-caption">
-                {{ item.raw.owner_username || `Owner ID: ${item.raw.owner_id}` }}
+                {{ item.raw.owner_username || t('teamSelector.ownerId', { id: item.raw.owner_id }) }}
               </v-list-item-subtitle>
             </v-list-item>
           </template>
@@ -53,7 +53,7 @@
       <!-- Selected Teams Display -->
       <div v-if="(props.selectedTeamIds || []).length > 0" class="mt-4">
         <div class="text-caption text-medium-emphasis mb-2">
-          Teams in Trade ({{ (props.selectedTeamIds || []).length }})
+          {{ t('teamSelector.teamsInTrade', { count: (props.selectedTeamIds || []).length }) }}
         </div>
 
         <v-chip-group column>
@@ -87,7 +87,7 @@
               activator="parent"
               location="top"
             >
-              Proposing Team
+              {{ t('teamSelector.proposingTeam') }}
             </v-tooltip>
           </v-chip>
         </v-chip-group>
@@ -104,7 +104,7 @@
         <div class="d-flex align-center">
           <v-icon icon="info" size="small" class="mr-2" />
           <span class="text-caption">
-            Multi-team trade: All teams must give and receive at least one asset
+            {{ t('teamSelector.multiTeamInfo') }}
           </span>
         </div>
       </v-alert>
@@ -114,7 +114,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Team } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   teams: Team[];

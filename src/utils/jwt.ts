@@ -1,4 +1,5 @@
 import { showError } from "@/services/errorSnackbar";
+import { i18n } from "@/i18n";
 
 export interface JwtPayload {
   user_id?: number;
@@ -24,7 +25,7 @@ export function decodeJwt(token: string): JwtPayload | null {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    showError("Failed to decode JWT:", error);
+    showError(i18n.global.t("jwt.decodeFailed"), error);
     return null;
   }
 }

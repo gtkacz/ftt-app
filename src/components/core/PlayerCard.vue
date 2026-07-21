@@ -4,7 +4,7 @@
 		<div class="card-header">
 			<div class="team-info">
 				<span class="team-city">{{ player?.real_team?.city }}</span>
-				<span class="team-name">{{ player?.real_team?.name || 'NBA' }}</span>
+				<span class="team-name">{{ player?.real_team?.name || t('playerCard.defaultLeagueName') }}</span>
 			</div>
 			<nba-team-icon :team="player?.real_team?.abbreviation" size="40" />
 		</div>
@@ -35,11 +35,11 @@
 			<!-- Physical stats -->
 			<div class="physical-stats">
 				<span class="stat-item">
-					<strong>{{ playerMetadata?.HEIGHT || 'N/A' }}</strong>
+					<strong>{{ playerMetadata?.HEIGHT || t('playerCard.notAvailable') }}</strong>
 				</span>
 				<span class="stat-divider">•</span>
 				<span class="stat-item">
-					<strong>{{ playerMetadata?.WEIGHT ? `${playerMetadata.WEIGHT} lbs` : 'N/A' }}</strong>
+					<strong>{{ playerMetadata?.WEIGHT ? `${playerMetadata.WEIGHT} lbs` : t('playerCard.notAvailable') }}</strong>
 				</span>
 			</div>
 
@@ -66,15 +66,14 @@
 				</v-chip>
 				<v-chip size="small" variant="tonal" class="salary-chip">
 					{{ pick?.contract?.duration }}
-					<word item="yr" :count="pick?.contract?.duration" />
+					<word :item="t('playerCard.yearAbbreviation')" :count="pick?.contract?.duration" />
 				</v-chip>
 			</div>
 
 			<!-- Draft info -->
 			<div class="draft-info" v-if="pick?.contract?.start_year">
 				<span class="draft-text">
-					{{ pick?.contract?.start_year }} Draft • Round {{ pick?.pick__round_number }} • Pick {{
-						pick?.pick_number }}
+					{{ t('playerCard.draftInfo', { year: pick?.contract?.start_year, round: pick?.pick__round_number, pick: pick?.pick_number }) }}
 				</span>
 			</div>
 		</v-card-text>
@@ -82,7 +81,7 @@
 		<v-card-actions v-if="props.canDraft" class="d-flex justify-center align-center flex-column mb-6 mx-3">
 			<v-spacer />
 			<v-btn variant="tonal" class="w-100" color="surface" rounded @click="onDraftConfirm" v-confirm>
-				Draft Player
+				{{ t('playerCard.draftPlayer') }}
 			</v-btn>
 		</v-card-actions>
 	</v-card>
@@ -90,7 +89,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
+
+const { t } = useI18n()
 
 const emit = defineEmits(['draft'])
 

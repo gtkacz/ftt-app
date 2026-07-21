@@ -2,7 +2,7 @@
   <div v-if="loading" class="state-panel dashboard-loading">
     <div>
       <v-progress-circular indeterminate color="secondary" size="48" width="4" />
-      <p>Building your team dashboard…</p>
+      <p>{{ t('dashboardView.loading') }}</p>
     </div>
   </div>
   <v-container v-else fluid class="dashboard-container page-view pa-0">
@@ -14,17 +14,17 @@
           <v-card-text class="team-header__content">
             <div class="team-header__identity">
               <v-avatar size="76" class="team-header__avatar">
-                <v-img :src="simulatedTeamData.avatar || defaultAvatar" alt="Team Avatar"></v-img>
+                <v-img :src="simulatedTeamData.avatar || defaultAvatar" :alt="t('dashboardView.header.teamAvatarAlt')"></v-img>
               </v-avatar>
               <div>
-                <p class="eyebrow">Team command center</p>
+                <p class="eyebrow">{{ t('dashboardView.header.eyebrow') }}</p>
                 <h1>{{ simulatedTeamData.name }}</h1>
-                <p class="team-header__manager">Managed by @{{ simulatedTeamData.owner_username }}</p>
+                <p class="team-header__manager">{{ t('dashboardView.header.managedBy', { username: simulatedTeamData.owner_username }) }}</p>
               </div>
             </div>
             <div class="team-header__summary">
-              <small>Current roster</small>
-              <strong>{{ simulatedTeamData.total_players }} players · ${{ simulatedTeamData.total_salary }}M</strong>
+              <small>{{ t('dashboardView.header.currentRoster') }}</small>
+              <strong>{{ t('dashboardView.header.rosterSummary', { players: simulatedTeamData.total_players, salary: simulatedTeamData.total_salary }) }}</strong>
             </div>
           </v-card-text>
         </v-card>
@@ -37,19 +37,19 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">person_add</v-icon>
-            Add Player Simulation
+            {{ t('dashboardView.simulation.title') }}
           </v-card-title>
           <v-card-text>
             <v-row>
               <v-col cols="12" md="4">
                 <v-autocomplete v-model="playerSelection" rounded :items="availableFreeAgents"
-                  :item-title="formatPlayerTitle" item-value="id" label="Select Player" return-object
-                  variant="outlined" clearable autocomplete="off" no-data-text="No eligible players found"
-                  class="player-simulation-select" v-combobox-label="'Select a player to simulate'"
+                  :item-title="formatPlayerTitle" item-value="id" :label="t('dashboardView.simulation.selectPlayer')" return-object
+                  variant="outlined" clearable autocomplete="off" :no-data-text="t('dashboardView.simulation.noEligiblePlayers')"
+                  class="player-simulation-select" v-combobox-label="t('dashboardView.simulation.selectPlayerAriaLabel')"
                   :menu-props="{ maxWidth: 520 }" @update:model-value="handlePlayerSelection">
                   <template v-slot:item="{ props, item }">
                     <v-list-item v-bind="props"
-                      :subtitle="item.raw.contract?.team === 0 ? 'Free agent' : 'Other team roster'">
+                      :subtitle="item.raw.contract?.team === 0 ? t('dashboardView.simulation.freeAgent') : t('dashboardView.simulation.otherTeamRoster')">
                       <template v-slot:prepend>
                         <v-chip :color="getPositionColor(item.raw.primary_position)" size="small">
                           {{ item.raw.primary_position }}
@@ -64,7 +64,7 @@
               </v-col>
               <v-col cols="12" md="8">
                 <div v-if="simulatedPlayers.length > 0">
-                  <v-card-text class="pa-0 mb-2">Simulated Additions:</v-card-text>
+                  <v-card-text class="pa-0 mb-2">{{ t('dashboardView.simulation.simulatedAdditions') }}</v-card-text>
                   <div class="d-flex flex-wrap align-center gap-2">
                     <v-chip v-for="player in simulatedPlayers" :key="player.id" closable
                       :color="getPositionColor(player.primary_position)" variant="tonal"
@@ -95,16 +95,14 @@
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <v-card-subtitle class="pa-0">Total Players</v-card-subtitle>
+                <v-card-subtitle class="pa-0">{{ t('dashboardView.stats.totalPlayers') }}</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ simulatedTeamData.total_players }}</v-card-title>
                 <div class="d-flex gap-1 flex-wrap">
                   <v-chip variant="tonal" size="small" color="info">
-                    {{ simulatedTeamData.available_players }} slots available
+                    {{ t('dashboardView.stats.slotsAvailable', { count: simulatedTeamData.available_players }) }}
                   </v-chip>
                   <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
-                    League Avg: {{ leagueStats.averages.totalPlayers.toFixed(1) }} | #{{ teamRankings.totalPlayers }} of
-                    {{
-                      leagueStats.teams.length }}
+                    {{ t('dashboardView.stats.leagueAvg', { avg: leagueStats.averages.totalPlayers.toFixed(1), rank: teamRankings.totalPlayers, total: leagueStats.teams.length }) }}
                   </v-chip>
                 </div>
               </div>
@@ -119,17 +117,15 @@
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <v-card-subtitle class="pa-0">Total Salary</v-card-subtitle>
+                <v-card-subtitle class="pa-0">{{ t('dashboardView.stats.totalSalary') }}</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">${{ simulatedTeamData.total_salary }}M</v-card-title>
                 <div class="d-flex gap-1 flex-wrap">
                   <v-chip :color="simulatedTeamData.available_salary > 0 ? 'success' : 'error'" variant="tonal"
                     size="small">
-                    ${{ simulatedTeamData.available_salary }}M available
+                    {{ t('dashboardView.stats.salaryAvailable', { amount: simulatedTeamData.available_salary }) }}
                   </v-chip>
                   <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
-                    League Avg: {{ leagueStats.averages?.totalSalary.toFixed(1) }} | #{{ teamRankings?.totalSalary }} of
-                    {{
-                      leagueStats.teams.length }}
+                    {{ t('dashboardView.stats.leagueAvg', { avg: leagueStats.averages?.totalSalary.toFixed(1), rank: teamRankings?.totalSalary, total: leagueStats.teams.length }) }}
                   </v-chip>
                 </div>
               </div>
@@ -144,16 +140,14 @@
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <v-card-subtitle class="pa-0">Total Fantasy Points</v-card-subtitle>
+                <v-card-subtitle class="pa-0">{{ t('dashboardView.stats.totalFantasyPoints') }}</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ currentStats.totalFantasyPoints.toFixed(1) }}</v-card-title>
                 <div class="d-flex gap-1 flex-wrap">
                   <v-chip color="info" variant="tonal" size="small">
-                    {{ currentStats.avgFantasyPoints.toFixed(1) }} avg
+                    {{ t('dashboardView.stats.avgSuffix', { value: currentStats.avgFantasyPoints.toFixed(1) }) }}
                   </v-chip>
                   <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
-                    League Avg: {{ leagueStats.averages?.avgFantasyPoints.toFixed(1) }} | #{{
-                      teamRankings?.avgFantasyPoints
-                    }} of {{ leagueStats.teams.length }}
+                    {{ t('dashboardView.stats.leagueAvg', { avg: leagueStats.averages?.avgFantasyPoints.toFixed(1), rank: teamRankings?.avgFantasyPoints, total: leagueStats.teams.length }) }}
                   </v-chip>
                 </div>
               </div>
@@ -168,13 +162,11 @@
           <v-card-text>
             <div class="d-flex justify-space-between align-center">
               <div>
-                <v-card-subtitle class="pa-0">Team Efficiency (FPTS per $M)</v-card-subtitle>
+                <v-card-subtitle class="pa-0">{{ t('dashboardView.stats.teamEfficiency') }}</v-card-subtitle>
                 <v-card-title class="pa-0 text-h4">{{ efficiencyStats.fptsPerMillion.toFixed(1) }}</v-card-title>
                 <div class="d-flex gap-1 flex-wrap">
                   <v-chip v-if="leagueStats" variant="tonal" size="small" color="secondary">
-                    League Avg: {{ leagueStats.averages?.fptsPerMillion.toFixed(1) }} | #{{ teamRankings?.fptsPerMillion
-                    }}
-                    of {{ leagueStats.teams.length }}
+                    {{ t('dashboardView.stats.leagueAvg', { avg: leagueStats.averages?.fptsPerMillion.toFixed(1), rank: teamRankings?.fptsPerMillion, total: leagueStats.teams.length }) }}
                   </v-chip>
                 </div>
               </div>
@@ -191,7 +183,7 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">groups</v-icon>
-            Lineup Projections
+            {{ t('dashboardView.lineups.title') }}
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -201,17 +193,15 @@
                     {{ lineup.name }}
                     <v-spacer></v-spacer>
                     <v-chip color="info" variant="tonal" size="small">
-                      {{ lineup.totalFpts.toFixed(1) }} Total FPTS
+                      {{ t('dashboardView.lineups.totalFpts', { value: lineup.totalFpts.toFixed(1) }) }}
                     </v-chip>
                     <v-chip v-if="leagueStats && index === 0" variant="tonal" size="small" color="secondary"
                       class="ml-2">
-                      Best Lineup Avg: {{ leagueStats.averages?.bestLineupFpts.toFixed(1) }} | #{{
-                        teamRankings?.bestLineupFpts }} of {{ leagueStats.teams.length }}
+                      {{ t('dashboardView.lineups.bestLineupAvg', { avg: leagueStats.averages?.bestLineupFpts.toFixed(1), rank: teamRankings?.bestLineupFpts, total: leagueStats.teams.length }) }}
                     </v-chip>
                     <v-chip v-if="leagueStats && index === 1" variant="tonal" size="small" color="secondary"
                       class="ml-2">
-                      All Lineups Avg: {{ leagueStats.averages?.avgLineupFpts.toFixed(1) }} | #{{
-                        teamRankings?.avgLineupFpts }} of {{ leagueStats.teams.length }}
+                      {{ t('dashboardView.lineups.allLineupsAvg', { avg: leagueStats.averages?.avgLineupFpts.toFixed(1), rank: teamRankings?.avgLineupFpts, total: leagueStats.teams.length }) }}
                     </v-chip>
                   </v-card-title>
                   <v-card-text class="pt-0">
@@ -266,7 +256,7 @@
         <v-card class="pa-3" elevation="3" v-if="currentStats.irPlayers">
           <v-card-title>
             <v-icon class="me-2">healing</v-icon>
-            Players on IR
+            {{ t('dashboardView.ir.title') }}
           </v-card-title>
           <v-card-text>
             <v-card variant="outlined">
@@ -294,7 +284,7 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">sports_basketball</v-icon>
-            Position Breakdown
+            {{ t('dashboardView.positions.title') }}
           </v-card-title>
           <v-card-text>
             <v-row v-for="position in positionStats" :key="position.name" class="mb-4">
@@ -304,17 +294,17 @@
                     {{ position.name }} ({{ position.count }})
                   </v-chip>
                   <v-chip color="info" variant="outlined" size="small">
-                    {{ position.capPercentage }}% of cap
+                    {{ t('dashboardView.positions.ofCap', { percent: position.capPercentage }) }}
                   </v-chip>
                 </div>
 
                 <v-row class="text-body-2">
                   <v-col cols="3">
-                    <strong>Salary:</strong><br>
+                    <strong>{{ t('dashboardView.positions.salary') }}</strong><br>
                     ${{ position.totalSalary.toFixed(1) }}M
                   </v-col>
                   <v-col cols="3">
-                    <strong>Avg Salary:</strong><br>
+                    <strong>{{ t('dashboardView.positions.avgSalary') }}</strong><br>
                     ${{ position.avgSalary.toFixed(1) }}M
                   </v-col>
                   <v-col cols="3">
@@ -322,7 +312,7 @@
                     {{ position.totalFantasyPoints.toFixed(1) }}
                   </v-col>
                   <v-col cols="3">
-                    <strong>Avg FPTS:</strong><br>
+                    <strong>{{ t('dashboardView.positions.avgFpts') }}</strong><br>
                     {{ position.avgFantasyPoints.toFixed(1) }}
                   </v-col>
                 </v-row>
@@ -338,10 +328,9 @@
             <!-- Show how many players have more than one position -->
             <v-card-text class="text-subtitle-2 text-center">
               <span v-if="teamData.players.some(player => !!player.secondary_position)">
-                {{teamData.players.filter(player => !!player.secondary_position).length}} players have multiple
-                positions
+                {{ t('dashboardView.positions.multiplePositionsCount', { count: teamData.players.filter(player => !!player.secondary_position).length }) }}
               </span>
-              <span v-else>No players with multiple positions</span>
+              <span v-else>{{ t('dashboardView.positions.noMultiplePositions') }}</span>
             </v-card-text>
           </v-card-actions>
         </v-card>
@@ -352,11 +341,11 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">star</v-icon>
-            Top Contributors
+            {{ t('dashboardView.topContributors.title') }}
           </v-card-title>
           <v-card-text>
             <v-expansion-panels variant="accordion">
-              <v-expansion-panel title="Team Leaders">
+              <v-expansion-panel :title="t('dashboardView.topContributors.teamLeaders')">
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="(player, index) in topContributors.team" :key="player.id">
@@ -375,7 +364,7 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
 
-              <v-expansion-panel v-for="pos in ['G', 'F', 'C']" :key="pos" :title="`${getPositionName(pos)} Leaders`">
+              <v-expansion-panel v-for="pos in ['G', 'F', 'C']" :key="pos" :title="t('dashboardView.topContributors.positionLeaders', { position: getPositionName(pos) })">
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="(player, index) in topContributors.byPosition[pos]" :key="player.id">
@@ -386,8 +375,7 @@
                       <v-list-item-subtitle>{{ player.fpts.toFixed(1) }} FPTS</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="topContributors.byPosition[pos].length === 0">
-                      <v-list-item-title class="text-grey">No {{ getPositionName(pos).toLowerCase() }} on
-                        roster</v-list-item-title>
+                      <v-list-item-title class="text-grey">{{ t('dashboardView.topContributors.noPositionOnRoster', { position: getPositionName(pos).toLowerCase() }) }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-expansion-panel-text>
@@ -404,7 +392,7 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">contract</v-icon>
-            Contract Status
+            {{ t('dashboardView.contracts.title') }}
           </v-card-title>
           <v-card-text>
             <v-row class="mb-3">
@@ -412,7 +400,7 @@
                 <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h4 text-success">{{ contractStats.rosterReturning.toFixed(1) }}%</div>
-                    <div class="text-caption">Roster Returning</div>
+                    <div class="text-caption">{{ t('dashboardView.contracts.rosterReturning') }}</div>
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -420,7 +408,7 @@
                 <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h4 text-error">{{ contractStats.rosterExpiring.toFixed(1) }}%</div>
-                    <div class="text-caption">Roster Expiring</div>
+                    <div class="text-caption">{{ t('dashboardView.contracts.rosterExpiring') }}</div>
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -430,8 +418,8 @@
 
             <div class="mb-3">
               <div class="d-flex justify-space-between mb-2">
-                <span>Expiring {{ currentYear }}:</span>
-                <v-chip color="error" variant="tonal" size="small">{{ contractStats.expiring2025 }} players</v-chip>
+                <span>{{ t('dashboardView.contracts.expiringYearLabel', { year: currentYear }) }}</span>
+                <v-chip color="error" variant="tonal" size="small">{{ t('dashboardView.contracts.playerCount', { count: contractStats.expiring2025 }) }}</v-chip>
               </div>
               <v-progress-linear :model-value="(contractStats.expiring2025 / simulatedTeamData.total_players) * 100"
                 color="error" height="4">
@@ -440,8 +428,8 @@
 
             <div class="mb-3">
               <div class="d-flex justify-space-between mb-2">
-                <span>Expiring {{ currentYear + 1 }}:</span>
-                <v-chip color="warning" variant="tonal" size="small">{{ contractStats.expiring2026 }} players</v-chip>
+                <span>{{ t('dashboardView.contracts.expiringYearLabel', { year: currentYear + 1 }) }}</span>
+                <v-chip color="warning" variant="tonal" size="small">{{ t('dashboardView.contracts.playerCount', { count: contractStats.expiring2026 }) }}</v-chip>
               </div>
               <v-progress-linear :model-value="(contractStats.expiring2026 / simulatedTeamData.total_players) * 100"
                 color="warning" height="4">
@@ -450,8 +438,8 @@
 
             <div class="mb-3">
               <div class="d-flex justify-space-between mb-2">
-                <span>Long-term (3+ years):</span>
-                <v-chip color="success" variant="tonal" size="small">{{ contractStats.longTerm }} players</v-chip>
+                <span>{{ t('dashboardView.contracts.longTerm') }}</span>
+                <v-chip color="success" variant="tonal" size="small">{{ t('dashboardView.contracts.playerCount', { count: contractStats.longTerm }) }}</v-chip>
               </div>
               <v-progress-linear :model-value="(contractStats.longTerm / simulatedTeamData.total_players) * 100"
                 color="success" height="4">
@@ -461,13 +449,13 @@
             <v-row class="mt-3">
               <v-col cols="6">
                 <div class="d-flex justify-space-between">
-                  <span>RFA Players:</span>
+                  <span>{{ t('dashboardView.contracts.rfaPlayers') }}</span>
                   <v-chip color="info" variant="tonal" size="small">{{ contractStats.rfa }}</v-chip>
                 </div>
               </v-col>
               <v-col cols="6">
                 <div class="d-flex justify-space-between">
-                  <span>Team Options:</span>
+                  <span>{{ t('dashboardView.contracts.teamOptions') }}</span>
                   <v-chip color="secondary" variant="tonal" size="small">{{ contractStats.teamOptions }}</v-chip>
                 </div>
               </v-col>
@@ -481,11 +469,11 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">calendar_clock</v-icon>
-            Expiring Contracts
+            {{ t('dashboardView.contracts.expiringTitle') }}
           </v-card-title>
           <v-card-text>
             <v-expansion-panels variant="accordion">
-              <v-expansion-panel :title="`${currentYear} Expiring (${expiringPlayers.thisYear.length})`">
+              <v-expansion-panel :title="t('dashboardView.contracts.expiringYearPanelTitle', { year: currentYear, count: expiringPlayers.thisYear.length })">
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.thisYear" :key="player.id">
@@ -506,13 +494,13 @@
                       </template>
                     </v-list-item>
                     <v-list-item v-if="expiringPlayers.thisYear.length === 0">
-                      <v-list-item-title class="text-grey">No players expiring this year</v-list-item-title>
+                      <v-list-item-title class="text-grey">{{ t('dashboardView.contracts.noneExpiringThisYear') }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-expansion-panel-text>
               </v-expansion-panel>
 
-              <v-expansion-panel :title="`${currentYear + 1} Expiring (${expiringPlayers.nextYear.length})`">
+              <v-expansion-panel :title="t('dashboardView.contracts.expiringYearPanelTitle', { year: currentYear + 1, count: expiringPlayers.nextYear.length })">
                 <v-expansion-panel-text>
                   <v-list density="compact">
                     <v-list-item v-for="player in expiringPlayers.nextYear" :key="player.id">
@@ -533,7 +521,7 @@
                       </template>
                     </v-list-item>
                     <v-list-item v-if="expiringPlayers.nextYear.length === 0">
-                      <v-list-item-title class="text-grey">No players expiring next year</v-list-item-title>
+                      <v-list-item-title class="text-grey">{{ t('dashboardView.contracts.noneExpiringNextYear') }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-expansion-panel-text>
@@ -550,29 +538,29 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">event_upcoming</v-icon>
-            Future Projections
+            {{ t('dashboardView.projections.title') }}
           </v-card-title>
           <v-card-text>
             <v-row>
               <v-col v-for="season in futureSeasons" :key="season.year" cols="12" sm="6" md="4">
                 <v-card variant="outlined" class="h-100 pa-3">
-                  <v-card-title class="text-h6">{{ season.year }} Season</v-card-title>
+                  <v-card-title class="text-h6">{{ t('dashboardView.projections.seasonTitle', { year: season.year }) }}</v-card-title>
                   <v-card-text>
                     <v-list density="compact">
                       <v-list-item>
-                        <v-list-item-title>Players:</v-list-item-title>
+                        <v-list-item-title>{{ t('dashboardView.projections.players') }}</v-list-item-title>
                         <template v-slot:append>
                           <strong>{{ season.players }}</strong>
                         </template>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-title>Salary Committed:</v-list-item-title>
+                        <v-list-item-title>{{ t('dashboardView.projections.salaryCommitted') }}</v-list-item-title>
                         <template v-slot:append>
                           <strong>${{ season.salaryCommitted.toFixed(1) }}M</strong>
                         </template>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-title>Available Cap:</v-list-item-title>
+                        <v-list-item-title>{{ t('dashboardView.projections.availableCap') }}</v-list-item-title>
                         <template v-slot:append>
                           <strong :class="season.availableCap > 0 ? 'text-success' : 'text-error'">
                             ${{ season.availableCap.toFixed(1) }}M
@@ -580,7 +568,7 @@
                         </template>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-title>Draft Picks:</v-list-item-title>
+                        <v-list-item-title>{{ t('dashboardView.projections.draftPicks') }}</v-list-item-title>
                         <template v-slot:append>
                           <strong>{{ season.picks }}</strong>
                         </template>
@@ -601,14 +589,14 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">child_care</v-icon>
-            Draft Capital
+            {{ t('dashboardView.draft.title') }}
           </v-card-title>
           <v-card-text>
             <div v-for="year in Object.keys(draftPicks).sort()" :key="year" class="mb-4">
               <div class="d-flex justify-space-between align-center mb-2">
-                <v-card-subtitle class="pa-0 text-h6">{{ year }} Draft</v-card-subtitle>
+                <v-card-subtitle class="pa-0 text-h6">{{ t('dashboardView.draft.yearDraft', { year }) }}</v-card-subtitle>
                 <v-chip color="info" variant="tonal">
-                  {{ draftPicks[year].length }} picks
+                  {{ t('dashboardView.draft.pickCount', { count: draftPicks[year].length }) }}
                 </v-chip>
               </div>
 
@@ -617,14 +605,14 @@
                   <v-chip-group base-color="info" column>
                     <v-chip v-for="pick in draftPicks[year]" :key="`${year}-${pick.round_number}`" variant="tonal"
                       size="small">
-                      {{ pick.original_team_name }} | Round {{ pick.round_number }}
+                      {{ t('dashboardView.draft.pickLabel', { team: pick.original_team_name, round: pick.round_number }) }}
                     </v-chip>
                   </v-chip-group>
                 </v-card-text>
               </v-card>
             </div>
             <v-alert v-if="Object.keys(draftPicks).length === 0" type="info" variant="tonal">
-              No upcoming draft picks
+              {{ t('dashboardView.draft.noPicks') }}
             </v-alert>
           </v-card-text>
         </v-card>
@@ -635,7 +623,7 @@
         <v-card elevation="3" class="pa-3">
           <v-card-title>
             <v-icon class="me-2">analytics</v-icon>
-            Advanced Metrics
+            {{ t('dashboardView.metrics.title') }}
           </v-card-title>
           <v-card-text>
             <v-row>
@@ -643,7 +631,7 @@
                 <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h5">{{ efficiencyStats.salaryCapUtilization.toFixed(1) }}%</div>
-                    <div class="text-caption">Cap Utilization</div>
+                    <div class="text-caption">{{ t('dashboardView.metrics.capUtilization') }}</div>
                     <v-progress-linear :model-value="efficiencyStats.salaryCapUtilization"
                       :color="efficiencyStats.salaryCapUtilization > 90 ? 'error' : efficiencyStats.salaryCapUtilization > 75 ? 'warning' : 'success'"
                       height="4" class="mt-2">
@@ -656,7 +644,7 @@
                 <v-card variant="outlined" class="pa-3">
                   <v-card-text class="text-center">
                     <div class="text-h5">{{ efficiencyStats.rosterUtilization.toFixed(1) }}%</div>
-                    <div class="text-caption">Roster Utilization</div>
+                    <div class="text-caption">{{ t('dashboardView.metrics.rosterUtilization') }}</div>
                     <v-progress-linear :model-value="efficiencyStats.rosterUtilization" color="info" height="4"
                       class="mt-2">
                     </v-progress-linear>
@@ -670,7 +658,7 @@
 
               <v-col cols="6">
                 <v-list-item class="px-0">
-                  <v-list-item-title>IR Players:</v-list-item-title>
+                  <v-list-item-title>{{ t('dashboardView.metrics.irPlayers') }}</v-list-item-title>
                   <template v-slot:append>
                     <v-chip color="error" variant="tonal" size="small">{{ currentStats.irPlayers }}</v-chip>
                   </template>
@@ -679,26 +667,25 @@
 
               <v-col cols="6">
                 <v-list-item class="px-0">
-                  <v-list-item-title>Avg Age:</v-list-item-title>
+                  <v-list-item-title>{{ t('dashboardView.metrics.avgAge') }}</v-list-item-title>
                   <template v-slot:append>
-                    <v-chip color="info" variant="tonal" size="small">{{ teamMetrics.avgAge.toFixed(1) }} yrs</v-chip>
+                    <v-chip color="info" variant="tonal" size="small">{{ t('dashboardView.metrics.yearsSuffix', { value: teamMetrics.avgAge.toFixed(1) }) }}</v-chip>
                   </template>
                 </v-list-item>
               </v-col>
 
               <v-col cols="6">
                 <v-list-item class="px-0">
-                  <v-list-item-title>Experience:</v-list-item-title>
+                  <v-list-item-title>{{ t('dashboardView.metrics.experience') }}</v-list-item-title>
                   <template v-slot:append>
-                    <v-chip color="secondary" variant="tonal" size="small">{{ teamMetrics.avgExperience.toFixed(1) }}
-                      yrs</v-chip>
+                    <v-chip color="secondary" variant="tonal" size="small">{{ t('dashboardView.metrics.yearsSuffix', { value: teamMetrics.avgExperience.toFixed(1) }) }}</v-chip>
                   </template>
                 </v-list-item>
               </v-col>
 
               <v-col cols="6">
                 <v-list-item class="px-0">
-                  <v-list-item-title>Value Rating:</v-list-item-title>
+                  <v-list-item-title>{{ t('dashboardView.metrics.valueRating') }}</v-list-item-title>
                   <template v-slot:append>
                     <v-chip :color="getValueRatingColor(teamMetrics.valueRating)" variant="tonal" size="small">
                       {{ teamMetrics.valueRating }}
@@ -717,7 +704,10 @@
 <script setup lang="ts">
 import api from '@/api/axios';
 import { computed, nextTick, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+
+const { t } = useI18n();
 
 function applyComboboxLabel(element: HTMLElement, label: string) {
   const combobox = element.matches('[role="combobox"]')
@@ -876,9 +866,9 @@ const getPositionColor = (position: string): string => {
 
 const getPositionName = (position: string): string => {
   switch (position) {
-    case 'G': return 'Guards'
-    case 'F': return 'Forwards'
-    case 'C': return 'Centers'
+    case 'G': return t('dashboardView.positions.guards')
+    case 'F': return t('dashboardView.positions.forwards')
+    case 'C': return t('dashboardView.positions.centers')
     default: return position
   }
 }
@@ -1195,7 +1185,13 @@ const lineupProjections = computed(() => {
 
   for (let i = 0; i < numLineups; i++) {
     const lineup = {
-      name: i === 0 ? 'Starting Lineup' : `${i === 1 ? '2nd' : i === 2 ? '3rd' : `${i + 1}th`} Unit`,
+      name: i === 0
+        ? t('dashboardView.lineups.startingLineup')
+        : i === 1
+          ? t('dashboardView.lineups.secondUnit')
+          : i === 2
+            ? t('dashboardView.lineups.thirdUnit')
+            : t('dashboardView.lineups.nthUnit', { n: i + 1 }),
       guards: [],
       forwards: [],
       center: null,

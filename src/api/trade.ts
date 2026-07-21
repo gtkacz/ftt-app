@@ -20,6 +20,7 @@ import type {
   TradeDisplayStatus,
 } from '@/types/trade';
 import { getTradeDisplayStatus } from '@/types/trade';
+import { i18n } from '@/i18n';
 
 export class TradeService {
   // Trade CRUD operations
@@ -113,29 +114,30 @@ export class TradeService {
       }
       
       // Get event display text
+      const { t } = i18n.global;
       const eventDisplayMap: Record<string, string> = {
-        'proposed': 'Trade Proposed',
-        'countered': 'Counteroffer Made',
-        'accepted': 'Trade Accepted',
-        'rejected': 'Trade Rejected',
-        'vetoed': 'Trade Vetoed',
-        'approved': 'Trade Approved',
-        'waiting_approval': 'Pending Approval',
-        'modified': 'Trade Modified',
+        'proposed': t('tradeTimeline.events.proposed'),
+        'countered': t('tradeTimeline.events.countered'),
+        'accepted': t('tradeTimeline.events.accepted'),
+        'rejected': t('tradeTimeline.events.rejected'),
+        'vetoed': t('tradeTimeline.events.vetoed'),
+        'approved': t('tradeTimeline.events.approved'),
+        'waiting_approval': t('tradeTimeline.events.waitingApproval'),
+        'modified': t('tradeTimeline.events.modified'),
       };
-      
+
       return {
         id: entry.id || index,
         trade: trade.id || id,
         created_at: timestamp || new Date().toISOString(),
         event_type: eventType as any,
-        event_display: eventDisplayMap[eventType] || 'Trade Event',
+        event_display: eventDisplayMap[eventType] || t('tradeTimeline.events.fallbackEvent'),
         actor: actorId,
         actor_username: actorUsername,
-        actor_display: actorDisplay || 'System',
+        actor_display: actorDisplay || t('tradeTimeline.events.fallbackActor'),
         team: actorId,
         team_name: actorDisplay || '',
-        message: description || eventDisplayMap[eventType] || 'Trade event occurred',
+        message: description || eventDisplayMap[eventType] || t('tradeTimeline.events.fallbackMessage'),
         assets_snapshot: null,
         has_snapshot: false,
         snapshot_summary: '',
@@ -279,9 +281,9 @@ export class TradeService {
       id: p.id,
       first_name: p.first_name || '',
       last_name: p.last_name || '',
-      full_name: p.full_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Player',
-      position: p.position || p.primary_position || 'N/A',
-      nba_team: p.nba_team || p.real_team?.abbreviation || p.real_team?.name || 'N/A',
+      full_name: p.full_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || i18n.global.t('players.unknownPlayer'),
+      position: p.position || p.primary_position || i18n.global.t('players.notAvailable'),
+      nba_team: p.nba_team || p.real_team?.abbreviation || p.real_team?.name || i18n.global.t('players.notAvailable'),
       jersey_number: p.jersey_number,
       photo_url: p.photo_url || p.photo,
       // Keep contract info - needed for trade creation (contract ID)

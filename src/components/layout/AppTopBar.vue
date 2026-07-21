@@ -3,22 +3,23 @@
     <div class="top-bar-content">
       <router-link :to="{ name: 'home' }" class="top-bar-brand d-md-none">
         <app-logo size="28px" :reactive="false" />
-        <span class="top-bar-brand__name">FTT</span>
+        <span class="top-bar-brand__name">{{ t('appTopBar.brandInitials') }}</span>
       </router-link>
 
       <div class="top-bar-context d-none d-md-flex">
-        <span class="top-bar-context__eyebrow">League workspace</span>
+        <span class="top-bar-context__eyebrow">{{ t('appTopBar.workspaceEyebrow') }}</span>
         <span class="top-bar-context__title">{{ teamName }}</span>
       </div>
 
       <div class="spacer"></div>
 
       <div class="user-actions">
+        <language-switcher />
         <theme-changer />
         <notification-menu />
         <v-menu offset-y>
           <template #activator="{ props }">
-            <v-btn icon variant="text" v-bind="props" class="action-btn" aria-label="Open account menu">
+            <v-btn icon variant="text" v-bind="props" class="action-btn" :aria-label="t('appTopBar.openAccountMenu')">
               <v-avatar size="32" color="secondary">
                 <span class="avatar-initials">{{ initials }}</span>
               </v-avatar>
@@ -29,7 +30,7 @@
             <v-list-item>
               <v-list-item-title class="text-caption ma-0">
                 <p class="d-flex align-center flex-column flex-wrap">
-                  Logged in as:
+                  {{ t('appTopBar.loggedInAs') }}
                   <span class="font-weight-bold">{{ user?.first_name }} {{ user?.last_name }}</span>
                 </p>
               </v-list-item-title>
@@ -39,14 +40,14 @@
               <template #prepend>
                 <v-icon icon="person" />
               </template>
-              <v-list-item-title>Profile</v-list-item-title>
+              <v-list-item-title>{{ t('appTopBar.profile') }}</v-list-item-title>
             </v-list-item>
 
             <v-list-item @click="handleLogout">
               <template #prepend>
                 <v-icon icon="logout" />
               </template>
-              <v-list-item-title>Logout</v-list-item-title>
+              <v-list-item-title>{{ t('appTopBar.logout') }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -59,16 +60,18 @@
 import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import NotificationMenu from '@/components/core/NotificationMenu.vue'
 
 defineProps<{
   withNavigation?: boolean
 }>()
 
+const { t } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
-const teamName = computed(() => user.value?.team?.name || 'Fantasy Trash Talk')
+const teamName = computed(() => user.value?.team?.name || t('common.appName'))
 
 const initials = computed(() => {
   const parts = [user.value?.first_name, user.value?.last_name].filter(Boolean) as string[]

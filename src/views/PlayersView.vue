@@ -1,7 +1,7 @@
 <template>
   <div class="page-view">
     <div class="page-header">
-      <h1 class="page-title">Player Directory</h1>
+      <h1 class="page-title">{{ t('playersView.title') }}</h1>
       <!-- <p class="page-subtitle">Lorem ipsum dolor sit amet</p> -->
     </div>
 
@@ -15,9 +15,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import PlayersTable from '@/components/core/PlayersTable.vue';
 import PlayerCard from '@/components/core/PlayerCard.vue';
 
+const { t } = useI18n();
 const showPlayerCard = ref(false);
 const playerData = ref(null);
 const pick = ref(null);

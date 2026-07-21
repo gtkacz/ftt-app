@@ -16,7 +16,7 @@
       </v-alert>
 
       <div v-if="examples.length" class="examples">
-        <div class="text-caption text-medium-emphasis mb-2">Examples:</div>
+        <div class="text-caption text-medium-emphasis mb-2">{{ t('pickProtectionExplainer.examplesLabel') }}</div>
         <v-list density="compact" class="bg-transparent">
           <v-list-item
             v-for="(example, index) in examples"
@@ -39,7 +39,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { PickProtectionType } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   protectionType: PickProtectionType;
@@ -80,24 +83,29 @@ const icon = computed(() => {
 const title = computed(() => {
   switch (props.protectionType) {
     case 'swap_best':
-      return 'Swap if Best Protection';
+      return t('pickProtectionExplainer.title.swapBest');
     case 'swap_worst':
-      return 'Swap if Worst Protection';
+      return t('pickProtectionExplainer.title.swapWorst');
     case 'doesnt_convey':
-      return 'Doesn\'t Convey Protection';
+      return t('pickProtectionExplainer.title.doesntConvey');
     default:
-      return 'No Protection';
+      return t('pickProtectionExplainer.title.none');
   }
 });
 
 const explanation = computed(() => {
+  const target = props.swapTargetName || t('pickProtectionExplainer.explanation.swapTargetDefault');
   switch (props.protectionType) {
     case 'swap_best':
-      return `If this pick ends up better (lower number) than ${props.swapTargetName || 'the swap target'}, the teams will swap picks. The team receiving this pick gets the worse of the two picks.`;
+      return t('pickProtectionExplainer.explanation.swapBest', { target });
     case 'swap_worst':
-      return `If this pick ends up worse (higher number) than ${props.swapTargetName || 'the swap target'}, the teams will swap picks. The team receiving this pick gets the better of the two picks.`;
+      return t('pickProtectionExplainer.explanation.swapWorst', { target });
     case 'doesnt_convey':
-      return `If this pick lands between #${props.rangeStart}-${props.rangeEnd}, it doesn't transfer. The original team keeps it, and a new pick is created for ${props.rolloverYear}.`;
+      return t('pickProtectionExplainer.explanation.doesntConvey', {
+        start: props.rangeStart,
+        end: props.rangeEnd,
+        year: props.rolloverYear,
+      });
     default:
       return '';
   }
@@ -110,12 +118,12 @@ const examples = computed(() => {
         {
           icon: 'check_circle',
           color: 'success',
-          text: `This pick is #15, target is #3 → No swap (15 > 3). Receiver gets #15.`
+          text: t('pickProtectionExplainer.examples.swapBest.noSwap')
         },
         {
           icon: 'swap_horiz',
           color: 'warning',
-          text: `This pick is #3, target is #15 → Swap! (3 < 15). Receiver gets #15.`
+          text: t('pickProtectionExplainer.examples.swapBest.swap')
         }
       ];
     case 'swap_worst':
@@ -123,12 +131,12 @@ const examples = computed(() => {
         {
           icon: 'check_circle',
           color: 'success',
-          text: `This pick is #3, target is #15 → No swap (3 < 15). Receiver gets #3.`
+          text: t('pickProtectionExplainer.examples.swapWorst.noSwap')
         },
         {
           icon: 'swap_horiz',
           color: 'warning',
-          text: `This pick is #15, target is #3 → Swap! (15 > 3). Receiver gets #3.`
+          text: t('pickProtectionExplainer.examples.swapWorst.swap')
         }
       ];
     case 'doesnt_convey':
@@ -136,12 +144,12 @@ const examples = computed(() => {
         {
           icon: 'shield',
           color: 'primary',
-          text: `Pick is #3 (in protected range) → Doesn't convey. Original team keeps it, ${props.rolloverYear} pick created.`
+          text: t('pickProtectionExplainer.examples.doesntConvey.inRange', { year: props.rolloverYear })
         },
         {
           icon: 'check_circle',
           color: 'success',
-          text: `Pick is #12 (outside range) → Conveys normally to receiving team.`
+          text: t('pickProtectionExplainer.examples.doesntConvey.outOfRange')
         }
       ];
     default:

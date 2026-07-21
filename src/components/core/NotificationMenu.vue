@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- Notification Button with Badge -->
-		<v-btn icon variant="text" ref="menuActivator" aria-label="Open notifications">
+		<v-btn icon variant="text" ref="menuActivator" :aria-label="t('notificationMenu.openNotifications')">
 			<v-badge :content="unreadCount" :model-value="unreadCount > 0" color="error" overlap>
 				<v-icon>notifications</v-icon>
 			</v-badge>
@@ -12,10 +12,10 @@
 			:close-on-content-click="false" width="400" max-width="calc(100vw - 24px)">
 			<v-card class="notification-menu">
 				<v-card-title class="d-flex align-center justify-space-between pa-4">
-					<span class="text-h6">Notifications</span>
+					<span class="text-h6">{{ t('notificationMenu.title') }}</span>
 					<v-btn v-if="unreadCount > 0" variant="tonal" prepend-icon="check" size="small" color="primary"
 						@click="markAllAsRead" :loading="markingAllRead">
-						Mark all read
+						{{ t('notificationMenu.markAllRead') }}
 					</v-btn>
 				</v-card-title>
 
@@ -59,7 +59,7 @@
 					</v-list>
 
 					<div v-else class="text-center pa-6 text-body-2 text-medium-emphasis">
-						No notifications
+						{{ t('notificationMenu.empty') }}
 					</div>
 				</div>
 			</v-card>
@@ -100,11 +100,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import type { Notification } from '@/types/notification'
 
 // Router
 const router = useRouter()
+const { t } = useI18n()
 
 // Reactive state
 const notifications = ref<Notification[]>([])
@@ -261,10 +263,10 @@ const formatDate = (dateString: string): string => {
 	const diffHours = Math.floor(diffMins / 60)
 	const diffDays = Math.floor(diffHours / 24)
 
-	if (diffMins < 1) return 'Just now'
-	if (diffMins < 60) return `${diffMins}m ago`
-	if (diffHours < 24) return `${diffHours}h ago`
-	if (diffDays < 7) return `${diffDays}d ago`
+	if (diffMins < 1) return t('notificationMenu.time.justNow')
+	if (diffMins < 60) return t('notificationMenu.time.minutesAgo', { minutes: diffMins })
+	if (diffHours < 24) return t('notificationMenu.time.hoursAgo', { hours: diffHours })
+	if (diffDays < 7) return t('notificationMenu.time.daysAgo', { days: diffDays })
 
 	return date.toLocaleDateString()
 }

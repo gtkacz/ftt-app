@@ -3,9 +3,9 @@
     <!-- Header -->
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-2">League Trade History</h1>
+        <h1 class="text-h4 mb-2">{{ t('leagueTradeOverviewView.header.title') }}</h1>
         <p class="text-subtitle-1 text-medium-emphasis">
-          All completed trades in the league
+          {{ t('leagueTradeOverviewView.header.subtitle') }}
         </p>
       </v-col>
     </v-row>
@@ -16,7 +16,7 @@
         <v-select
           v-model="selectedSeason"
           :items="seasons"
-          label="Season"
+          :label="t('leagueTradeOverviewView.filters.season')"
           density="compact"
           variant="outlined"
           disabled
@@ -28,7 +28,7 @@
           :items="teams"
           item-title="name"
           item-value="id"
-          label="Team"
+          :label="t('leagueTradeOverviewView.filters.team')"
           clearable
           density="compact"
           variant="outlined"
@@ -37,7 +37,7 @@
       <v-col cols="12" md="4">
         <v-text-field
           v-model="search"
-          label="Search trades"
+          :label="t('leagueTradeOverviewView.filters.search')"
           prepend-inner-icon="search"
           density="compact"
           variant="outlined"
@@ -60,9 +60,9 @@
         <v-card v-if="filteredTrades.length === 0" variant="outlined">
           <v-card-text class="text-center py-8">
             <v-icon size="64" color="grey-lighten-1">handshake</v-icon>
-            <p class="text-h6 mt-4">No completed trades found</p>
+            <p class="text-h6 mt-4">{{ t('leagueTradeOverviewView.empty.title') }}</p>
             <p class="text-body-2 text-medium-emphasis">
-              Completed trades will appear here
+              {{ t('leagueTradeOverviewView.empty.subtitle') }}
             </p>
           </v-card-text>
         </v-card>
@@ -86,16 +86,16 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="d-flex align-center">
                 <v-icon class="mr-2" color="success">check_circle</v-icon>
-                Trade #{{ trade.id }}
+                {{ t('leagueTradeOverviewView.trade.title', { id: trade.id }) }}
                 <v-spacer />
-                <v-chip size="small" color="success">Completed</v-chip>
+                <v-chip size="small" color="success">{{ t('leagueTradeOverviewView.trade.completed') }}</v-chip>
               </v-card-title>
 
               <v-card-text>
                 <!-- Teams Involved -->
                 <div class="mb-3">
                   <div class="text-caption text-medium-emphasis mb-1">
-                    Teams Involved:
+                    {{ t('leagueTradeOverviewView.trade.teamsInvolved') }}
                   </div>
                   <v-chip-group>
                     <v-chip
@@ -124,7 +124,7 @@
                     size="small"
                     prepend-icon="visibility"
                   >
-                    View Details
+                    {{ t('leagueTradeOverviewView.trade.viewDetails') }}
                   </v-btn>
                 </div>
               </v-card-text>
@@ -139,7 +139,7 @@
             :loading="loading.more"
             variant="outlined"
           >
-            Load More
+            {{ t('leagueTradeOverviewView.loadMore') }}
           </v-btn>
         </div>
       </v-col>
@@ -149,10 +149,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTradeStore } from '@/stores/trade'
 import TradeSummaryPanel from '@/components/trade/TradeSummaryPanel.vue'
 import type { Trade, Team } from '@/types'
 
+const { t } = useI18n()
 const tradeStore = useTradeStore()
 
 // State
@@ -200,7 +202,7 @@ const filteredTrades = computed(() => {
 
 // Methods
 const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'Unknown'
+  if (!dateString) return t('leagueTradeOverviewView.unknownDate')
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',

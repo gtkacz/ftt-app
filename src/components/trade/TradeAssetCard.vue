@@ -38,16 +38,16 @@
                 color="warning"
                 class="ml-2"
               >
-                RFA
+                {{ t('tradeAssetCard.rfa') }}
               </v-chip>
             </div>
             <div class="text-caption text-medium-emphasis">
               {{ getPlayerPosition(playerData) }} • {{ getPlayerTeam(playerData) }}
             </div>
             <div v-if="contractData" class="text-caption">
-              {{ formatCurrency(contractData.salary) }} • {{ contractData.duration }}yr
+              {{ formatCurrency(contractData.salary) }} • {{ t('tradeAssetCard.contractDuration', { years: contractData.duration }) }}
               <span v-if="contractData.years_remaining !== undefined">
-                ({{ contractData.years_remaining }} left)
+                {{ t('tradeAssetCard.yearsLeft', { years: contractData.years_remaining }) }}
               </span>
             </div>
           </div>
@@ -55,10 +55,10 @@
           <!-- Pick Asset -->
           <div v-if="asset.asset_type === 'pick' && pickData">
             <div class="text-subtitle-2 font-weight-bold">
-              {{ pickData.display_name || `${pickData.draft_year} Round ${pickData.round_number}` }}
+              {{ pickData.display_name || t('tradeAssetCard.pickRound', { year: pickData.draft_year, round: pickData.round_number }) }}
             </div>
             <div class="text-caption text-medium-emphasis">
-              Via {{ pickData.original_team.name }}
+              {{ t('tradeAssetCard.via', { team: pickData.original_team.name }) }}
             </div>
             <div v-if="asset.pick_protection_type && asset.pick_protection_type !== 'none'" class="mt-1">
               <PickProtectionBadge
@@ -102,8 +102,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TradeAsset, Player, Contract, Pick, Team } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
+
+const { t } = useI18n();
 
 interface Props {
   asset: TradeAsset;
@@ -237,8 +240,8 @@ const directionText = computed(() => {
   const receivingTeam = typeof props.asset.receiving_team === 'object' ? props.asset.receiving_team.name : 'Team';
 
   return props.directionType === 'giving'
-    ? `To ${receivingTeam}`
-    : `From ${givingTeam}`;
+    ? t('tradeAssetCard.directionTo', { team: receivingTeam })
+    : t('tradeAssetCard.directionFrom', { team: givingTeam });
 });
 
 function formatCurrency(value: number): string {

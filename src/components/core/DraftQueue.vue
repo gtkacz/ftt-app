@@ -6,7 +6,7 @@
 				<v-btn v-bind="props" variant="outlined" prepend-icon="queue" class="draft-queue-trigger"
 					:color="queuePlayers.length > 0 ? 'primary' : undefined" rounded>
 					<v-badge :content="queuePlayers.length" :model-value="queuePlayers.length > 0" color="success">
-						Draft Queue
+						{{ t('draftQueue.title') }}
 					</v-badge>
 				</v-btn>
 			</template>
@@ -19,12 +19,12 @@
 				<template v-if="!showPlayerTable">
 					<v-card-title class="d-flex align-center justify-space-between pa-6" rounded>
 						<p class="d-flex align-center ga-1">
-							<span>Draft Queue</span>
+							<span>{{ t('draftQueue.title') }}</span>
 							<v-icon icon="help" filled="false" size="x-small"
-								title="Players in your draft queue will be autopicked when available at your next pick" />
+								:title="t('draftQueue.tooltip')" />
 						</p>
 						<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
-							{{ queuePlayers.length }} player{{ queuePlayers.length !== 1 ? 's' : '' }}
+							{{ t('draftQueue.playerCountLabel', { count: queuePlayers.length }, queuePlayers.length) }}
 						</v-chip>
 					</v-card-title>
 
@@ -34,17 +34,17 @@
 						<!-- Empty state -->
 						<div v-if="queuePlayers.length === 0" class="text-center pa-8">
 							<v-icon size="64" color="grey-lighten-1" class="mb-4">queue</v-icon>
-							<div class="text-h6 text-grey-darken-1 mb-2">No players in queue</div>
-							<div class="text-body-2 text-grey">Add players to your draft queue to get started</div>
+							<div class="text-h6 text-grey-darken-1 mb-2">{{ t('draftQueue.emptyState.title') }}</div>
+							<div class="text-body-2 text-grey">{{ t('draftQueue.emptyState.subtitle') }}</div>
 						</div>
 
 						<!-- Control buttons -->
 						<div class="pa-4 border-t d-flex align-center justify-space-between">
 							<v-btn @click="showPlayerTable = true" prepend-icon="add" variant="outlined" rounded>
-								Add Player
+								{{ t('draftQueue.addPlayer') }}
 							</v-btn>
 							<!-- Toggle queue on and off -->
-							<v-checkbox class="ml-4" label="Enable Autopick From Queue" ripple
+							<v-checkbox class="ml-4" :label="t('draftQueue.enableAutopick')" ripple
 								:disabled="queuePlayers.length === 0" color="primary" v-model="queueEnabled"
 								@update:model-value="toggleQueue" :loading="queueToggleLoading" density="compact"
 								hide-details />
@@ -96,7 +96,7 @@
 
 										<template #append>
 											<v-btn icon variant="text" color="error" class="queue-remove-btn"
-												aria-label="Remove from queue" title="Remove from queue" @click="removeFromQueue(index)">
+												:aria-label="t('draftQueue.removeFromQueue')" :title="t('draftQueue.removeFromQueue')" @click="removeFromQueue(index)">
 												<v-icon size="18">close</v-icon>
 											</v-btn>
 										</template>
@@ -110,17 +110,17 @@
 
 					<v-card-actions class="justify-space-between pa-4">
 						<v-btn @click="discardChanges" icon variant="text" color="grey" class="action-btn"
-							:disabled="!hasChanges" aria-label="Discard changes" title="Discard changes">
+							:disabled="!hasChanges" :aria-label="t('draftQueue.discardChanges')" :title="t('draftQueue.discardChanges')">
 							<v-icon>undo</v-icon>
 						</v-btn>
 						<div class="d-flex ga-2">
 							<v-btn @click="clearQueue" icon color="error" class="action-btn"
-								:disabled="queuePlayers.length === 0" aria-label="Clear queue" title="Clear queue" v-confirm>
+								:disabled="queuePlayers.length === 0" :aria-label="t('draftQueue.clearQueue')" :title="t('draftQueue.clearQueue')" v-confirm>
 								<v-icon>delete</v-icon>
 							</v-btn>
 							<v-btn @click="saveQueue" icon color="success" variant="tonal" :loading="saving"
 								class="action-btn" :disabled="queuePlayers.length === 0 || !hasChanges"
-								aria-label="Save queue" title="Save queue" v-confirm>
+								:aria-label="t('draftQueue.saveQueue')" :title="t('draftQueue.saveQueue')" v-confirm>
 								<v-icon>save</v-icon>
 							</v-btn>
 						</div>
@@ -132,13 +132,13 @@
 					<v-card-title class="d-flex align-center justify-space-between">
 						<div class="d-flex align-center ga-2">
 							<v-btn @click="showPlayerTable = false" icon variant="text" class="queue-back-btn"
-								aria-label="Back to draft queue" title="Back to draft queue">
+								:aria-label="t('draftQueue.backToQueue')" :title="t('draftQueue.backToQueue')">
 								<v-icon>arrow_back</v-icon>
 							</v-btn>
-							<span>Add Player to Queue</span>
+							<span>{{ t('draftQueue.addPlayerToQueue') }}</span>
 						</div>
 						<v-chip v-if="queuePlayers.length > 0" size="small" color="primary">
-							{{ queuePlayers.length }} in queue
+							{{ t('draftQueue.playersInQueue', { count: queuePlayers.length }) }}
 						</v-chip>
 					</v-card-title>
 
@@ -160,8 +160,11 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import NbaTeamIcon from './NBATeamIcon.vue'
+
+const { t } = useI18n()
 
 const draggable = defineAsyncComponent(() => import('vuedraggable'))
 const PlayersTable = defineAsyncComponent(() => import('@/components/core/PlayersTable.vue'))
@@ -210,9 +213,9 @@ const hasChanges = computed(() => {
 
 // Table headers for player selection
 const tableHeaders = [
-	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '200px', visible: true },
+	{ title: t('draftQueue.headers.player'), key: 'player', value: 'last_name', sortable: true, width: '200px', visible: true },
 	{ title: 'FP/G', key: 'relevancy', align: 'end', width: '100px', visible: true, sortable: true },
-	{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
+	{ title: t('draftQueue.headers.position'), key: 'primary_position', width: '120px', visible: true, sortable: true },
 ]
 
 // Methods
@@ -245,7 +248,7 @@ const toggleQueue = async (enabled: boolean | null) => {
 		queueEnabled.value = enabled
 	}
 	catch (err) {
-		error.value = 'Failed to update queue status'
+		error.value = t('draftQueue.errors.updateStatusFailed')
 	}
 	finally {
 		queueToggleLoading.value = false

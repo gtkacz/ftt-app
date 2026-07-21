@@ -6,6 +6,7 @@ import { createApp } from "vue";
 import { createVuetify } from "vuetify";
 import "vuetify/styles";
 import App from "./App.vue";
+import { i18n } from "./i18n";
 import { aliases, mds } from "./iconsets/mds";
 import router from "./router";
 
@@ -22,8 +23,12 @@ import { vConfirm } from "@/directives/v-confirm.ts";
 import AppLogo from "@/components/common/AppLogo.vue";
 import Countdown from "@/components/common/Countdown.vue";
 import LabeledDivider from "@/components/common/LabeledDivider.vue";
+import LanguageSwitcher from "@/components/common/LanguageSwitcher.vue";
 import ThemeChanger from "@/components/common/ThemeChanger.vue";
 import Word from "@/components/common/Word.vue";
+
+// Stores
+import { useLocaleStore } from "@/stores/locale";
 
 // Keep installed PWAs current: check for a new service worker every hour
 registerSW({
@@ -47,6 +52,9 @@ window.addEventListener("load", () => sessionStorage.removeItem("chunk-reload"))
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
+
+// Resolve the default UI language (saved choice > IP geolocation > browser language)
+useLocaleStore(pinia).resolveDefaultLocale();
 
 // Detect user's system theme preference
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -131,12 +139,14 @@ const app = createApp(App)
   .use(pinia)
   .use(router)
   .use(vuetify)
+  .use(i18n)
   .use(errorSnackbarPlugin)
   .component("AppLogo", AppLogo)
   .component("Word", Word)
   .component("Countdown", Countdown)
   .component("LabeledDivider", LabeledDivider)
   .component("ThemeChanger", ThemeChanger)
+  .component("LanguageSwitcher", LanguageSwitcher)
   .directive("confirm", vConfirm);
 
 app.mount("#app");

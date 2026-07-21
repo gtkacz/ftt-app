@@ -23,7 +23,7 @@
               {{ summary.team.name }}
             </v-card-title>
             <v-card-subtitle>
-              Acquires
+              {{ t('tradeSummaryPanel.acquires') }}
             </v-card-subtitle>
           </v-card-item>
 
@@ -48,9 +48,9 @@
                   </v-list-item-title>
 
                   <v-list-item-subtitle class="d-flex align-center mt-1">
-                    <span class="text-body-2">{{ asset.player_detail.position || 'POS' }}</span>
+                    <span class="text-body-2">{{ asset.player_detail.position || t('tradeSummaryPanel.positionFallback') }}</span>
                     <span class="mx-2">•</span>
-                    <span class="text-body-2">{{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || 'NBA Team' }}</span>
+                    <span class="text-body-2">{{ asset.player_detail.real_team?.name || asset.player_detail.nba_team || t('tradeSummaryPanel.nbaTeamFallback') }}</span>
                   </v-list-item-subtitle>
                   
                   <!-- Optional: Salary info if available in player_detail or contract -->
@@ -70,12 +70,12 @@
                   </template>
 
                   <v-list-item-title class="font-weight-bold text-body-1">
-                    {{ asset.pick_detail.draft_year || asset.pick_detail.year }} Round {{ asset.pick_detail.round_number || asset.pick_detail.round }}
+                    {{ t('tradeSummaryPanel.pickRound', { year: asset.pick_detail.draft_year || asset.pick_detail.year, round: asset.pick_detail.round_number || asset.pick_detail.round }) }}
                   </v-list-item-title>
 
                   <v-list-item-subtitle class="mt-1">
                     <div class="d-flex flex-wrap gap-2 align-center">
-                      <span class="text-body-2">From {{ getTeamName(asset.giving_team) }}</span>
+                      <span class="text-body-2">{{ t('tradeSummaryPanel.fromTeam', { team: getTeamName(asset.giving_team) }) }}</span>
                       <PickProtectionBadge
                         v-if="hasProtection(asset.pick_detail)"
                         :protection-type="getPickProtectionType(asset.pick_detail)"
@@ -85,15 +85,15 @@
                       />
                     </div>
                     <div v-if="asset.pick_detail.original_team || asset.pick_detail.original_team_name" class="text-caption text-medium-emphasis mt-1">
-                      via {{ getOriginalTeamName(asset.pick_detail) }}
+                      {{ t('tradeSummaryPanel.viaTeam', { team: getOriginalTeamName(asset.pick_detail) }) }}
                     </div>
                   </v-list-item-subtitle>
                 </v-list-item>
               </div>
             </template>
-            
+
             <v-list-item v-else class="py-8 text-center">
-              <v-list-item-title class="text-grey">No assets received</v-list-item-title>
+              <v-list-item-title class="text-grey">{{ t('tradeSummaryPanel.noAssetsReceived') }}</v-list-item-title>
             </v-list-item>
           </v-list>
 
@@ -102,9 +102,9 @@
           <!-- Impact Summary Footer -->
           <v-sheet class="team-card__impact px-4 py-3">
              <div class="d-flex align-center justify-space-between mb-2">
-               <span class="text-subtitle-2 font-weight-bold text-uppercase text-medium-emphasis">Net Impact</span>
+               <span class="text-subtitle-2 font-weight-bold text-uppercase text-medium-emphasis">{{ t('tradeSummaryPanel.netImpact') }}</span>
              </div>
-             
+
              <div class="d-flex gap-3">
                <!-- Cap Space Impact -->
                <v-chip
@@ -117,10 +117,10 @@
                  <v-icon start size="small">
                    {{ summary.netSalary < 0 ? 'add_circle' : 'remove_circle' }}
                  </v-icon>
-                 {{ summary.netSalary < 0 ? 'Save' : 'Add' }} {{ formatCurrency(Math.abs(summary.netSalary)) }}
+                 {{ summary.netSalary < 0 ? t('tradeSummaryPanel.save') : t('tradeSummaryPanel.add') }} {{ formatCurrency(Math.abs(summary.netSalary)) }}
                </v-chip>
                <v-chip v-else color="grey" variant="tonal" size="small">
-                 No Cap Change
+                 {{ t('tradeSummaryPanel.noCapChange') }}
                </v-chip>
 
                <!-- Roster Spot Impact -->
@@ -134,16 +134,18 @@
                   <v-icon start size="small">
                     {{ summary.netPlayers < 0 ? 'person_remove' : 'person_add' }}
                   </v-icon>
-                  {{ Math.abs(summary.netPlayers) }} Spot{{ Math.abs(summary.netPlayers) !== 1 ? 's' : '' }} {{ summary.netPlayers < 0 ? 'Open' : 'Filled' }}
+                  {{ summary.netPlayers < 0
+                    ? t('tradeSummaryPanel.spotsOpen', { count: Math.abs(summary.netPlayers) }, Math.abs(summary.netPlayers))
+                    : t('tradeSummaryPanel.spotsFilled', { count: Math.abs(summary.netPlayers) }, Math.abs(summary.netPlayers)) }}
                </v-chip>
                 <v-chip v-else color="grey" variant="tonal" size="small">
-                 No Roster Change
+                 {{ t('tradeSummaryPanel.noRosterChange') }}
                </v-chip>
              </div>
-             
+
              <!-- Total Cap Preview -->
              <div v-if="summary.impact" class="mt-3 text-caption d-flex justify-space-between align-center text-medium-emphasis">
-               <span>Post-Trade Cap:</span>
+               <span>{{ t('tradeSummaryPanel.postTradeCap') }}</span>
                <span :class="summary.impact.new_salary > summary.impact.salary_cap ? 'text-error font-weight-bold' : ''">
                  {{ formatCurrency(summary.impact.new_salary) }} / {{ formatCurrency(summary.impact.salary_cap) }}
                </span>
@@ -157,6 +159,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Team, CreateTradeAssetData, TradeAsset, TradeTeamSummary, TeamImpact } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
 
@@ -169,6 +172,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   validation: null,
 });
+
+const { t } = useI18n();
 
 // Generate team summaries
 const teamSummaries = computed((): TradeTeamSummary[] => {
@@ -193,11 +198,11 @@ const teamSummaries = computed((): TradeTeamSummary[] => {
 // Helper to get team name
 function getTeamName(teamId: number): string {
   const team = props.teams.find((t) => t.id === teamId);
-  return team?.name || 'Unknown Team';
+  return team?.name || t('tradeSummaryPanel.unknownTeam');
 }
 
 function getPlayerName(playerDetail: any): string {
-  return playerDetail.full_name || playerDetail.name || `${playerDetail.first_name || ''} ${playerDetail.last_name || ''}`.trim() || 'Unknown Player';
+  return playerDetail.full_name || playerDetail.name || `${playerDetail.first_name || ''} ${playerDetail.last_name || ''}`.trim() || t('tradeSummaryPanel.unknownPlayer');
 }
 
 // Helper to get original team name
@@ -206,12 +211,12 @@ function getOriginalTeamName(pickDetail: any): string {
   if (pickDetail.original_team_name) {
     return pickDetail.original_team_name;
   }
-  
+
   // 2. Check if original_team is an object with a name
   if (pickDetail.original_team && typeof pickDetail.original_team === 'object' && pickDetail.original_team.name) {
     return pickDetail.original_team.name;
   }
-  
+
   // 3. If original_team is an ID, try to find it in the trade participants
   const teamId = typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team;
   if (teamId) {
@@ -220,9 +225,9 @@ function getOriginalTeamName(pickDetail: any): string {
       return team.name;
     }
   }
-  
+
   // 4. Fallback if we really can't find the name
-  return teamId ? `Team ${teamId}` : 'Unknown Team';
+  return teamId ? t('tradeSummaryPanel.teamNumber', { id: teamId }) : t('tradeSummaryPanel.unknownTeam');
 }
 
 // Helper to check protection

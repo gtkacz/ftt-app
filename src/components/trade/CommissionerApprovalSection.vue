@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title class="d-flex align-center">
       <v-icon start>gavel</v-icon>
-      Commissioner Approval
+      {{ t('commissionerApprovalSection.title') }}
     </v-card-title>
 
     <v-divider />
@@ -23,9 +23,7 @@
               {{ getApprovalStatusMessage() }}
             </div>
             <div class="text-caption mt-1">
-              {{ approvalStatus.approve_votes }} approve,
-              {{ approvalStatus.veto_votes }} veto
-              ({{ approvalStatus.majority_needed }} needed for majority)
+              {{ t('commissionerApprovalSection.voteTally', { approve: approvalStatus.approve_votes, veto: approvalStatus.veto_votes, majority: approvalStatus.majority_needed }) }}
             </div>
             <v-progress-linear
               :model-value="getApprovalProgress()"
@@ -41,7 +39,7 @@
       <!-- Commissioner Votes List -->
       <v-row v-if="approvals && approvals.length > 0">
         <v-col cols="12">
-          <div class="text-subtitle-2 mb-2">Commissioner Votes</div>
+          <div class="text-subtitle-2 mb-2">{{ t('commissionerApprovalSection.commissionerVotes') }}</div>
           <v-list density="compact">
             <v-list-item
               v-for="approval in sortedApprovals"
@@ -78,7 +76,7 @@
                   prepend-icon="star"
                   class="ml-2"
                 >
-                  Admin - Instant Decision
+                  {{ t('commissionerApprovalSection.adminInstantDecision') }}
                 </v-chip>
               </v-list-item-title>
 
@@ -94,7 +92,7 @@
                   variant="outlined"
                   class="ml-2"
                 >
-                  Final Authority
+                  {{ t('commissionerApprovalSection.finalAuthority') }}
                 </v-chip>
               </v-list-item-subtitle>
 
@@ -109,7 +107,7 @@
                     <v-icon start size="small">
                       {{ expandedNotes.includes(approval.id) ? 'expand_less' : 'expand_more' }}
                     </v-icon>
-                    {{ expandedNotes.includes(approval.id) ? 'Hide' : 'View' }} Notes
+                    {{ expandedNotes.includes(approval.id) ? t('commissionerApprovalSection.hideNotes') : t('commissionerApprovalSection.viewNotes') }}
                   </v-btn>
                 </v-list-item-subtitle>
                 <v-expand-transition>
@@ -127,11 +125,11 @@
       <v-row v-if="approvalStatus && approvalStatus.votes_remaining > 0">
         <v-col cols="12">
           <div class="text-subtitle-2 mb-2">
-            Pending Votes ({{ approvalStatus.votes_remaining }} remaining)
+            {{ t('commissionerApprovalSection.pendingVotes', { count: approvalStatus.votes_remaining }) }}
           </div>
           <v-chip size="small" variant="outlined" color="grey">
             <v-icon start size="small">schedule</v-icon>
-            Awaiting commissioner decisions
+            {{ t('commissionerApprovalSection.awaitingDecisions') }}
           </v-chip>
         </v-col>
       </v-row>
@@ -140,22 +138,22 @@
       <v-row v-if="canVote && !hasVoted">
         <v-col cols="12">
           <v-divider class="my-4" />
-          <div class="text-subtitle-2 mb-3">Cast Your Vote</div>
+          <div class="text-subtitle-2 mb-3">{{ t('commissionerApprovalSection.castYourVote') }}</div>
 
           <v-radio-group v-model="voteSelection" hide-details>
-            <v-radio label="Approve" value="approve" color="success">
+            <v-radio :label="t('commissionerApprovalSection.approve')" value="approve" color="success">
               <template #label>
                 <div class="d-flex align-center">
                   <v-icon color="success" class="mr-2">check_circle</v-icon>
-                  <span>Approve</span>
+                  <span>{{ t('commissionerApprovalSection.approve') }}</span>
                 </div>
               </template>
             </v-radio>
-            <v-radio label="Veto" value="veto" color="error">
+            <v-radio :label="t('commissionerApprovalSection.veto')" value="veto" color="error">
               <template #label>
                 <div class="d-flex align-center">
                   <v-icon color="error" class="mr-2">cancel</v-icon>
-                  <span>Veto</span>
+                  <span>{{ t('commissionerApprovalSection.veto') }}</span>
                 </div>
               </template>
             </v-radio>
@@ -163,11 +161,11 @@
 
           <v-textarea
             v-model="voteNotes"
-            label="Notes (optional)"
+            :label="t('commissionerApprovalSection.notesLabel')"
             variant="outlined"
             rows="3"
             class="mt-3"
-            placeholder="Add any comments about your decision..."
+            :placeholder="t('commissionerApprovalSection.notesPlaceholder')"
           />
 
           <v-btn
@@ -178,7 +176,7 @@
             @click="submitVote"
           >
             <v-icon start>send</v-icon>
-            Submit Vote
+            {{ t('commissionerApprovalSection.submitVote') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -190,7 +188,7 @@
             <template #prepend>
               <v-icon>info</v-icon>
             </template>
-            You have already voted on this trade.
+            {{ t('commissionerApprovalSection.alreadyVoted') }}
           </v-alert>
         </v-col>
       </v-row>
@@ -200,10 +198,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import type { Trade, TradeApproval, ApprovalStatus, VoteType } from '@/types/trade';
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 interface Props {
   trade: Trade;
@@ -272,14 +272,14 @@ function getApprovalStatusIcon(): string {
 
 // Get approval status message
 function getApprovalStatusMessage(): string {
-  if (!props.approvalStatus) return 'Awaiting commissioner votes';
+  if (!props.approvalStatus) return t('commissionerApprovalSection.awaitingVotes');
 
   if (props.approvalStatus.approve_votes >= props.approvalStatus.majority_needed) {
-    return 'Trade Approved by Majority';
+    return t('commissionerApprovalSection.approvedByMajority');
   } else if (props.approvalStatus.veto_votes >= props.approvalStatus.majority_needed) {
-    return 'Trade Vetoed by Majority';
+    return t('commissionerApprovalSection.vetoedByMajority');
   } else {
-    return `${props.approvalStatus.votes_remaining} vote${props.approvalStatus.votes_remaining !== 1 ? 's' : ''} remaining`;
+    return t('commissionerApprovalSection.votesRemaining', { count: props.approvalStatus.votes_remaining }, props.approvalStatus.votes_remaining);
   }
 }
 

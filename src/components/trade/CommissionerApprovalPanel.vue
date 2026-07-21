@@ -2,7 +2,7 @@
   <v-card class="commissioner-panel" elevation="2">
     <v-card-title class="panel-header">
       <v-icon icon="gavel" class="mr-2" />
-      Commissioner Review
+      {{ t('commissionerApprovalPanel.header.title') }}
       <v-spacer />
       <v-chip
         :color="statusColor"
@@ -18,22 +18,22 @@
     <v-card-text class="pa-4">
       <!-- Trade Summary -->
       <div class="trade-summary mb-4">
-        <div class="text-subtitle-1 font-weight-medium mb-2">Trade Summary</div>
+        <div class="text-subtitle-1 font-weight-medium mb-2">{{ t('commissionerApprovalPanel.summary.heading') }}</div>
         <div class="summary-grid">
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Trade ID: </span>
+            <span class="text-caption text-medium-emphasis">{{ t('commissionerApprovalPanel.summary.tradeId') }} </span>
             <span class="text-body-2">{{ trade.id }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Proposed by: </span>
+            <span class="text-caption text-medium-emphasis">{{ t('commissionerApprovalPanel.summary.proposedBy') }} </span>
             <span class="text-body-2">{{ getProposingTeamName() }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Teams Involved: </span>
+            <span class="text-caption text-medium-emphasis">{{ t('commissionerApprovalPanel.summary.teamsInvolved') }} </span>
             <span class="text-body-2">{{ trade.teams.length }}</span>
           </div>
           <div class="summary-item">
-            <span class="text-caption text-medium-emphasis">Proposed: </span>
+            <span class="text-caption text-medium-emphasis">{{ t('commissionerApprovalPanel.summary.proposedAt') }} </span>
             <span class="text-body-2">{{ formatDate(trade.proposed_at) }}</span>
           </div>
         </div>
@@ -41,7 +41,7 @@
 
       <!-- Team Responses -->
       <div class="team-responses mb-4">
-        <div class="text-subtitle-1 font-weight-medium mb-2">Team Responses</div>
+        <div class="text-subtitle-1 font-weight-medium mb-2">{{ t('commissionerApprovalPanel.teamResponses.heading') }}</div>
         <v-list density="compact" class="pa-0">
           <v-list-item
             v-for="offer in trade.offers"
@@ -66,7 +66,7 @@
                 variant="tonal"
                 size="x-small"
               >
-                {{ offer.status.toUpperCase() }}
+                {{ getResponseLabel(offer.status).toUpperCase() }}
               </v-chip>
               <span v-if="offer.responded_at" class="ml-2 text-caption">
                 {{ formatDate(offer.responded_at) }}
@@ -95,25 +95,25 @@
         <div class="d-flex align-center">
           <v-icon icon="admin_panel_settings" class="mr-2" />
           <div>
-            <div class="text-subtitle-2 font-weight-medium">Admin Override Available</div>
-            <div class="text-caption">You can approve this trade without all team acceptances using admin privileges.</div>
+            <div class="text-subtitle-2 font-weight-medium">{{ t('commissionerApprovalPanel.adminOverride.title') }}</div>
+            <div class="text-caption">{{ t('commissionerApprovalPanel.adminOverride.description') }}</div>
           </div>
         </div>
       </v-alert>
 
       <!-- Validation Results -->
       <div v-if="validation" class="validation-results mb-4">
-        <div class="text-subtitle-1 font-weight-medium mb-2">Validation Results</div>
+        <div class="text-subtitle-1 font-weight-medium mb-2">{{ t('commissionerApprovalPanel.validation.heading') }}</div>
         <v-alert
           :type="validation.valid ? 'success' : 'error'"
           density="compact"
           class="mb-2"
         >
-          {{ validation.valid ? 'Trade is valid' : 'Trade has errors' }}
+          {{ validation.valid ? t('commissionerApprovalPanel.validation.valid') : t('commissionerApprovalPanel.validation.invalid') }}
         </v-alert>
 
         <div v-if="validation.errors.length > 0" class="mb-2">
-          <div class="text-subtitle-2 text-error mb-1">Errors:</div>
+          <div class="text-subtitle-2 text-error mb-1">{{ t('commissionerApprovalPanel.validation.errorsLabel') }}</div>
           <v-chip
             v-for="(error, index) in validation.errors"
             :key="`error-${index}`"
@@ -127,7 +127,7 @@
         </div>
 
         <div v-if="validation.warnings.length > 0">
-          <div class="text-subtitle-2 text-warning mb-1">Warnings:</div>
+          <div class="text-subtitle-2 text-warning mb-1">{{ t('commissionerApprovalPanel.validation.warningsLabel') }}</div>
           <v-chip
             v-for="(warning, index) in validation.warnings"
             :key="`warning-${index}`"
@@ -143,7 +143,7 @@
 
       <!-- Team Impacts Summary -->
       <div v-if="validation" class="team-impacts mb-4">
-        <div class="text-subtitle-1 font-weight-medium mb-2">Team Impacts</div>
+        <div class="text-subtitle-1 font-weight-medium mb-2">{{ t('commissionerApprovalPanel.teamImpacts.heading') }}</div>
         <v-expansion-panels variant="accordion">
           <v-expansion-panel
             v-for="teamId in getTeamIds()"
@@ -159,39 +159,39 @@
                   size="x-small"
                   class="mr-4"
                 >
-                  Cap Violation
+                  {{ t('commissionerApprovalPanel.teamImpacts.capViolation') }}
                 </v-chip>
               </div>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
               <div class="impact-details">
                 <div class="impact-row">
-                  <span>Current Salary:</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.currentSalary') }}</span>
                   <span>${formatMoney(getTeamImpact(teamId)?.current_salary)}</span>
                 </div>
                 <div class="impact-row">
-                  <span>New Salary:</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.newSalary') }}</span>
                   <span>${formatMoney(getTeamImpact(teamId)?.new_salary)}</span>
                 </div>
                 <div class="impact-row">
-                  <span>Net Change:</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.netChange') }}</span>
                   <span :class="getSalaryChangeClass(teamId)">
                     {{ formatNetChange(getTeamImpact(teamId)?.net_salary) }}
                   </span>
                 </div>
                 <v-divider class="my-2" />
                 <div class="impact-row">
-                  <span>Current Roster:</span>
-                  <span>{{ getTeamImpact(teamId)?.current_player_count }} players</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.currentRoster') }}</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.playersSuffix', { count: getTeamImpact(teamId)?.current_player_count }) }}</span>
                 </div>
                 <div class="impact-row">
-                  <span>New Roster:</span>
-                  <span>{{ getTeamImpact(teamId)?.new_player_count }} players</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.newRoster') }}</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.playersSuffix', { count: getTeamImpact(teamId)?.new_player_count }) }}</span>
                 </div>
                 <div class="impact-row">
-                  <span>Net Change:</span>
+                  <span>{{ t('commissionerApprovalPanel.teamImpacts.netChange') }}</span>
                   <span :class="getRosterChangeClass(teamId)">
-                    {{ formatNetChange(getTeamImpact(teamId)?.net_players) }} players
+                    {{ t('commissionerApprovalPanel.teamImpacts.playersSuffix', { count: formatNetChange(getTeamImpact(teamId)?.net_players) }) }}
                   </span>
                 </div>
               </div>
@@ -204,11 +204,11 @@
       <div v-if="showVetoForm" class="veto-form mb-4">
         <v-textarea
           v-model="vetoReason"
-          label="Veto Reason (Required)"
+          :label="t('commissionerApprovalPanel.veto.label')"
           variant="outlined"
           rows="3"
-          placeholder="Explain why this trade is being vetoed..."
-          :rules="[v => !!v || 'Veto reason is required']"
+          :placeholder="t('commissionerApprovalPanel.veto.placeholder')"
+          :rules="[v => !!v || t('commissionerApprovalPanel.veto.required')]"
         />
       </div>
     </v-card-text>
@@ -224,7 +224,7 @@
         :disabled="isProcessing || !canTakeAction"
       >
         <v-icon icon="gavel" class="mr-2" />
-        Veto Trade
+        {{ t('commissionerApprovalPanel.actions.vetoTrade') }}
       </v-btn>
 
       <v-btn
@@ -232,7 +232,7 @@
         variant="text"
         @click="cancelVeto"
       >
-        Cancel
+        {{ t('commissionerApprovalPanel.actions.cancel') }}
       </v-btn>
 
       <v-spacer />
@@ -246,7 +246,7 @@
         @click="confirmVeto"
       >
         <v-icon icon="block" class="mr-2" />
-        Confirm Veto
+        {{ t('commissionerApprovalPanel.actions.confirmVeto') }}
       </v-btn>
 
       <v-btn
@@ -258,7 +258,7 @@
         @click="confirmApprove"
       >
         <v-icon icon="check_circle" class="mr-2" />
-        Approve Trade
+        {{ t('commissionerApprovalPanel.actions.approveTrade') }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -266,8 +266,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { format, parseISO } from 'date-fns';
 import type { Trade, Team, TradeValidationResponse, TeamImpact } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   trade: Trade;
@@ -305,11 +308,11 @@ const statusColor = computed(() => {
 const statusText = computed(() => {
   switch (props.trade.status) {
     case 'waiting_approval':
-      return 'Awaiting Approval';
+      return t('commissionerApprovalPanel.status.waitingApproval');
     case 'approved':
-      return 'Approved';
+      return t('commissionerApprovalPanel.status.approved');
     case 'vetoed':
-      return 'Vetoed';
+      return t('commissionerApprovalPanel.status.vetoed');
     default:
       return props.trade.status.toUpperCase();
   }
@@ -341,7 +344,7 @@ const canApprove = computed(() => {
 function getTeamName(teamIdOrTeam: Team | number): string {
   if (typeof teamIdOrTeam === 'number') {
     const team = props.teams.find(t => t.id === teamIdOrTeam);
-    return team?.name || `Team ${teamIdOrTeam}`;
+    return team?.name || t('commissionerApprovalPanel.teamFallback', { id: teamIdOrTeam });
   }
   return teamIdOrTeam.name;
 }
@@ -365,7 +368,7 @@ function isImpactValid(teamId: number): boolean {
 }
 
 function formatDate(dateString: string | undefined): string {
-  if (!dateString) return 'N/A';
+  if (!dateString) return t('commissionerApprovalPanel.dates.notAvailable');
   try {
     return format(parseISO(dateString), 'MMM d, yyyy h:mm a');
   } catch {
@@ -416,10 +419,20 @@ function getResponseColor(status: string): string {
   return colorMap[status] || 'grey';
 }
 
+function getResponseLabel(status: string): string {
+  const labelMap: Record<string, string> = {
+    pending: t('commissionerApprovalPanel.offerStatus.pending'),
+    accepted: t('commissionerApprovalPanel.offerStatus.accepted'),
+    rejected: t('commissionerApprovalPanel.offerStatus.rejected'),
+    countered: t('commissionerApprovalPanel.offerStatus.countered'),
+  };
+  return labelMap[status] || status;
+}
+
 async function confirmApprove() {
   if (!canApprove.value) return;
 
-  if (!confirm('Are you sure you want to approve this trade? This action cannot be undone.')) {
+  if (!confirm(t('commissionerApprovalPanel.confirmations.approve'))) {
     return;
   }
 
@@ -434,7 +447,7 @@ async function confirmApprove() {
 async function confirmVeto() {
   if (!vetoReason.value) return;
 
-  if (!confirm('Are you sure you want to veto this trade? This action cannot be undone.')) {
+  if (!confirm(t('commissionerApprovalPanel.confirmations.veto'))) {
     return;
   }
 

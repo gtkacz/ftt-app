@@ -2,7 +2,7 @@
   <v-card class="trade-timeline" elevation="2">
     <v-card-title class="timeline-header">
       <v-icon icon="timeline" class="mr-2" />
-      Trade History
+      {{ t('tradeTimeline.title') }}
     </v-card-title>
 
     <v-divider />
@@ -10,11 +10,11 @@
     <v-card-text class="pa-0">
       <div v-if="loading" class="loading-state">
         <v-progress-circular indeterminate color="primary" size="32" />
-        <div class="text-caption text-medium-emphasis mt-2">Loading timeline...</div>
+        <div class="text-caption text-medium-emphasis mt-2">{{ t('tradeTimeline.loading') }}</div>
       </div>
       <div v-else-if="!history || history.length === 0" class="empty-state">
         <v-icon icon="history" size="48" class="text-medium-emphasis mb-2" />
-        <div class="text-caption text-medium-emphasis">No events yet</div>
+        <div class="text-caption text-medium-emphasis">{{ t('tradeTimeline.noEvents') }}</div>
       </div>
 
       <v-timeline direction="horizontal" v-else side="end" density="compact" class="timeline-content">
@@ -40,7 +40,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TradeHistoryEntry, TradeHistoryEventType } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   tradeId: number;

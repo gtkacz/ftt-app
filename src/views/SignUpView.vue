@@ -3,49 +3,49 @@
     <div class="auth-form">
       <div class="auth-form__status">
         <v-icon icon="lock" size="18" />
-        Invite only
+        {{ t('signUpView.status') }}
       </div>
-      <p class="eyebrow">Join the league</p>
-      <h2>Create your account</h2>
-      <p class="auth-form__intro">Your commissioner will approve the account before you enter the league.</p>
+      <p class="eyebrow">{{ t('signUpView.eyebrow') }}</p>
+      <h2>{{ t('signUpView.title') }}</h2>
+      <p class="auth-form__intro">{{ t('signUpView.intro') }}</p>
 
       <v-alert class="mt-5" color="info" variant="tonal" icon="info" density="comfortable">
-        New registrations are temporarily paused. Ask your commissioner for access.
+        {{ t('signUpView.pausedAlert') }}
       </v-alert>
 
       <v-form v-model="formValid" class="auth-form__fields" disabled @submit.prevent="handleSignup">
-        <v-text-field v-model="username" label="Username" autocomplete="username" append-inner-icon="account_box"
+        <v-text-field v-model="username" :label="t('signUpView.form.usernameLabel')" autocomplete="username" append-inner-icon="account_box"
           :rules="[rules.required]" hide-details="auto" />
 
         <div class="auth-form__row">
-          <v-text-field v-model="firstName" label="First name" autocomplete="given-name" append-inner-icon="face"
+          <v-text-field v-model="firstName" :label="t('signUpView.form.firstNameLabel')" autocomplete="given-name" append-inner-icon="face"
             :rules="[rules.required]" hide-details="auto" />
-          <v-text-field v-model="lastName" label="Last name" autocomplete="family-name"
+          <v-text-field v-model="lastName" :label="t('signUpView.form.lastNameLabel')" autocomplete="family-name"
             append-inner-icon="fingerprint" :rules="[rules.required]" hide-details="auto" />
         </div>
 
-        <v-text-field v-model="email" label="Email" type="email" autocomplete="email" append-inner-icon="email"
+        <v-text-field v-model="email" :label="t('signUpView.form.emailLabel')" type="email" autocomplete="email" append-inner-icon="email"
           :rules="[rules.required, rules.email]" hide-details="auto" />
 
         <div class="auth-form__row">
-          <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'" label="Password"
+          <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'" :label="t('signUpView.form.passwordLabel')"
             autocomplete="new-password" :append-inner-icon="showPassword ? 'visibility' : 'visibility_off'"
             :rules="[rules.required, rules.min(8)]" hide-details="auto"
             @click:append-inner="showPassword = !showPassword" />
-          <v-text-field v-model="passwordConfirm" :type="showPassword ? 'text' : 'password'" label="Confirm password"
+          <v-text-field v-model="passwordConfirm" :type="showPassword ? 'text' : 'password'" :label="t('signUpView.form.confirmPasswordLabel')"
             autocomplete="new-password" append-inner-icon="lock" :rules="[rules.required, rules.passwordMatch]"
             hide-details="auto" />
         </div>
 
         <v-btn type="submit" block size="large" height="52" :loading="authStore.isLoading"
           :disabled="!formValid || authStore.isLoading" color="secondary">
-          Registration unavailable
+          {{ t('signUpView.form.submit') }}
         </v-btn>
       </v-form>
 
       <div class="auth-form__footer">
-        <span>Already have an account?</span>
-        <router-link :to="{ name: 'login' }">Sign in</router-link>
+        <span>{{ t('signUpView.footer.prompt') }}</span>
+        <router-link :to="{ name: 'login' }">{{ t('signUpView.footer.cta') }}</router-link>
       </div>
     </div>
   </AuthShell>
@@ -54,9 +54,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AuthShell from '@/components/auth/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -70,10 +72,10 @@ const formValid = ref(false)
 const showPassword = ref(false)
 
 const rules = {
-  required: (value: string) => !!value || 'This field is required',
-  email: (value: string) => /\S+@\S+\.\S+/.test(value) || 'Must be a valid email',
-  min: (length: number) => (value: string) => value.length >= length || `Minimum ${length} characters`,
-  passwordMatch: (value: string) => value === password.value || 'Passwords must match',
+  required: (value: string) => !!value || t('signUpView.validation.required'),
+  email: (value: string) => /\S+@\S+\.\S+/.test(value) || t('signUpView.validation.email'),
+  min: (length: number) => (value: string) => value.length >= length || t('signUpView.validation.min', { length }),
+  passwordMatch: (value: string) => value === password.value || t('signUpView.validation.passwordMatch'),
 }
 
 async function handleSignup() {

@@ -1,22 +1,24 @@
 <template>
   <div class="user-data">
-    <h3>Dados do Usuário (JWT)</h3>
+    <h3>{{ t('userProfile.title') }}</h3>
     <div v-if="authStore.user">
-      <p><strong>ID:</strong> {{ authStore.user.id }}</p>
-      <p><strong>Username:</strong> {{ authStore.user.username }}</p>
-      <p><strong>Nome:</strong> {{ authStore.user.first_name }} {{ authStore.user.last_name }}</p>
-      <p><strong>Email:</strong> {{ authStore.user.email }}</p>
-      <p><strong>Staff:</strong> {{ authStore.user.is_staff ? 'Sim' : 'Não' }}</p>
-      <p><strong>Ativo:</strong> {{ authStore.user.is_active ? 'Sim' : 'Não' }}</p>
-      <p><strong>Aprovado:</strong> {{ authStore.user.is_approved ? 'Sim' : 'Não' }}</p>
+      <p><strong>{{ t('userProfile.id') }}</strong> {{ authStore.user.id }}</p>
+      <p><strong>{{ t('userProfile.username') }}</strong> {{ authStore.user.username }}</p>
+      <p><strong>{{ t('userProfile.name') }}</strong> {{ authStore.user.first_name }} {{ authStore.user.last_name }}</p>
+      <p><strong>{{ t('userProfile.email') }}</strong> {{ authStore.user.email }}</p>
+      <p><strong>{{ t('userProfile.staff') }}</strong> {{ authStore.user.is_staff ? t('userProfile.yes') : t('userProfile.no') }}</p>
+      <p><strong>{{ t('userProfile.active') }}</strong> {{ authStore.user.is_active ? t('userProfile.yes') : t('userProfile.no') }}</p>
+      <p><strong>{{ t('userProfile.approved') }}</strong> {{ authStore.user.is_approved ? t('userProfile.yes') : t('userProfile.no') }}</p>
     </div>
-    <p v-else>Nenhum usuário autenticado</p>
+    <p v-else>{{ t('userProfile.noUser') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 </script>
 

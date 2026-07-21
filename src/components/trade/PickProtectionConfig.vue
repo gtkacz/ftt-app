@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon icon="lock" class="mr-2" />
-        Pick Protection Configuration
+        {{ t('pickProtectionConfig.title') }}
       </v-card-title>
 
       <v-divider />
@@ -11,7 +11,7 @@
       <v-card-text class="pt-4">
         <v-select
           v-model="localProtection.type"
-          label="Protection Type"
+          :label="t('pickProtectionConfig.protectionTypeLabel')"
           :items="protectionTypes"
           item-title="label"
           item-value="value"
@@ -36,7 +36,7 @@
         <div v-if="localProtection.type === 'swap_best' || localProtection.type === 'swap_worst'" class="mt-4">
           <v-autocomplete
             v-model="localProtection.swapTarget"
-            label="Swap Target Pick"
+            :label="t('pickProtectionConfig.swapTargetLabel')"
             :items="availableSwapTargets"
             item-title="display_name"
             item-value="id"
@@ -65,7 +65,7 @@
           <div class="d-flex gap-3 mb-3">
             <v-text-field
               v-model.number="localProtection.rangeStart"
-              label="Range Start"
+              :label="t('pickProtectionConfig.rangeStartLabel')"
               type="number"
               min="1"
               max="30"
@@ -75,7 +75,7 @@
             />
             <v-text-field
               v-model.number="localProtection.rangeEnd"
-              label="Range End"
+              :label="t('pickProtectionConfig.rangeEndLabel')"
               type="number"
               min="1"
               max="30"
@@ -87,13 +87,13 @@
 
           <v-text-field
             v-model.number="localProtection.rolloverYear"
-            label="Rollover Year"
+            :label="t('pickProtectionConfig.rolloverYearLabel')"
             type="number"
             :min="pick.draft_year + 1"
             variant="outlined"
             density="comfortable"
             :rules="[rules.required, rules.futureYear]"
-            hint="Year to receive new pick if this one doesn't convey"
+            :hint="t('pickProtectionConfig.rolloverYearHint')"
             persistent-hint
           />
 
@@ -122,7 +122,7 @@
           variant="text"
           @click="cancel"
         >
-          Cancel
+          {{ t('pickProtectionConfig.cancel') }}
         </v-btn>
         <v-btn
           color="primary"
@@ -130,7 +130,7 @@
           :disabled="!isValid"
           @click="save"
         >
-          Save Protection
+          {{ t('pickProtectionConfig.save') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -139,8 +139,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pick, PickProtectionType } from '@/types/trade';
 import PickProtectionExplainer from './PickProtectionExplainer.vue';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: boolean;
@@ -175,32 +178,32 @@ const localProtection = ref<Protection>({
   rolloverYear: undefined,
 });
 
-const protectionTypes = [
+const protectionTypes = computed(() => [
   {
     value: 'none',
-    label: 'No Protection',
-    description: 'Pick transfers normally',
+    label: t('pickProtectionConfig.types.none.label'),
+    description: t('pickProtectionConfig.types.none.description'),
     icon: 'cancel',
   },
   {
     value: 'swap_best',
-    label: 'Swap if Best',
-    description: 'Swap with target if this pick is better',
+    label: t('pickProtectionConfig.types.swapBest.label'),
+    description: t('pickProtectionConfig.types.swapBest.description'),
     icon: 'swap_vert',
   },
   {
     value: 'swap_worst',
-    label: 'Swap if Worst',
-    description: 'Swap with target if this pick is worse',
+    label: t('pickProtectionConfig.types.swapWorst.label'),
+    description: t('pickProtectionConfig.types.swapWorst.description'),
     icon: 'swap_vert',
   },
   {
     value: 'doesnt_convey',
-    label: 'Doesn\'t Convey',
-    description: 'Stays with original team if in protected range',
+    label: t('pickProtectionConfig.types.doesntConvey.label'),
+    description: t('pickProtectionConfig.types.doesntConvey.description'),
     icon: 'shield',
   },
-];
+]);
 
 const availableSwapTargets = computed(() => {
   if (!props.availablePicks) return [];
@@ -220,23 +223,23 @@ const selectedSwapTargetName = computed(() => {
 
 const swapError = computed(() => {
   if (!localProtection.value.swapTarget) {
-    return 'You must select a swap target pick';
+    return t('pickProtectionConfig.errors.swapTargetRequired');
   }
   return null;
 });
 
 const conveyError = computed(() => {
   if (!localProtection.value.rangeStart || !localProtection.value.rangeEnd) {
-    return 'You must specify the protected range';
+    return t('pickProtectionConfig.errors.rangeRequired');
   }
   if (localProtection.value.rangeStart > localProtection.value.rangeEnd) {
-    return 'Range start must be less than or equal to range end';
+    return t('pickProtectionConfig.errors.rangeOrder');
   }
   if (!localProtection.value.rolloverYear) {
-    return 'You must specify a rollover year';
+    return t('pickProtectionConfig.errors.rolloverRequired');
   }
   if (localProtection.value.rolloverYear <= props.pick.draft_year) {
-    return 'Rollover year must be after the current draft year';
+    return t('pickProtectionConfig.errors.rolloverFuture');
   }
   return null;
 });
@@ -253,9 +256,9 @@ const isValid = computed(() => {
 });
 
 const rules = {
-  required: (v: any) => !!v || 'This field is required',
-  range: (v: number) => (v >= 1 && v <= 30) || 'Must be between 1 and 30',
-  futureYear: (v: number) => v > props.pick.draft_year || 'Must be a future year',
+  required: (v: any) => !!v || t('pickProtectionConfig.errors.fieldRequired'),
+  range: (v: number) => (v >= 1 && v <= 30) || t('pickProtectionConfig.errors.rangeBounds'),
+  futureYear: (v: number) => v > props.pick.draft_year || t('pickProtectionConfig.errors.futureYear'),
 };
 
 function onProtectionTypeChange() {

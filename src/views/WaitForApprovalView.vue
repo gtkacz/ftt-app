@@ -1,19 +1,18 @@
 <template>
-  <AuthShell brand-to="/approval" brand-label="Fantasy Trash Talk approval status" compact-on-mobile>
+  <AuthShell brand-to="/approval" :brand-label="t('waitForApprovalView.brandLabel')" compact-on-mobile>
     <div class="approval-state">
       <div class="approval-state__icon" aria-hidden="true">
         <v-icon icon="hourglass_top" size="34" />
       </div>
-      <p class="eyebrow">Account review</p>
-      <h2>You’re in the queue</h2>
+      <p class="eyebrow">{{ t('waitForApprovalView.eyebrow') }}</p>
+      <h2>{{ t('waitForApprovalView.title') }}</h2>
       <p class="approval-state__intro">
-        Your account is waiting for commissioner approval. Once approved, you’ll be able to create a team and enter
-        the league workspace.
+        {{ t('waitForApprovalView.intro') }}
       </p>
 
       <div class="approval-state__status">
         <span aria-hidden="true" />
-        Approval pending
+        {{ t('waitForApprovalView.statusPending') }}
       </div>
 
       <v-alert v-if="statusMessage" :type="statusType" variant="tonal" density="compact" class="mt-5">
@@ -22,13 +21,13 @@
 
       <div class="approval-state__actions">
         <v-btn color="secondary" size="large" :loading="isChecking" @click="checkApproval">
-          Check again
+          {{ t('waitForApprovalView.checkAgain') }}
           <v-icon icon="refresh" end />
         </v-btn>
-        <v-btn variant="text" size="large" @click="logout">Use another account</v-btn>
+        <v-btn variant="text" size="large" @click="logout">{{ t('waitForApprovalView.useAnotherAccount') }}</v-btn>
       </div>
 
-      <p class="approval-state__help">Questions? Contact your league commissioner.</p>
+      <p class="approval-state__help">{{ t('waitForApprovalView.helpText') }}</p>
     </div>
   </AuthShell>
 </template>
@@ -36,9 +35,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AuthShell from '@/components/auth/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 const isChecking = ref(false)
@@ -57,11 +58,11 @@ async function checkApproval() {
       return
     }
     statusType.value = 'info'
-    statusMessage.value = 'Still pending. We’ll keep your place in the queue.'
+    statusMessage.value = t('waitForApprovalView.statusStillPending')
   } catch (error) {
     console.error('Failed to refresh approval status:', error)
     statusType.value = 'error'
-    statusMessage.value = 'We could not refresh your status. Please try again shortly.'
+    statusMessage.value = t('waitForApprovalView.statusRefreshError')
   } finally {
     isChecking.value = false
   }

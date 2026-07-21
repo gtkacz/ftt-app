@@ -1,19 +1,19 @@
 <template>
   <AuthShell>
     <div class="auth-form">
-      <p class="eyebrow">League access</p>
-      <h2>Welcome back</h2>
-      <p class="auth-form__intro">Sign in to get back to your roster and league activity.</p>
+      <p class="eyebrow">{{ t('loginView.eyebrow') }}</p>
+      <h2>{{ t('loginView.title') }}</h2>
+      <p class="auth-form__intro">{{ t('loginView.intro') }}</p>
 
       <v-form v-model="formValid" class="auth-form__fields" @submit.prevent="handleLogin">
-        <v-text-field v-model="username" label="Username" autocomplete="username" append-inner-icon="account_box"
+        <v-text-field v-model="username" :label="t('loginView.form.usernameLabel')" autocomplete="username" append-inner-icon="account_box"
           :rules="[rules.required]" hide-details="auto" />
 
-        <v-text-field v-model="password" label="Password" autocomplete="current-password"
+        <v-text-field v-model="password" :label="t('loginView.form.passwordLabel')" autocomplete="current-password"
           :type="showPassword ? 'text' : 'password'" :rules="[rules.required]" hide-details="auto">
           <template #append-inner>
             <v-btn class="password-toggle" variant="text" icon
-              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              :aria-label="showPassword ? t('loginView.form.hidePassword') : t('loginView.form.showPassword')"
               @click="showPassword = !showPassword">
               <v-icon :icon="showPassword ? 'visibility' : 'visibility_off'" />
             </v-btn>
@@ -22,21 +22,21 @@
 
         <v-btn type="submit" block size="large" height="52" :loading="authStore.isLoading"
           :disabled="!formValid || authStore.isLoading" color="secondary">
-          Sign in
+          {{ t('loginView.form.submit') }}
           <v-icon icon="arrow_forward" end />
         </v-btn>
       </v-form>
 
-      <div class="auth-form__divider" role="separator" aria-label="or">
-        <span>or</span>
+      <div class="auth-form__divider" role="separator" :aria-label="t('loginView.divider')">
+        <span>{{ t('loginView.divider') }}</span>
       </div>
 
       <GoogleSignInButton :loading="authStore.isLoading" @credential="handleGoogleCredential"
         @error="handleGoogleError" />
 
       <div class="auth-form__footer">
-        <span>New to the league?</span>
-        <router-link :to="{ name: 'signup' }">Create an account</router-link>
+        <span>{{ t('loginView.footer.prompt') }}</span>
+        <router-link :to="{ name: 'signup' }">{{ t('loginView.footer.cta') }}</router-link>
       </div>
     </div>
   </AuthShell>
@@ -45,11 +45,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AuthShell from '@/components/auth/AuthShell.vue'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue'
 import { useAuthStore } from '@/stores/auth'
 import { showError } from '@/services/errorSnackbar'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -59,7 +61,7 @@ const formValid = ref(false)
 const showPassword = ref(false)
 
 const rules = {
-  required: (value: string) => !!value || 'This field is required',
+  required: (value: string) => !!value || t('loginView.validation.required'),
 }
 
 async function handleLogin() {
@@ -85,7 +87,7 @@ async function handleGoogleCredential(credential: string) {
       await router.push(redirectPath as string)
     }
   } catch (error) {
-    showError('Google sign-in failed.', error instanceof Error ? error : null)
+    showError(t('loginView.errors.googleSignInFailed'), error instanceof Error ? error : null)
   }
 }
 

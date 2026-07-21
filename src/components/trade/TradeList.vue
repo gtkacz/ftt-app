@@ -3,14 +3,14 @@
     <!-- Loading State -->
     <div v-if="loading" class="text-center pa-8">
       <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="text-h6 text-medium-emphasis mt-4">Loading trades...</p>
+      <p class="text-h6 text-medium-emphasis mt-4">{{ t('tradeList.loading') }}</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="trades.length === 0" class="text-center pa-8">
       <v-icon size="64" color="grey-lighten-1">swap_horiz</v-icon>
-      <p class="text-h6 text-medium-emphasis mt-4">No trades found</p>
-      <p class="text-caption">Trades in this status will appear here</p>
+      <p class="text-h6 text-medium-emphasis mt-4">{{ t('tradeList.empty.title') }}</p>
+      <p class="text-caption">{{ t('tradeList.empty.subtitle') }}</p>
     </div>
 
     <!-- Trade Cards -->
@@ -87,7 +87,7 @@
                 class="asset-badge"
               >
                 <v-icon start size="small">person</v-icon>
-                {{ getPlayerCount(trade) }} player{{ getPlayerCount(trade) !== 1 ? 's' : '' }}
+                {{ t('tradeList.assetBadges.players', { count: getPlayerCount(trade) }, getPlayerCount(trade)) }}
               </v-chip>
               <v-chip
                 v-if="getPickCount(trade) > 0"
@@ -97,7 +97,7 @@
                 class="asset-badge"
               >
                 <v-icon start size="small">star</v-icon>
-                {{ getPickCount(trade) }} pick{{ getPickCount(trade) !== 1 ? 's' : '' }}
+                {{ t('tradeList.assetBadges.picks', { count: getPickCount(trade) }, getPickCount(trade)) }}
               </v-chip>
             </div>
 
@@ -111,8 +111,8 @@
               </div>
               <div class="metadata-item mt-2">
                 <v-icon size="small" color="info" class="mr-2">group</v-icon>
-                <span class="text-caption text-medium-emphasis">Proposed by: </span>
-                <span class="text-caption font-weight-medium">{{ getSenderTeam(trade)?.name || 'Unknown Team' }}</span>
+                <span class="text-caption text-medium-emphasis">{{ t('tradeList.proposedBy') }}</span>
+                <span class="text-caption font-weight-medium">{{ getSenderTeam(trade)?.name || t('tradeList.unknownTeam') }}</span>
               </div>
             </div>
 
@@ -141,7 +141,7 @@
                 @click.stop="$emit('edit-trade', trade)"
               >
                 <v-icon start size="small">edit</v-icon>
-                Edit
+                {{ t('tradeList.actions.edit') }}
               </v-btn>
               <v-btn
                 size="small"
@@ -151,7 +151,7 @@
                 @click.stop="$emit('delete-trade', trade)"
               >
                 <v-icon start size="small">delete</v-icon>
-                Delete
+                {{ t('tradeList.actions.delete') }}
               </v-btn>
             </template>
 
@@ -165,7 +165,7 @@
                 @click.stop="$emit('respond-trade', { trade, response: 'accept' })"
               >
                 <v-icon start size="small">check</v-icon>
-                Accept
+                {{ t('tradeList.actions.accept') }}
               </v-btn>
               <v-btn
                 size="small"
@@ -175,7 +175,7 @@
                 @click.stop="$emit('respond-trade', { trade, response: 'counter' })"
               >
                 <v-icon start size="small">edit</v-icon>
-                Counter
+                {{ t('tradeList.actions.counter') }}
               </v-btn>
               <v-btn
                 size="small"
@@ -185,7 +185,7 @@
                 @click.stop="$emit('respond-trade', { trade, response: 'reject' })"
               >
                 <v-icon start size="small">close</v-icon>
-                Reject
+                {{ t('tradeList.actions.reject') }}
               </v-btn>
             </template>
           </v-card-actions>
@@ -198,11 +198,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import type { Trade, BackendTradeAssets } from '@/types/trade';
 import { getTradeDisplayStatus } from '@/types/trade';
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 interface Props {
   trades: Trade[];
@@ -247,16 +249,16 @@ function getStatusColor(status: string): string {
 // Get status display text
 function getStatusDisplay(status: string): string {
   const displays: Record<string, string> = {
-    draft: 'Draft',
-    proposed: 'Proposed',
-    waiting_acceptance: 'Waiting Response',
-    waiting_approval: 'Pending Approval',
-    accepted: 'Accepted',
-    approved: 'Approved',
-    vetoed: 'Vetoed',
-    rejected: 'Rejected',
-    completed: 'Completed',
-    unknown: 'Unknown',
+    draft: t('tradeList.status.draft'),
+    proposed: t('tradeList.status.proposed'),
+    waiting_acceptance: t('tradeList.status.waitingAcceptance'),
+    waiting_approval: t('tradeList.status.waitingApproval'),
+    accepted: t('tradeList.status.accepted'),
+    approved: t('tradeList.status.approved'),
+    vetoed: t('tradeList.status.vetoed'),
+    rejected: t('tradeList.status.rejected'),
+    completed: t('tradeList.status.completed'),
+    unknown: t('tradeList.status.unknown'),
   };
   return displays[status] || status;
 }
@@ -322,11 +324,11 @@ function formatDate(dateString: string): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return 'Today';
+    return t('tradeList.date.today');
   } else if (diffDays === 1) {
-    return 'Yesterday';
+    return t('tradeList.date.yesterday');
   } else if (diffDays < 7) {
-    return `${diffDays} days ago`;
+    return t('tradeList.date.daysAgo', { days: diffDays });
   } else {
     return date.toLocaleDateString();
   }

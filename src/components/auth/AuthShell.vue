@@ -1,14 +1,17 @@
 <template>
   <section class="auth-shell" :class="{ 'auth-shell--compact-mobile': compactOnMobile }">
     <header class="auth-shell__header">
-      <router-link :to="brandTo" class="auth-shell__brand" :aria-label="brandLabel">
+      <router-link :to="brandTo" class="auth-shell__brand" :aria-label="brandLabel ?? t('authShell.brandLabel')">
         <app-logo size="38px" :reactive="false" />
         <span>
-          <strong>Fantasy</strong>
-          <small>Trash Talk</small>
+          <strong>{{ t('authShell.brandNamePart1') }}</strong>
+          <small>{{ t('authShell.brandNamePart2') }}</small>
         </span>
       </router-link>
-      <theme-changer />
+      <div class="auth-shell__header-actions">
+        <language-switcher />
+        <theme-changer />
+      </div>
     </header>
 
     <div class="auth-shell__court" aria-hidden="true">
@@ -18,24 +21,24 @@
 
     <div class="auth-shell__layout">
       <aside class="auth-shell__story">
-        <p class="eyebrow">Your league. Your front office.</p>
-        <h1>Run the league.<br><span>Own the conversation.</span></h1>
+        <p class="eyebrow">{{ t('authShell.story.eyebrow') }}</p>
+        <h1>{{ t('authShell.story.headlineLine1') }}<br><span>{{ t('authShell.story.headlineLine2') }}</span></h1>
         <p class="auth-shell__lede">
-          Rosters, picks, cap space and trade talks in one focused fantasy basketball workspace.
+          {{ t('authShell.story.lede') }}
         </p>
 
-        <ul class="auth-shell__features" aria-label="Application features">
+        <ul class="auth-shell__features" :aria-label="t('authShell.features.ariaLabel')">
           <li>
             <v-icon icon="groups" size="20" />
-            <span><strong>Build</strong> the roster</span>
+            <span><strong>{{ t('authShell.features.build.strong') }}</strong> {{ t('authShell.features.build.rest') }}</span>
           </li>
           <li>
             <v-icon icon="handshake" size="20" />
-            <span><strong>Work</strong> the trade desk</span>
+            <span><strong>{{ t('authShell.features.trade.strong') }}</strong> {{ t('authShell.features.trade.rest') }}</span>
           </li>
           <li>
             <v-icon icon="trophy" size="20" />
-            <span><strong>Win</strong> the season</span>
+            <span><strong>{{ t('authShell.features.season.strong') }}</strong> {{ t('authShell.features.season.rest') }}</span>
           </li>
         </ul>
       </aside>
@@ -46,7 +49,7 @@
     </div>
 
     <footer class="auth-shell__footer">
-      <span>FTT</span>
+      <span>{{ t('authShell.footer.abbreviation') }}</span>
       <span aria-hidden="true">•</span>
       <span>v{{ version }}</span>
     </footer>
@@ -54,13 +57,17 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 withDefaults(defineProps<{
   brandTo?: string
   brandLabel?: string
   compactOnMobile?: boolean
 }>(), {
   brandTo: '/login',
-  brandLabel: 'Fantasy Trash Talk login',
+  brandLabel: undefined,
   compactOnMobile: false,
 })
 
@@ -91,6 +98,12 @@ const version = __APP_VERSION__
   align-items: center;
   justify-content: space-between;
   height: 76px;
+}
+
+.auth-shell__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .auth-shell__brand {

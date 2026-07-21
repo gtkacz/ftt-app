@@ -2,7 +2,7 @@
 	<div>
 		<!-- Player avatar for other teams with player -->
 		<v-avatar v-if="player && ((!isStaff && team.id !== userTeamId) || disabled)" size="44" class="cursor-pointer"
-			role="button" tabindex="0" :aria-label="`View ${playerFullName}`" @click="showPlayerDialog = true"
+			role="button" tabindex="0" :aria-label="t('playerDraftDialog.viewPlayer', { name: playerFullName })" @click="showPlayerDialog = true"
 			@keydown.enter="showPlayerDialog = true" @keydown.space.prevent="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template #error>
@@ -13,14 +13,14 @@
 
 		<!-- Draft button for user's team -->
 		<v-btn v-else-if="(team.id === userTeamId || isStaff) && pick?.is_current" icon variant="outlined"
-			class="draft-player-action" aria-label="Draft a player" title="Draft a player" @click="showDraftDialog = true">
+			class="draft-player-action" :aria-label="t('playerDraftDialog.draftPlayerAction')" :title="t('playerDraftDialog.draftPlayerAction')" @click="showDraftDialog = true">
 			<v-icon>person_add</v-icon>
 		</v-btn>
 
 
 		<!-- Player avatar for user's team with player -->
 		<v-avatar v-else-if="player && pick?.is_pick_made" size="44" class="cursor-pointer"
-			role="button" tabindex="0" :aria-label="`View ${playerFullName}`" @click="showPlayerDialog = true"
+			role="button" tabindex="0" :aria-label="t('playerDraftDialog.viewPlayer', { name: playerFullName })" @click="showPlayerDialog = true"
 			@keydown.enter="showPlayerDialog = true" @keydown.space.prevent="showPlayerDialog = true">
 			<v-img :src="player?.photo" :alt="playerFullName" cover>
 				<template #error>
@@ -43,12 +43,12 @@
 		<v-dialog v-model="showDraftDialog" max-width="1600" scrollable transition="fade-transition">
 			<v-card class="pa-4" density="comfortable">
 				<v-card-title>
-					Draft a Player
+					{{ t('playerDraftDialog.title') }}
 					<v-btn v-if="team.id === userTeamId || isStaff" variant="tonal" icon
-						aria-label="Close draft dialog" @click="showDraftDialog = false">
+						:aria-label="t('playerDraftDialog.closeDialog')" @click="showDraftDialog = false">
 						<v-icon icon="smart_toy" />
 					</v-btn>
-					<v-btn variant="text" icon aria-label="Close draft dialog"
+					<v-btn variant="text" icon :aria-label="t('playerDraftDialog.closeDialog')"
 						@click="showDraftDialog = false" class="float-right">
 						<v-icon>close</v-icon>
 					</v-btn>
@@ -70,6 +70,7 @@
 import api from '@/api/axios';
 import { useAuthStore } from '@/stores/auth';
 import { computed, defineAsyncComponent, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const PlayerCard = defineAsyncComponent(() => import('@/components/core/PlayerCard.vue'))
 const PlayersTable = defineAsyncComponent(() => import('@/components/core/PlayersTable.vue'))
@@ -93,6 +94,7 @@ const emit = defineEmits<{
 }>();
 
 // State
+const { t } = useI18n()
 const authStore = useAuthStore()
 const userTeamId = computed(() => authStore.user?.team?.id)
 const isStaff = computed(() => authStore.user?.is_staff)
@@ -102,11 +104,11 @@ const showPickDialog = ref(false)
 const pickData = ref(null)
 
 // Draft table headers
-const draftHeaders = [
-	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
-	{ title: 'FP/G', key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
-	{ title: 'Position', key: 'primary_position', width: '120px', visible: true, sortable: true },
-]
+const draftHeaders = computed(() => [
+	{ title: t('playerDraftDialog.headers.player'), key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
+	{ title: t('playerDraftDialog.headers.fpPerGame'), key: 'relevancy', align: 'end', width: '120px', visible: true, sortable: true },
+	{ title: t('playerDraftDialog.headers.position'), key: 'primary_position', width: '120px', visible: true, sortable: true },
+])
 
 // Computed
 const playerFullName = computed(() => {

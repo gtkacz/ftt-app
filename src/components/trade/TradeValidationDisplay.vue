@@ -6,7 +6,7 @@
         :color="overallColor"
         class="mr-2"
       />
-      Trade Validation {{ validation.valid ? 'Passed' : 'Failed' }}
+      {{ validation.valid ? t('tradeValidationDisplay.status.passed') : t('tradeValidationDisplay.status.failed') }}
     </v-card-title>
 
     <v-divider />
@@ -16,7 +16,7 @@
       <div v-if="validation.errors.length" class="mb-4">
         <div class="text-subtitle-2 text-error mb-2">
           <v-icon icon="error" size="small" class="mr-1" />
-          Errors ({{ validation.errors.length }})
+          {{ t('tradeValidationDisplay.errorsCount', { count: validation.errors.length }) }}
         </div>
         <v-list density="compact" class="bg-transparent">
           <v-list-item
@@ -36,7 +36,7 @@
       <div v-if="validation.warnings.length" class="mb-4">
         <div class="text-subtitle-2 text-warning mb-2">
           <v-icon icon="warning" size="small" class="mr-1" />
-          Warnings ({{ validation.warnings.length }})
+          {{ t('tradeValidationDisplay.warningsCount', { count: validation.warnings.length }) }}
         </div>
         <v-list density="compact" class="bg-transparent">
           <v-list-item
@@ -55,7 +55,7 @@
       <!-- Team Impacts -->
       <div v-if="Object.keys(validation.team_impacts).length">
         <div class="text-subtitle-2 mb-3">
-          Team Impact Analysis
+          {{ t('tradeValidationDisplay.teamImpactAnalysis') }}
         </div>
 
         <v-expansion-panels variant="accordion">
@@ -77,7 +77,7 @@
                       size="x-small"
                       class="mr-1"
                     />
-                    Cap
+                    {{ t('tradeValidationDisplay.capChip') }}
                   </v-chip>
                   <v-chip
                     :color="impact.under_player_cap ? 'success' : 'error'"
@@ -89,7 +89,7 @@
                       size="x-small"
                       class="mr-1"
                     />
-                    Roster
+                    {{ t('tradeValidationDisplay.rosterChip') }}
                   </v-chip>
                 </div>
               </div>
@@ -100,7 +100,7 @@
                 <!-- Salary Impact -->
                 <v-col cols="12" md="6">
                   <div class="impact-card">
-                    <div class="text-caption text-medium-emphasis mb-1">Salary Impact</div>
+                    <div class="text-caption text-medium-emphasis mb-1">{{ t('tradeValidationDisplay.salaryImpact') }}</div>
                     <div class="d-flex align-center justify-space-between">
                       <div>
                         <div class="text-body-2">
@@ -118,7 +118,7 @@
                         size="small"
                         variant="tonal"
                       >
-                        {{ formatCurrency(impact.salary_cap - impact.new_salary) }} space
+                        {{ t('tradeValidationDisplay.capSpace', { amount: formatCurrency(impact.salary_cap - impact.new_salary) }) }}
                       </v-chip>
                     </div>
                   </div>
@@ -127,17 +127,17 @@
                 <!-- Roster Impact -->
                 <v-col cols="12" md="6">
                   <div class="impact-card">
-                    <div class="text-caption text-medium-emphasis mb-1">Roster Impact</div>
+                    <div class="text-caption text-medium-emphasis mb-1">{{ t('tradeValidationDisplay.rosterImpact') }}</div>
                     <div class="d-flex align-center justify-space-between">
                       <div>
                         <div class="text-body-2">
-                          {{ impact.current_player_count }} → {{ impact.new_player_count }} players
+                          {{ t('tradeValidationDisplay.playersChange', { current: impact.current_player_count, new: impact.new_player_count }) }}
                         </div>
                         <div
                           class="text-caption"
                           :class="impact.net_players > 0 ? 'text-warning' : impact.net_players < 0 ? 'text-info' : ''"
                         >
-                          {{ impact.net_players > 0 ? '+' : '' }}{{ impact.net_players }} players
+                          {{ t('tradeValidationDisplay.netPlayers', { sign: impact.net_players > 0 ? '+' : '', count: impact.net_players }) }}
                         </div>
                       </div>
                       <v-chip
@@ -145,7 +145,7 @@
                         size="small"
                         variant="tonal"
                       >
-                        {{ impact.max_player_cap - impact.new_player_count }} slots
+                        {{ t('tradeValidationDisplay.slots', { count: impact.max_player_cap - impact.new_player_count }) }}
                       </v-chip>
                     </div>
                   </div>
@@ -161,7 +161,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TradeValidationResponse, Team } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   validation: TradeValidationResponse | null;
@@ -181,8 +184,8 @@ const overallColor = computed(() => {
 });
 
 function getTeamName(teamId: number): string {
-  const team = props.teams?.find(t => t.id === teamId);
-  return team?.name || `Team ${teamId}`;
+  const team = props.teams?.find(team => team.id === teamId);
+  return team?.name || t('tradeValidationDisplay.defaultTeamName', { id: teamId });
 }
 
 function formatCurrency(value: number): string {

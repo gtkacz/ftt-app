@@ -2,13 +2,13 @@
   <div class="trade-overview-view page-view">
     <header class="trade-header page-header">
       <div>
-        <p class="eyebrow">Deal room</p>
-        <h1 class="page-title">Trade Center</h1>
-        <p class="page-subtitle">Build offers, follow negotiations and keep every league deal moving.</p>
+        <p class="eyebrow">{{ t('tradeOverviewView.header.eyebrow') }}</p>
+        <h1 class="page-title">{{ t('tradeOverviewView.header.title') }}</h1>
+        <p class="page-subtitle">{{ t('tradeOverviewView.header.subtitle') }}</p>
       </div>
       <v-btn class="trade-header__create" color="secondary" size="large" prepend-icon="add"
         @click="createNewTrade">
-        Create trade
+        {{ t('tradeOverviewView.header.createTrade') }}
       </v-btn>
     </header>
 
@@ -22,7 +22,7 @@
           >
             <v-tab value="waiting_acceptance">
               <v-icon start>schedule</v-icon>
-              Waiting Response
+              {{ t('tradeOverviewView.tabs.waitingResponse') }}
               <v-chip
                 v-if="getCountByStatus('waiting_acceptance') > 0"
                 size="x-small"
@@ -34,7 +34,7 @@
             </v-tab>
             <v-tab value="rejected">
               <v-icon start>cancel</v-icon>
-              Rejected
+              {{ t('tradeOverviewView.tabs.rejected') }}
               <v-chip
                 v-if="getCountByStatus('rejected') > 0"
                 size="x-small"
@@ -46,7 +46,7 @@
             </v-tab>
             <v-tab value="accepted">
               <v-icon start>check_circle</v-icon>
-              Accepted
+              {{ t('tradeOverviewView.tabs.accepted') }}
               <v-chip
                 v-if="getCountByStatus('accepted') > 0"
                 size="x-small"
@@ -58,7 +58,7 @@
             </v-tab>
             <v-tab v-if="isCommissioner" value="pending_approval">
               <v-icon start>gavel</v-icon>
-              Pending Approval
+              {{ t('tradeOverviewView.tabs.pendingApproval') }}
               <v-chip
                 v-if="getPendingApprovalTrades().length > 0"
                 size="x-small"
@@ -70,7 +70,7 @@
             </v-tab>
             <v-tab value="vetoed">
               <v-icon start>block</v-icon>
-              Vetoed
+              {{ t('tradeOverviewView.tabs.vetoed') }}
               <v-chip
                 v-if="getCountByStatus('vetoed') > 0"
                 size="x-small"
@@ -82,7 +82,7 @@
             </v-tab>
             <v-tab value="completed">
               <v-icon start>done_all</v-icon>
-              Completed
+              {{ t('tradeOverviewView.tabs.completed') }}
               <v-chip
                 v-if="getCountByStatus('completed') > 0"
                 size="x-small"
@@ -166,7 +166,7 @@
       size="large"
       icon
       elevation="8"
-      aria-label="Create trade"
+      :aria-label="t('tradeOverviewView.fab.createTradeAriaLabel')"
       @click="createNewTrade"
     >
       <v-icon>add</v-icon>
@@ -176,7 +176,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
       <template #actions>
-        <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
+        <v-btn variant="text" @click="snackbar.show = false">{{ t('tradeOverviewView.snackbar.close') }}</v-btn>
       </template>
     </v-snackbar>
 
@@ -195,32 +195,32 @@
               <v-icon color="white" size="24">check_circle</v-icon>
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">Approve Trade</div>
-              <div class="text-caption text-medium-emphasis">Review trade details before confirming</div>
+              <div class="text-h6 font-weight-bold">{{ t('tradeOverviewView.dialogs.approve.title') }}</div>
+              <div class="text-caption text-medium-emphasis">{{ t('tradeOverviewView.dialogs.approve.subtitle') }}</div>
             </div>
           </div>
         </v-card-title>
         <v-divider />
         <v-card-text class="dialog-content">
-          <v-alert 
-            type="info" 
-            variant="tonal" 
+          <v-alert
+            type="info"
+            variant="tonal"
             density="comfortable"
             class="mb-4 info-alert"
             border="start"
             border-color="info"
           >
             <p>
-              <div class="font-weight-medium mb-1">Review Before Approving</div>
-              <div class="text-caption">Please carefully review all trade details below before confirming your approval.</div>
+              <div class="font-weight-medium mb-1">{{ t('tradeOverviewView.dialogs.approve.reviewTitle') }}</div>
+              <div class="text-caption">{{ t('tradeOverviewView.dialogs.approve.reviewText') }}</div>
             </p>
           </v-alert>
-          
+
           <!-- Trade Summary -->
           <div v-if="approveDialog.trade" class="trade-summary-dialog">
             <div class="summary-header mb-3">
               <v-icon color="primary" class="mr-2">swap_horiz</v-icon>
-              <span class="text-subtitle-1 font-weight-bold">Trade #{{ approveDialog.trade.id }}</span>
+              <span class="text-subtitle-1 font-weight-bold">{{ t('tradeOverviewView.dialogs.tradeNumber', { id: approveDialog.trade.id }) }}</span>
             </div>
             <TradeSummaryPanel
               :teams="approveDialog.trade.teams_detail || approveDialog.trade.participants || []"
@@ -238,7 +238,7 @@
             class="action-btn"
             @click="closeApproveDialog"
           >
-            Cancel
+            {{ t('tradeOverviewView.dialogs.approve.cancel') }}
           </v-btn>
           <v-btn
             color="success"
@@ -248,7 +248,7 @@
             :loading="votingTradeId === approveDialog.trade?.id"
             @click="confirmApprove"
           >
-            Confirm Approval
+            {{ t('tradeOverviewView.dialogs.approve.confirm') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -269,16 +269,16 @@
               <v-icon color="white" size="24">gavel</v-icon>
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">Veto Trade</div>
-              <div class="text-caption text-medium-emphasis">This action cannot be undone</div>
+              <div class="text-h6 font-weight-bold">{{ t('tradeOverviewView.dialogs.veto.title') }}</div>
+              <div class="text-caption text-medium-emphasis">{{ t('tradeOverviewView.dialogs.veto.subtitle') }}</div>
             </div>
           </div>
         </v-card-title>
         <v-divider />
         <v-card-text class="dialog-content">
-          <v-alert 
-            type="warning" 
-            variant="tonal" 
+          <v-alert
+            type="warning"
+            variant="tonal"
             density="comfortable"
             class="mb-4 warning-alert"
             border="start"
@@ -286,17 +286,17 @@
           >
             <div class="d-flex align-center">
               <p>
-                <div class="font-weight-medium mb-1">Are you sure you want to veto this trade?</div>
-                <div class="text-caption">This action is permanent and will prevent the trade from being completed.</div>
+                <div class="font-weight-medium mb-1">{{ t('tradeOverviewView.dialogs.veto.confirmText') }}</div>
+                <div class="text-caption">{{ t('tradeOverviewView.dialogs.veto.warningText') }}</div>
               </p>
             </div>
           </v-alert>
-          
+
           <!-- Trade Summary -->
           <div v-if="vetoDialog.trade" class="trade-summary-dialog mb-4">
             <div class="summary-header mb-3">
               <v-icon color="primary" class="mr-2">swap_horiz</v-icon>
-              <span class="text-subtitle-1 font-weight-bold">Trade #{{ vetoDialog.trade.id }}</span>
+              <span class="text-subtitle-1 font-weight-bold">{{ t('tradeOverviewView.dialogs.tradeNumber', { id: vetoDialog.trade.id }) }}</span>
             </div>
             <TradeSummaryPanel
               :teams="vetoDialog.trade.teams_detail || vetoDialog.trade.participants || []"
@@ -314,7 +314,7 @@
             class="action-btn"
             @click="closeVetoDialog"
           >
-            Cancel
+            {{ t('tradeOverviewView.dialogs.veto.cancel') }}
           </v-btn>
           <v-btn
             color="error"
@@ -324,7 +324,7 @@
             :loading="votingTradeId === vetoDialog.trade?.id"
             @click="confirmVeto"
           >
-            Confirm Veto
+            {{ t('tradeOverviewView.dialogs.veto.confirm') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -335,6 +335,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
@@ -345,6 +346,7 @@ import CommissionerTradeList from '@/components/trade/CommissionerTradeList.vue'
 import TradeSummaryPanel from '@/components/trade/TradeSummaryPanel.vue';
 
 const router = useRouter();
+const { t } = useI18n();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
 
@@ -483,11 +485,19 @@ async function handleRespondTrade(payload: { trade: Trade; response: 'accept' | 
       trade_id: trade.id,
     });
 
-    showSnackbar(`Trade ${response === 'accept' ? 'accepted' : 'rejected'} successfully`, 'success');
+    showSnackbar(
+      response === 'accept'
+        ? t('tradeOverviewView.messages.tradeAcceptedSuccess')
+        : t('tradeOverviewView.messages.tradeRejectedSuccess'),
+      'success'
+    );
     await loadTrades();
   } catch (error: any) {
     console.error('Trade action error:', error);
-    const errorMessage = error.response?.data?.detail || error.message || `Failed to ${response} trade`;
+    const fallbackMessage = response === 'accept'
+      ? t('tradeOverviewView.messages.failedToAcceptTrade')
+      : t('tradeOverviewView.messages.failedToRejectTrade');
+    const errorMessage = error.response?.data?.detail || error.message || fallbackMessage;
     showSnackbar(errorMessage, 'error');
   }
 }
@@ -502,7 +512,7 @@ async function loadTrades() {
     await tradeStore.fetchUserTrades();
   } catch (error) {
     console.error('Failed to load trades:', error);
-    showSnackbar('Failed to load trades', 'error');
+    showSnackbar(t('tradeOverviewView.messages.failedToLoadTrades'), 'error');
   }
 }
 
@@ -527,7 +537,7 @@ function handleApprove(trade: Trade) {
   if (!trade.id) return;
   // Prevent voting if user has already voted
   if (hasUserVoted(trade)) {
-    showSnackbar('You have already voted on this trade', 'warning');
+    showSnackbar(t('tradeOverviewView.messages.alreadyVoted'), 'warning');
     return;
   }
   approveDialog.value = {
@@ -547,12 +557,12 @@ async function confirmApprove() {
       action: 'approved',
       trade_id: approveDialog.value.trade.id,
     });
-    showSnackbar('Trade approved successfully', 'success');
+    showSnackbar(t('tradeOverviewView.messages.tradeApprovedSuccess'), 'success');
     closeApproveDialog();
     await loadTrades();
   } catch (error: any) {
     console.error('Approve error:', error);
-    const errorMessage = error.response?.data?.detail || error.message || 'Failed to approve trade';
+    const errorMessage = error.response?.data?.detail || error.message || t('tradeOverviewView.messages.failedToApproveTrade');
     showSnackbar(errorMessage, 'error');
   } finally {
     votingTradeId.value = null;
@@ -572,7 +582,7 @@ function handleVeto(trade: Trade) {
   if (!trade.id) return;
   // Prevent voting if user has already voted
   if (hasUserVoted(trade)) {
-    showSnackbar('You have already voted on this trade', 'warning');
+    showSnackbar(t('tradeOverviewView.messages.alreadyVoted'), 'warning');
     return;
   }
   vetoDialog.value = {
@@ -592,12 +602,12 @@ async function confirmVeto() {
       action: 'vetoed',
       trade_id: vetoDialog.value.trade.id,
     });
-    showSnackbar('Trade vetoed successfully', 'success');
+    showSnackbar(t('tradeOverviewView.messages.tradeVetoedSuccess'), 'success');
     closeVetoDialog();
     await loadTrades();
   } catch (error: any) {
     console.error('Veto error:', error);
-    const errorMessage = error.response?.data?.detail || error.message || 'Failed to veto trade';
+    const errorMessage = error.response?.data?.detail || error.message || t('tradeOverviewView.messages.failedToVetoTrade');
     showSnackbar(errorMessage, 'error');
   } finally {
     votingTradeId.value = null;

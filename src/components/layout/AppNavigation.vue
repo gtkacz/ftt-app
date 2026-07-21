@@ -1,9 +1,9 @@
 <template>
-  <nav class="app-navigation" :class="{ expanded: isExpanded }" aria-label="Primary navigation"
+  <nav class="app-navigation" :class="{ expanded: isExpanded }" :aria-label="t('appNavigation.ariaLabel')"
     @mouseenter="isHovered = true" @mouseleave="isHovered = false" @focusin="isFocusWithin = true"
     @focusout="handleFocusOut">
     <div class="nav-logo">
-      <LogoNav label="Fantasy Trash Talk" :expanded="isExpanded" />
+      <LogoNav :label="t('common.appName')" :expanded="isExpanded" />
     </div>
 
     <div class="nav-items">
@@ -32,7 +32,9 @@ import NavItem from '@/components/navigation/NavItem.vue'
 import LogoNav from '@/components/navigation/LogoNav.vue'
 import { useNavigationGroups } from '@/components/layout/navItems'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const version = __APP_VERSION__
 const isDev = ref(import.meta.env.DEV);
 const navigationGroups = useNavigationGroups()

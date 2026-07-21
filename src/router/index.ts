@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
+import { i18n } from "@/i18n";
 import { useAuthStore } from "@/stores/auth.ts";
 
 const routes: RouteRecordRaw[] = [
@@ -13,7 +14,7 @@ const routes: RouteRecordRaw[] = [
     name: "login",
     component: () => import("@/views/LoginView.vue"),
     meta: {
-      title: "Login - Fantasy Trash Talk",
+      titleKey: "pageTitles.login",
       requiresAuth: false,
     },
   },
@@ -22,7 +23,7 @@ const routes: RouteRecordRaw[] = [
     name: "signup",
     component: () => import("@/views/SignUpView.vue"),
     meta: {
-      title: "Signup - Fantasy Trash Talk",
+      titleKey: "pageTitles.signup",
       requiresAuth: false,
     },
   },
@@ -63,7 +64,7 @@ const routes: RouteRecordRaw[] = [
     name: "trade-overview",
     component: () => import("@/views/TradeOverviewView.vue"),
     meta: {
-      title: "Trade Center - Fantasy Trash Talk",
+      titleKey: "pageTitles.tradeCenter",
     },
   },
   {
@@ -71,7 +72,7 @@ const routes: RouteRecordRaw[] = [
     name: "trade-create",
     component: () => import("@/views/TradeEditorView.vue"),
     meta: {
-      title: "Create Trade - Fantasy Trash Talk",
+      titleKey: "pageTitles.tradeCreate",
     },
   },
   {
@@ -80,7 +81,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/TradeEditorView.vue"),
     props: true,
     meta: {
-      title: "Edit Trade - Fantasy Trash Talk",
+      titleKey: "pageTitles.tradeEdit",
     },
   },
   {
@@ -89,7 +90,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/TradeDetailView.vue"),
     props: true,
     meta: {
-      title: "Trade Details - Fantasy Trash Talk",
+      titleKey: "pageTitles.tradeDetail",
     },
   },
   {
@@ -97,7 +98,7 @@ const routes: RouteRecordRaw[] = [
     name: "league-trades",
     component: () => import("@/views/LeagueTradeOverviewView.vue"),
     meta: {
-      title: "League Trade History - Fantasy Trash Talk",
+      titleKey: "pageTitles.leagueTradeHistory",
     },
   },
   {
@@ -133,7 +134,7 @@ const routes: RouteRecordRaw[] = [
         name: "commission-settings",
         component: () => import("@/views/501View.vue"),
         meta: {
-          title: "Commission Settings - Fantasy Trash Talk",
+          titleKey: "pageTitles.commissionSettings",
           requiresStaff: true,
         },
       },
@@ -142,7 +143,7 @@ const routes: RouteRecordRaw[] = [
         name: "commission-users",
         component: () => import("@/views/admin/UserView.vue"),
         meta: {
-          title: "Comission Users - Fantasy Trash Talk",
+          titleKey: "pageTitles.commissionUsers",
           requiresStaff: true,
         },
       },
@@ -151,7 +152,7 @@ const routes: RouteRecordRaw[] = [
         name: "commission-teams",
         component: () => import("@/views/501View.vue"),
         meta: {
-          title: "Admin Teams - Fantasy Trash Talk",
+          titleKey: "pageTitles.adminTeams",
           requiresStaff: true,
         },
       },
@@ -160,7 +161,7 @@ const routes: RouteRecordRaw[] = [
         name: "commission-players",
         component: () => import("@/views/501View.vue"),
         meta: {
-          title: "Admin Players - Fantasy Trash Talk",
+          titleKey: "pageTitles.adminPlayers",
           requiresStaff: true,
         },
       },
@@ -169,7 +170,7 @@ const routes: RouteRecordRaw[] = [
         name: "commission-trades",
         component: () => import("@/views/CommissionerTradesView.vue"),
         meta: {
-          title: "Commissioner Trade Review - Fantasy Trash Talk",
+          titleKey: "pageTitles.commissionerTradeReview",
           requiresStaff: true,
         },
       },
@@ -221,8 +222,8 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
-  const title = (to.meta.title as string) || "Fantasy Trash Talk";
-  document.title = title;
+  const titleKey = to.meta.titleKey as string | undefined;
+  document.title = titleKey ? i18n.global.t(titleKey) : i18n.global.t("common.appName");
 
   const requiresAuth = to.meta.requiresAuth !== false;
   const requiresStaff = to.meta.requiresStaff === true;

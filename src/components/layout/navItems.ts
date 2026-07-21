@@ -1,4 +1,5 @@
 import { computed } from "vue";
+import { i18n } from "@/i18n";
 import { useAuthStore } from "@/stores/auth";
 
 export interface NavItemDef {
@@ -21,6 +22,7 @@ export const MOBILE_PRIMARY_ROUTES = ["home", "team", "players", "trade-overview
 
 export function useNavigationGroups() {
   const authStore = useAuthStore();
+  const { t } = i18n.global;
 
   return computed<NavGroupDef[]>(() => {
     // Navigation only renders for users with a team, so the fallback is never navigated to
@@ -28,23 +30,23 @@ export function useNavigationGroups() {
 
     return [
       {
-        title: "General",
+        title: t("nav.groups.general"),
         items: [
           {
             icon: "home",
-            label: "Home",
+            label: t("nav.items.home"),
             routeName: "home",
           },
           {
             icon: "dashboard",
-            label: "Dashboard",
+            label: t("nav.items.dashboard"),
             routeName: "dashboard",
             params: { id: teamId },
             disabled: !teamId,
           },
           {
             icon: "person_play",
-            label: "My Team",
+            label: t("nav.items.myTeam"),
             routeName: "team",
             params: { id: teamId },
             disabled: !teamId,
@@ -52,66 +54,66 @@ export function useNavigationGroups() {
         ],
       },
       {
-        title: "Rosters",
+        title: t("nav.groups.rosters"),
         items: [
           {
             icon: "model_training",
-            label: "League Draft",
+            label: t("nav.items.leagueDraft"),
             routeName: "league-draft",
           },
           {
             icon: "sports_basketball",
-            label: "League",
+            label: t("nav.items.league"),
             routeName: "league",
             disabled: true,
           },
           {
             icon: "clinical_notes",
-            label: "Players",
+            label: t("nav.items.players"),
             routeName: "players",
           },
           {
             icon: "handshake",
-            label: "Trades",
+            label: t("nav.items.trades"),
             routeName: "trade-overview",
           },
         ],
       },
       {
-        title: "Draft",
+        title: t("nav.groups.draft"),
         items: [
           {
             icon: "workspaces",
-            label: "Draft",
+            label: t("nav.items.draft"),
             routeName: "draft",
             disabled: true,
           },
           {
             icon: "interests",
-            label: "Big Board",
+            label: t("nav.items.bigBoard"),
             routeName: "big-board",
             disabled: true,
           },
           {
             icon: "format_list_numbered",
-            label: "Lottery",
+            label: t("nav.items.lottery"),
             routeName: "lottery",
             disabled: true,
           },
         ],
       },
       {
-        title: "Account",
+        title: t("nav.groups.account"),
         items: [
           {
             icon: "manage_accounts",
-            label: "Commission",
+            label: t("nav.items.commission"),
             routeName: "commission",
             commission_only: true,
           },
           {
             icon: "settings",
-            label: "Settings",
+            label: t("nav.items.settings"),
             routeName: "settings",
           },
         ],

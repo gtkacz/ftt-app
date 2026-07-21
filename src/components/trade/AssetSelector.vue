@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon start>{{ assetType === 'player' ? 'person' : 'star' }}</v-icon>
-        Select {{ assetType === 'player' ? 'Player' : 'Pick' }}
+        {{ assetType === 'player' ? t('assetSelector.dialogTitle.player') : t('assetSelector.dialogTitle.pick') }}
         <v-spacer />
         <v-btn icon variant="text" @click="closeDialog">
           <v-icon>close</v-icon>
@@ -21,10 +21,10 @@
               :items="destinationTeams"
               item-title="name"
               item-value="id"
-              label="Send to Team"
+              :label="t('assetSelector.destination.label')"
               prepend-inner-icon="arrow_forward"
               variant="outlined"
-              :rules="[v => !!v || 'Destination team is required']"
+              :rules="[v => !!v || t('assetSelector.destination.required')]"
             >
               <template #selection="{ item }">
                 <div class="d-flex align-center">
@@ -52,7 +52,7 @@
           <v-text-field
             v-model="playerSearch"
             prepend-inner-icon="search"
-            label="Search players"
+            :label="t('assetSelector.player.searchLabel')"
             variant="outlined"
             density="compact"
             clearable
@@ -89,8 +89,8 @@
             <template #no-data>
               <div class="text-center pa-4">
                 <v-icon size="48" color="grey-lighten-1">person_off</v-icon>
-                <p class="text-h6 text-medium-emphasis mt-2">No players available</p>
-                <p class="text-caption">This team has no available players to trade</p>
+                <p class="text-h6 text-medium-emphasis mt-2">{{ t('assetSelector.player.empty.title') }}</p>
+                <p class="text-caption">{{ t('assetSelector.player.empty.subtitle') }}</p>
               </div>
             </template>
           </v-data-table>
@@ -110,9 +110,9 @@
             fixed-header
           >
             <template #[`item.pick`]="{ item }">
-              <div class="font-weight-medium">{{ item.year }} Round {{ item.round }}</div>
+              <div class="font-weight-medium">{{ t('assetSelector.pick.yearRound', { year: item.year, round: item.round }) }}</div>
               <div class="text-caption text-medium-emphasis">
-                via {{ getTeamName(item.original_team) }}
+                {{ t('assetSelector.pick.via', { team: getTeamName(item.original_team) }) }}
               </div>
             </template>
 
@@ -122,14 +122,14 @@
                 :protection="item.protection_type"
                 :value="item.protection_value"
               />
-              <span v-else class="text-caption text-medium-emphasis">Unprotected</span>
+              <span v-else class="text-caption text-medium-emphasis">{{ t('assetSelector.pick.unprotected') }}</span>
             </template>
 
             <template #no-data>
               <div class="text-center pa-4">
                 <v-icon size="48" color="grey-lighten-1">event_busy</v-icon>
-                <p class="text-h6 text-medium-emphasis mt-2">No picks available</p>
-                <p class="text-caption">This team has no available draft picks to trade</p>
+                <p class="text-h6 text-medium-emphasis mt-2">{{ t('assetSelector.pick.empty.title') }}</p>
+                <p class="text-caption">{{ t('assetSelector.pick.empty.subtitle') }}</p>
               </div>
             </template>
           </v-data-table>
@@ -140,22 +140,22 @@
               <v-divider class="mb-4" />
               <h4 class="text-subtitle-1 mb-3">
                 <v-icon start>verified_user</v-icon>
-                Pick Protection (Optional)
+                {{ t('assetSelector.protection.heading') }}
               </h4>
 
               <v-radio-group v-model="pickProtection" hide-details class="protection-radio-group">
                 <v-radio value="none">
                   <template #label>
                     <div class="d-flex align-center">
-                      <span>No Protection</span>
+                      <span>{{ t('assetSelector.protection.options.none') }}</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
                           <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
-                          <div class="font-weight-bold mb-1">No Protection</div>
+                          <div class="font-weight-bold mb-1">{{ t('assetSelector.protection.tooltips.none.title') }}</div>
                           <div class="text-caption">
-                            The pick conveys regardless of where it lands. The receiving team gets the pick no matter what.
+                            {{ t('assetSelector.protection.tooltips.none.body') }}
                           </div>
                         </div>
                       </v-tooltip>
@@ -166,19 +166,19 @@
                 <v-radio value="top_x">
                   <template #label>
                     <div class="d-flex align-center">
-                      <span>Top X Protected</span>
+                      <span>{{ t('assetSelector.protection.options.topX') }}</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
                           <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
-                          <div class="font-weight-bold mb-1">Top X Protected</div>
+                          <div class="font-weight-bold mb-1">{{ t('assetSelector.protection.tooltips.topX.title') }}</div>
                           <div class="text-caption mb-2">
-                            If the pick lands in the top X positions, it doesn't convey and the giving team keeps it.
+                            {{ t('assetSelector.protection.tooltips.topX.body') }}
                           </div>
-                          <div class="text-caption font-weight-medium mb-1">Example:</div>
+                          <div class="text-caption font-weight-medium mb-1">{{ t('assetSelector.protection.tooltips.topX.exampleLabel') }}</div>
                           <div class="text-caption">
-                            Top 5 Protected: If the pick is #1-5, the giving team keeps it. If it's #6 or later, it conveys to the receiving team.
+                            {{ t('assetSelector.protection.tooltips.topX.example') }}
                           </div>
                         </div>
                       </v-tooltip>
@@ -189,19 +189,19 @@
                 <v-radio value="swap_best">
                   <template #label>
                     <div class="d-flex align-center">
-                      <span>Swap Best</span>
+                      <span>{{ t('assetSelector.protection.options.swapBest') }}</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
                           <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
-                          <div class="font-weight-bold mb-1">Swap Best (Pick Swap Rights)</div>
+                          <div class="font-weight-bold mb-1">{{ t('assetSelector.protection.tooltips.swapBest.title') }}</div>
                           <div class="text-caption mb-2">
-                            The two teams compare their picks, and the receiving team gets whichever pick is better (lower number).
+                            {{ t('assetSelector.protection.tooltips.swapBest.body') }}
                           </div>
-                          <div class="text-caption font-weight-medium mb-1">Example:</div>
+                          <div class="text-caption font-weight-medium mb-1">{{ t('assetSelector.protection.tooltips.swapBest.exampleLabel') }}</div>
                           <div class="text-caption">
-                            Team A has pick #3, Team B has pick #10. With swap best, Team B gets pick #3 (the better pick), and Team A gets pick #10.
+                            {{ t('assetSelector.protection.tooltips.swapBest.example') }}
                           </div>
                         </div>
                       </v-tooltip>
@@ -212,19 +212,19 @@
                 <v-radio value="swap_worst">
                   <template #label>
                     <div class="d-flex align-center">
-                      <span>Swap Worst</span>
+                      <span>{{ t('assetSelector.protection.options.swapWorst') }}</span>
                       <v-tooltip location="end" max-width="350">
                         <template #activator="{ props: tooltipProps }">
                           <v-icon v-bind="tooltipProps" size="small" class="ml-2" color="grey">info</v-icon>
                         </template>
                         <div class="tooltip-content">
-                          <div class="font-weight-bold mb-1">Swap Worst (Reverse Pick Swap)</div>
+                          <div class="font-weight-bold mb-1">{{ t('assetSelector.protection.tooltips.swapWorst.title') }}</div>
                           <div class="text-caption mb-2">
-                            The two teams compare their picks, and the receiving team gets whichever pick is worse (higher number).
+                            {{ t('assetSelector.protection.tooltips.swapWorst.body') }}
                           </div>
-                          <div class="text-caption font-weight-medium mb-1">Example:</div>
+                          <div class="text-caption font-weight-medium mb-1">{{ t('assetSelector.protection.tooltips.swapWorst.exampleLabel') }}</div>
                           <div class="text-caption">
-                            Team A has pick #3, Team B has pick #10. With swap worst, Team B gets pick #10 (the worse pick), and Team A gets pick #3. This protects Team A from losing their best pick.
+                            {{ t('assetSelector.protection.tooltips.swapWorst.example') }}
                           </div>
                         </div>
                       </v-tooltip>
@@ -238,8 +238,8 @@
                   v-if="pickProtection === 'top_x'"
                   v-model.number="protectionValue"
                   type="number"
-                  label="Protection Value"
-                  hint="E.g., Top 5 Protected"
+                  :label="t('assetSelector.protection.valueField.label')"
+                  :hint="t('assetSelector.protection.valueField.hint')"
                   persistent-hint
                   variant="outlined"
                   class="mt-3"
@@ -253,42 +253,45 @@
                   <v-icon>verified_user</v-icon>
                 </template>
                 <template v-if="pickProtection === 'top_x'">
-                  <div class="text-subtitle-2 mb-2">Top {{ protectionValue || 'X' }} Protected Pick</div>
+                  <div class="text-subtitle-2 mb-2">{{ t('assetSelector.protection.summary.topX.title', { value: protectionValue || 'X' }) }}</div>
                   <div class="text-body-2">
-                    If this pick lands in positions #1 through #{{ protectionValue || 'X' }}, the <strong>giving team keeps it</strong> and the receiving team does not get it.
-                    The pick may roll over to future years depending on the protection terms.
+                    {{ t('assetSelector.protection.summary.topX.prefix', { value: protectionValue || 'X' }) }}
+                    <strong>{{ t('assetSelector.protection.summary.topX.strong') }}</strong>
+                    {{ t('assetSelector.protection.summary.topX.suffix') }}
                   </div>
                   <div class="mt-2">
                     <v-chip size="small" color="success" variant="outlined" class="mr-2">
                       <v-icon start size="small">check</v-icon>
-                      Conveys: #{{ (protectionValue || 0) + 1 }}+
+                      {{ t('assetSelector.protection.summary.topX.conveys', { value: (protectionValue || 0) + 1 }) }}
                     </v-chip>
                     <v-chip size="small" color="error" variant="outlined">
                       <v-icon start size="small">close</v-icon>
-                      Protected: #1-{{ protectionValue || 'X' }}
+                      {{ t('assetSelector.protection.summary.topX.protectedRange', { value: protectionValue || 'X' }) }}
                     </v-chip>
                   </div>
                 </template>
                 <template v-else-if="pickProtection === 'swap_best'">
-                  <div class="text-subtitle-2 mb-2">Swap Best (Pick Swap Rights)</div>
+                  <div class="text-subtitle-2 mb-2">{{ t('assetSelector.protection.tooltips.swapBest.title') }}</div>
                   <div class="text-body-2">
-                    Both teams compare their draft picks for this year. The <strong>receiving team gets the better pick</strong> (lower draft position = higher pick),
-                    and the giving team gets the worse pick. This is typically used when teams want to secure a higher draft position.
+                    {{ t('assetSelector.protection.summary.swapBest.prefix') }}
+                    <strong>{{ t('assetSelector.protection.summary.swapBest.strong') }}</strong>
+                    {{ t('assetSelector.protection.summary.swapBest.suffix') }}
                   </div>
                   <div class="mt-2 text-caption">
                     <v-icon size="small" class="mr-1">info</v-icon>
-                    Common in deals where one team wants lottery protection
+                    {{ t('assetSelector.protection.summary.swapBest.note') }}
                   </div>
                 </template>
                 <template v-else-if="pickProtection === 'swap_worst'">
-                  <div class="text-subtitle-2 mb-2">Swap Worst (Reverse Pick Swap)</div>
+                  <div class="text-subtitle-2 mb-2">{{ t('assetSelector.protection.tooltips.swapWorst.title') }}</div>
                   <div class="text-body-2">
-                    Both teams compare their draft picks for this year. The <strong>receiving team gets the worse pick</strong> (higher draft position = lower pick),
-                    and the giving team gets the better pick. This protects the giving team from giving up their best draft position.
+                    {{ t('assetSelector.protection.summary.swapWorst.prefix') }}
+                    <strong>{{ t('assetSelector.protection.summary.swapWorst.strong') }}</strong>
+                    {{ t('assetSelector.protection.summary.swapWorst.suffix') }}
                   </div>
                   <div class="mt-2 text-caption">
                     <v-icon size="small" class="mr-1">info</v-icon>
-                    Rarely used; ensures the giving team maintains their higher pick
+                    {{ t('assetSelector.protection.summary.swapWorst.note') }}
                   </div>
                 </template>
               </v-alert>
@@ -301,9 +304,9 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
+        <v-btn variant="text" @click="closeDialog">{{ t('assetSelector.actions.cancel') }}</v-btn>
         <v-btn color="primary" :disabled="!canConfirm" @click="confirmSelection">
-          Add to Trade
+          {{ t('assetSelector.actions.confirm') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -312,8 +315,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Player, Pick, Team, PickProtectionType } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: boolean;
@@ -385,21 +391,21 @@ const canConfirm = computed(() => {
 });
 
 // Table headers
-const playerTableHeaders = [
-  { title: 'Player', key: 'name', sortable: false },
-  { title: 'Position', key: 'position', sortable: true },
-  { title: 'NBA Team', key: 'nba_team', sortable: true },
-];
+const playerTableHeaders = computed(() => [
+  { title: t('assetSelector.player.table.name'), key: 'name', sortable: false },
+  { title: t('assetSelector.player.table.position'), key: 'position', sortable: true },
+  { title: t('assetSelector.player.table.team'), key: 'nba_team', sortable: true },
+]);
 
-const pickTableHeaders = [
-  { title: 'Pick', key: 'pick', sortable: false },
-  { title: 'Protection', key: 'protection', sortable: false },
-];
+const pickTableHeaders = computed(() => [
+  { title: t('assetSelector.pick.table.pick'), key: 'pick', sortable: false },
+  { title: t('assetSelector.pick.table.protection'), key: 'protection', sortable: false },
+]);
 
 // Helper to get team name
 function getTeamName(teamId: number): string {
   const team = props.availableTeams.find((t) => t.id === teamId);
-  return team?.name || 'Unknown';
+  return team?.name || t('assetSelector.unknownTeam');
 }
 
 // Close dialog

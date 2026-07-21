@@ -1,6 +1,6 @@
 <template>
   <span class="nav-item-content disabled" v-if="disabled" role="link" aria-disabled="true"
-    :aria-label="`${label} — coming soon`" :title="expanded ? 'Coming soon' : `${label} — coming soon`">
+    :aria-label="t('navItem.comingSoonWithLabel', { label })" :title="expanded ? t('navItem.comingSoon') : t('navItem.comingSoonWithLabel', { label })">
     <v-icon class="nav-icon" :icon="icon" theme="outlined" />
     <span v-if="expanded" class="nav-item-label">{{ label }}</span>
   </span>
@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 
 interface Props {
@@ -31,6 +32,7 @@ interface Props {
 }
 
 defineProps<Props>()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 </script>

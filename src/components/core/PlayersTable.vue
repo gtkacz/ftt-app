@@ -12,8 +12,8 @@
 							<slot name="search">
 								<v-col cols="12" md="9" class="player-toolbar__search">
 									<v-text-field v-model="search" prepend-inner-icon="search"
-										label="Search players..." single-line hide-details clearable
-										variant="outlined" class="search-field" aria-label="Search players"></v-text-field>
+										:label="t('playersTable.toolbar.searchLabel')" single-line hide-details clearable
+										variant="outlined" class="search-field" :aria-label="t('playersTable.toolbar.searchAriaLabel')"></v-text-field>
 								</v-col>
 							</slot>
 
@@ -23,7 +23,7 @@
 									<v-menu rounded v-model="filterMenu" :close-on-content-click="false"
 										location="bottom">
 									<template #activator="{ props }">
-										<v-btn v-bind="props" icon variant="outlined" aria-label="Filter players" title="Filter players"
+										<v-btn v-bind="props" icon variant="outlined" :aria-label="t('playersTable.filters.ariaLabel')" :title="t('playersTable.filters.ariaLabel')"
 											:color="hasActiveFilters ? 'primary' : undefined">
 												<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
 													color="error">
@@ -33,19 +33,19 @@
 										</template>
 									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
 										class="players-menu-card pa-4">
-											<template #title class="text-h6">Filters<v-divider
+											<template #title class="text-h6">{{ t('playersTable.filters.title') }}<v-divider
 													class="my-4" /></template>
 											<template #text>
 												<v-row>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.team" :items="teams"
-															label="Team" clearable density="compact" variant="outlined"
+															:label="t('playersTable.filters.team')" clearable density="compact" variant="outlined"
 															prepend-inner-icon="diversity_3" multiple chips
 															closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.realTeam" :items="realTeams"
-															label="NBA Roster" clearable density="compact"
+															:label="t('playersTable.filters.nbaRoster')" clearable density="compact"
 															variant="outlined" prepend-inner-icon="sports_basketball"
 															multiple chips closable-chips single-line counter
 															color="primary">
@@ -72,26 +72,26 @@
 													</v-col>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.position" :items="positions"
-															label="Position" clearable density="compact"
+															:label="t('playersTable.filters.position')" clearable density="compact"
 															variant="outlined" prepend-inner-icon="conditions" multiple
 															chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.multiPosition"
-															:items="[{ title: 'All players', value: false }, { title: 'Multi-position only', value: true }]"
-															label="Position requirement" density="compact"
+															:items="[{ title: t('playersTable.filters.allPlayers'), value: false }, { title: t('playersTable.filters.multiPositionOnly'), value: true }]"
+															:label="t('playersTable.filters.positionRequirement')" density="compact"
 															variant="outlined" prepend-inner-icon="sports_kabaddi" />
 													</v-col>
 													<v-col cols="12" class="py-2">
 														<v-select rounded v-model="filters.status" :items="statuses"
-															label="Status" clearable density="compact"
+															:label="t('playersTable.filters.status')" clearable density="compact"
 															variant="outlined" prepend-inner-icon="diamond_shine"
 															multiple chips closable-chips></v-select>
 													</v-col>
 													<v-col cols="12" class="py-2">
 														<v-text-field rounded readonly variant="outlined"
 															density="compact" prepend-inner-icon="payments"
-															label="Salary Range"
+															:label="t('playersTable.filters.salaryRange')"
 															:model-value="`$${filters.salaryRange[0]}M - $${filters.salaryRange[1]}M`"
 															@click="showSalaryFilter = !showSalaryFilter"
 															:append-inner-icon="showSalaryFilter ? 'expand_less' : 'expand_more'"
@@ -115,8 +115,8 @@
 													<v-col cols="12" class="py-2">
 														<v-text-field readonly rounded variant="outlined"
 															density="compact" prepend-inner-icon="schedule"
-															label="Contract Duration"
-															:model-value="`${filters.durationRange[0]} - ${filters.durationRange[1]} years`"
+															:label="t('playersTable.filters.contractDuration')"
+															:model-value="t('playersTable.filters.durationRangeValue', { min: filters.durationRange[0], max: filters.durationRange[1] })"
 															@click="showDurationFilter = !showDurationFilter"
 															:append-inner-icon="showDurationFilter ? 'expand_less' : 'expand_more'"
 															style="cursor: pointer;" />
@@ -125,13 +125,11 @@
 																class="mt-2 pa-3">
 																<div class="d-flex align-center gap-2 mb-2">
 																	<v-chip size="x-small" variant="outlined">{{
-																		filters.durationRange[0] }}yr{{
-																			filters.durationRange[0] !== 1 ? 's' : ''
+																		t('playersTable.common.yearsAbbrev', { count: filters.durationRange[0] }, filters.durationRange[0])
 																		}}</v-chip>
 																	<v-spacer></v-spacer>
 																	<v-chip size="x-small" variant="outlined">{{
-																		filters.durationRange[1] }}yr{{
-																			filters.durationRange[1] !== 1 ? 's' : ''
+																		t('playersTable.common.yearsAbbrev', { count: filters.durationRange[1] }, filters.durationRange[1])
 																		}}</v-chip>
 																</div>
 																<v-range-slider v-model="filters.durationRange" :min="0"
@@ -145,7 +143,7 @@
 											<template #actions>
 												<v-spacer></v-spacer>
 												<v-btn @click="clearFilters" icon variant="outlined"
-											:disabled="!hasActiveFilters" aria-label="Clear all filters" title="Clear all filters">
+											:disabled="!hasActiveFilters" :aria-label="t('playersTable.filters.clearAriaLabel')" :title="t('playersTable.filters.clearAriaLabel')">
 													<v-icon icon="filter_alt_off" />
 												</v-btn>
 											</template>
@@ -156,13 +154,13 @@
 									<v-menu rounded v-model="columnMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
 									<template #activator="{ props }">
-										<v-btn v-bind="props" icon variant="outlined" aria-label="Manage table columns" title="Manage columns">
+										<v-btn v-bind="props" icon variant="outlined" :aria-label="t('playersTable.columns.manageAriaLabel')" :title="t('playersTable.columns.manageTitle')">
 												<v-icon icon="view_column" />
 											</v-btn>
 										</template>
 									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
 										class="players-menu-card pa-4">
-											<template #title>Manage Columns<v-divider class="my-4" /></template>
+											<template #title>{{ t('playersTable.columns.menuTitle') }}<v-divider class="my-4" /></template>
 											<template #text>
 												<v-list>
 													<v-list-item v-for="(header, index) in editableHeaders"
@@ -187,7 +185,7 @@
 											<template #actions>
 												<v-spacer></v-spacer>
 												<v-btn icon variant="outlined" @click="saveColumnSettings"
-													color="success" aria-label="Save column settings"><v-icon icon="check" /></v-btn>
+													color="success" :aria-label="t('playersTable.columns.saveAriaLabel')"><v-icon icon="check" /></v-btn>
 											</template>
 										</v-card>
 									</v-menu>
@@ -196,39 +194,39 @@
 									<v-menu rounded v-model="settingsMenu" max-width="500" transition="fade-transition"
 										:close-on-content-click="false" location="bottom">
 									<template #activator="{ props }">
-										<v-btn v-bind="props" icon variant="outlined" aria-label="Open display settings" title="Display settings">
+										<v-btn v-bind="props" icon variant="outlined" :aria-label="t('playersTable.settings.ariaLabel')" :title="t('playersTable.settings.buttonTitle')">
 												<v-icon icon="settings" />
 											</v-btn>
 										</template>
 									<v-card width="500" max-width="calc(100vw - 24px)" density="comfortable"
 										class="players-menu-card pa-4">
-											<v-card-title>Display Settings</v-card-title>
+											<v-card-title>{{ t('playersTable.settings.cardTitle') }}</v-card-title>
 											<v-divider />
 											<v-card-text>
 												<v-list>
 													<v-list-item>
-														<v-list-item-title>Show players' weight</v-list-item-title>
+														<v-list-item-title>{{ t('playersTable.settings.showWeight') }}</v-list-item-title>
 														<template #append>
 															<v-checkbox v-model="showWeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
-														<v-list-item-title>Show players' height</v-list-item-title>
+														<v-list-item-title>{{ t('playersTable.settings.showHeight') }}</v-list-item-title>
 														<template #append>
 															<v-checkbox v-model="showHeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
-														<v-list-item-title>Use metric weight units</v-list-item-title>
+														<v-list-item-title>{{ t('playersTable.settings.metricWeight') }}</v-list-item-title>
 														<template #append>
 															<v-checkbox v-model="convertWeight" hide-details
 																density="compact" />
 														</template>
 													</v-list-item>
 													<v-list-item>
-														<v-list-item-title>Use metric height units</v-list-item-title>
+														<v-list-item-title>{{ t('playersTable.settings.metricHeight') }}</v-list-item-title>
 														<template #append>
 															<v-checkbox v-model="convertHeight" hide-details
 																density="compact" />
@@ -249,7 +247,7 @@
 			<v-data-table v-if="!loading" :headers="responsiveHeaders" :items="sortedFilteredPlayers" :search="search"
 				:custom-filter="customSearch" :fixed-header="!smAndDown" :fixed-footer="!smAndDown"
 				:height="smAndDown ? undefined : 'calc(100dvh - 260px)'" :loading="loading"
-				:no-data-text="'No players found'" :no-results-text="'No matching players'" density="comfortable"
+				:no-data-text="t('playersTable.emptyState.noData')" :no-results-text="t('playersTable.emptyState.noResults')" density="comfortable"
 				class="players-table" hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
 				:row-props="playerRowProps"
@@ -276,7 +274,7 @@
 							</div>
 							<div v-else class="text-caption text-grey-darken-1 d-flex align-center ga-1">
 								<nba-team-icon team="NBA" :size="12" />
-								<span>Unsigned ({{ getSeasonFromYear(item.metadata?.TO_YEAR) }})</span>
+								<span>{{ t('playersTable.playerRow.unsigned', { season: getSeasonFromYear(item.metadata?.TO_YEAR) }) }}</span>
 							</div>
 							<div class="text-caption text-grey d-flex align-center ga-1"
 								v-if="(showHeight || showWeight) && (item.metadata?.HEIGHT || item.metadata?.WEIGHT)">
@@ -308,7 +306,7 @@
 				<!-- Team -->
 				<template #item.team.name="{ item }">
 					<span v-if="item.team.name">{{ item.team.name }}</span>
-					<span v-else class="text-grey-darken-1">Free Agent</span>
+					<span v-else class="text-grey-darken-1">{{ t('playersTable.common.freeAgent') }}</span>
 				</template>
 
 				<!-- Contract Info -->
@@ -316,8 +314,7 @@
 					<span v-if="item.contract?.salary || item.contract?.duration" class="font-weight-medium">
 						<span v-if="item.contract?.salary">{{ formatCurrency(item.contract.salary) }}</span>
 						<span v-if="item.contract?.salary && item.contract?.duration">/</span>
-						<span v-if="item.contract?.duration">{{ item.contract.duration }}yr<span
-								v-if="item.contract.duration !== 1">s</span></span>
+						<span v-if="item.contract?.duration">{{ t('playersTable.common.yearsAbbrev', { count: item.contract.duration }, item.contract.duration) }}</span>
 					</span>
 					<span v-else class="text-grey">—</span>
 				</template>
@@ -325,14 +322,14 @@
 				<!-- Status badges -->
 				<template #item.status="{ item }">
 					<div class="d-flex flex-wrap gap-1">
-						<v-chip v-if="item.contract?.is_rfa" size="x-small" title="Restricted Free Agent" color="warning">
-							Restricted Free Agent
+						<v-chip v-if="item.contract?.is_rfa" size="x-small" :title="t('playersTable.statuses.restrictedFreeAgent')" color="warning">
+							{{ t('playersTable.statuses.restrictedFreeAgent') }}
 						</v-chip>
-						<v-chip v-if="item.contract?.is_to" size="x-small" title="Team Option" color="info">
-							Team Option
+						<v-chip v-if="item.contract?.is_to" size="x-small" :title="t('playersTable.statuses.teamOption')" color="info">
+							{{ t('playersTable.statuses.teamOption') }}
 						</v-chip>
-						<v-chip v-if="item.is_ir" size="x-small" title="Injured Reserve" color="danger">
-							Injured Reserve
+						<v-chip v-if="item.is_ir" size="x-small" :title="t('playersTable.statuses.injuredReserve')" color="danger">
+							{{ t('playersTable.statuses.injuredReserve') }}
 						</v-chip>
 					</div>
 				</template>
@@ -342,26 +339,26 @@
 					<slot name="pagination-footer">
 						<v-divider />
 						<div class="pagination-bar">
-							<span class="pagination-bar__summary">Showing {{ paginationText }}</span>
+							<span class="pagination-bar__summary">{{ t('playersTable.pagination.showing', { range: paginationText }) }}</span>
 							<div class="pagination-bar__controls">
 								<label class="items-per-page-select">
-									<span class="visually-hidden">Items per page</span>
-									<select v-model.number="itemsPerPage" aria-label="Items per page">
+									<span class="visually-hidden">{{ t('playersTable.pagination.itemsPerPage') }}</span>
+									<select v-model.number="itemsPerPage" :aria-label="t('playersTable.pagination.itemsPerPage')">
 										<option :value="10">10</option>
 										<option :value="25">25</option>
 										<option :value="50">50</option>
 										<option :value="100">100</option>
-										<option :value="-1">All</option>
+										<option :value="-1">{{ t('playersTable.pagination.allOption') }}</option>
 									</select>
 								</label>
 								<v-btn variant="text" @click="page = 1" :disabled="page === 1" icon density="compact"
-									class="pagination-edge-button" aria-label="First page">
+									class="pagination-edge-button" :aria-label="t('playersTable.pagination.firstPage')">
 									<v-icon icon="first_page" />
 								</v-btn>
 								<v-pagination v-if="pageCount > 1" v-model="page" :length="pageCount"
 									:total-visible="smAndDown ? 3 : 5" density="compact" rounded />
 								<v-btn variant="text" @click="page = pageCount" :disabled="page === pageCount" icon
-									density="compact" class="pagination-edge-button" aria-label="Last page">
+									density="compact" class="pagination-edge-button" :aria-label="t('playersTable.pagination.lastPage')">
 									<v-icon icon="last_page" />
 								</v-btn>
 							</div>
@@ -376,10 +373,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 import NbaTeamIcon from '@/components/core/NBATeamIcon.vue'
 
 const { smAndDown } = useDisplay()
+const { t } = useI18n()
 
 // Props
 const props = defineProps<{
@@ -433,12 +432,12 @@ const filters = ref<{
 const defaultHeaders = ref(props.headers && props.headers.length
 	? props.headers
 	: [
-		{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
-		{ title: 'Team', key: 'team.name', width: '75px', visible: true, sortable: true },
+		{ title: t('playersTable.headers.player'), key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
+		{ title: t('playersTable.headers.team'), key: 'team.name', width: '75px', visible: true, sortable: true },
 		{ title: 'FP/G', key: 'relevancy', width: '60px', visible: true, sortable: true },
-		{ title: 'Position', key: 'primary_position', width: '60px', visible: true, sortable: true },
-		{ title: 'Contract', key: 'contract_info', width: '75px', visible: true, sortable: true },
-		{ title: 'Status', key: 'status', width: '30px', visible: true, sortable: false },
+		{ title: t('playersTable.headers.position'), key: 'primary_position', width: '60px', visible: true, sortable: true },
+		{ title: t('playersTable.headers.contract'), key: 'contract_info', width: '75px', visible: true, sortable: true },
+		{ title: t('playersTable.headers.status'), key: 'status', width: '30px', visible: true, sortable: false },
 	])
 const allHeaders = ref(defaultHeaders.value)
 const editableHeaders = ref([...allHeaders.value])
@@ -477,7 +476,7 @@ const customSearch = (value: any, search: string, item: any) => {
 const teams = computed(() => {
 	const uniqueTeams = [...new Set(players.value.map(p => p.team?.name).filter(Boolean))]
 	const sortedTeams = uniqueTeams.sort()
-	const specialOptions = [{ title: 'Free Agent', value: 'FREE_AGENT' }]
+	const specialOptions = [{ title: t('playersTable.common.freeAgent'), value: 'FREE_AGENT' }]
 
 	if (sortedTeams.length > 0) {
 		return [...specialOptions, ...sortedTeams]
@@ -491,8 +490,8 @@ const realTeams = computed(() => {
 		.filter(Boolean))]
 	const sortedTeams = uniqueRealTeams.sort().map(team => ({ title: team, value: team }))
 	const specialOptions = [
-		{ title: 'In the NBA', value: 'IN_NBA' },
-		{ title: 'Out of the NBA', value: 'OUT_OF_NBA' }
+		{ title: t('playersTable.filters.inNba'), value: 'IN_NBA' },
+		{ title: t('playersTable.filters.outOfNba'), value: 'OUT_OF_NBA' }
 	]
 
 	if (sortedTeams.length > 0) {
@@ -511,9 +510,9 @@ const positions = computed(() => {
 })
 
 const statuses = [
-	{ title: 'Restricted Free Agent', value: 'rfa' },
-	{ title: 'Team Option', value: 'to' },
-	{ title: 'Injured Reserve', value: 'ir' }
+	{ title: t('playersTable.statuses.restrictedFreeAgent'), value: 'rfa' },
+	{ title: t('playersTable.statuses.teamOption'), value: 'to' },
+	{ title: t('playersTable.statuses.injuredReserve'), value: 'ir' }
 ]
 
 // Helper method to check if a filter value is special
@@ -662,12 +661,12 @@ const pageCount = computed(() => {
 
 const paginationText = computed(() => {
 	const total = sortedFilteredPlayers.value.length
-	if (total === 0) return '0 of 0 entries'
-	if (itemsPerPage.value === -1) return `${total} of ${total} entries`
+	if (total === 0) return t('playersTable.pagination.emptyRange')
+	if (itemsPerPage.value === -1) return t('playersTable.pagination.allRange', { total })
 
 	const start = (page.value - 1) * itemsPerPage.value + 1
 	const end = Math.min(page.value * itemsPerPage.value, total)
-	return `${start}-${end} of ${total} entries`
+	return t('playersTable.pagination.range', { start, end, total })
 })
 
 const maxSalary = computed(() => {
@@ -694,7 +693,7 @@ const playerRowProps = ({ item }: { item: any }) => {
 	return {
 		tabindex: 0,
 		role: 'button',
-		'aria-label': `Open ${player.first_name} ${player.last_name}`,
+		'aria-label': t('playersTable.playerRow.openAriaLabel', { firstName: player.first_name, lastName: player.last_name }),
 		onKeydown: (event: KeyboardEvent) => {
 			if (event.key === 'Enter' || event.key === ' ') {
 				event.preventDefault()
@@ -790,9 +789,9 @@ const saveColumnSettings = () => {
 
 const getPositionTooltip = (position) => {
 	const tooltips = {
-		C: 'Center',
-		G: 'Guard',
-		F: 'Forward',
+		C: t('playersTable.positions.center'),
+		G: t('playersTable.positions.guard'),
+		F: t('playersTable.positions.forward'),
 	}
 	return tooltips[position] || position
 }
@@ -820,7 +819,7 @@ const removeNBAFilter = (value) => {
 }
 
 const getSeasonFromYear = (year) => {
-	if (!year) return 'Unknown'
+	if (!year) return t('playersTable.playerRow.unknownSeason')
 	return `${year}-${String(Number(year) + 1).slice(-2)}`
 }
 

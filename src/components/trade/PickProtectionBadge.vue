@@ -18,7 +18,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { PickProtectionType } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   protectionType: PickProtectionType;
@@ -58,14 +61,14 @@ const chipIcon = computed(() => {
 const chipText = computed(() => {
   switch (props.protectionType) {
     case 'swap_best':
-      return 'Swap ↑';
+      return t('pickProtectionBadge.chip.swapBest');
     case 'swap_worst':
-      return 'Swap ↓';
+      return t('pickProtectionBadge.chip.swapWorst');
     case 'doesnt_convey':
       if (props.rangeStart && props.rangeEnd) {
-        return `Top-${props.rangeEnd} Protected`;
+        return t('pickProtectionBadge.chip.topProtected', { range: props.rangeEnd });
       }
-      return 'Protected';
+      return t('pickProtectionBadge.chip.protected');
     default:
       return '';
   }
@@ -74,14 +77,18 @@ const chipText = computed(() => {
 const tooltipText = computed(() => {
   switch (props.protectionType) {
     case 'swap_best':
-      return 'Swaps with target pick if this pick is better (lower number)';
+      return t('pickProtectionBadge.tooltip.swapBest');
     case 'swap_worst':
-      return 'Swaps with target pick if this pick is worse (higher number)';
+      return t('pickProtectionBadge.tooltip.swapWorst');
     case 'doesnt_convey':
       if (props.rangeStart && props.rangeEnd && props.rolloverYear) {
-        return `If pick falls between #${props.rangeStart}-${props.rangeEnd}, it stays with original team and rolls to ${props.rolloverYear}`;
+        return t('pickProtectionBadge.tooltip.doesntConvey', {
+          start: props.rangeStart,
+          end: props.rangeEnd,
+          year: props.rolloverYear,
+        });
       }
-      return 'Pick has protection conditions';
+      return t('pickProtectionBadge.tooltip.protectionConditions');
     default:
       return '';
   }

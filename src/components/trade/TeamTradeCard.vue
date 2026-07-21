@@ -33,11 +33,11 @@
     <v-tabs v-model="activeTab" color="primary" align-tabs="center">
       <v-tab value="players">
         <v-icon start>person</v-icon>
-        Players
+        {{ t('teamTradeCard.tabs.players') }}
       </v-tab>
       <v-tab value="picks">
         <v-icon start>lasso_select</v-icon>
-        Picks
+        {{ t('teamTradeCard.tabs.picks') }}
       </v-tab>
     </v-tabs>
 
@@ -62,7 +62,7 @@
                   @click="$emit('add-asset', { teamId, assetType: 'player' })"
                 >
                   <v-icon start>add</v-icon>
-                  Add Player
+                  {{ t('teamTradeCard.addPlayer') }}
                 </v-btn>
               </v-toolbar>
             </template>
@@ -111,7 +111,7 @@
 
             <template #no-data>
               <div class="text-center pa-4 text-medium-emphasis">
-                No players added yet
+                {{ t('teamTradeCard.noPlayers') }}
               </div>
             </template>
           </v-data-table>
@@ -136,7 +136,7 @@
                   @click="$emit('add-asset', { teamId, assetType: 'pick' })"
                 >
                   <v-icon start>add</v-icon>
-                  Add Pick
+                  {{ t('teamTradeCard.addPick') }}
                 </v-btn>
               </v-toolbar>
             </template>
@@ -144,7 +144,7 @@
             <template #[`item.pick`]="{ item }">
               <div v-if="item.pick_detail">
                 <div class="font-weight-medium">
-                  {{ item.pick_detail.year }} Round {{ item.pick_detail.round }}
+                  {{ t('teamTradeCard.pickRound', { year: item.pick_detail.year, round: item.pick_detail.round }) }}
                 </div>
                 <div v-if="item.pick_detail.protection_type && item.pick_detail.protection_type !== 'none'" class="text-caption">
                   <PickProtectionBadge :protection="item.pick_detail.protection_type" :value="item.pick_detail.protection_value" />
@@ -183,7 +183,7 @@
 
             <template #no-data>
               <div class="text-center pa-4 text-medium-emphasis">
-                No picks added yet
+                {{ t('teamTradeCard.noPicks') }}
               </div>
             </template>
           </v-data-table>
@@ -195,9 +195,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Team, CreateTradeAssetData, TeamImpact } from '@/types/trade';
 import TeamCapDisplay from './TeamCapDisplay.vue';
 import PickProtectionBadge from './PickProtectionBadge.vue';
+
+const { t } = useI18n();
 
 interface Props {
   teamId: number;
@@ -241,14 +244,14 @@ const availableDestinations = computed(() => {
 
 // Table headers
 const playerHeaders = [
-  { title: 'Player', key: 'player', sortable: false },
-  { title: 'To', key: 'destination', sortable: false, width: '200px' },
+  { title: t('teamTradeCard.headers.player'), key: 'player', sortable: false },
+  { title: t('teamTradeCard.headers.to'), key: 'destination', sortable: false, width: '200px' },
   { title: '', key: 'actions', sortable: false, width: '50px', align: 'center' as const },
 ];
 
 const pickHeaders = [
-  { title: 'Pick', key: 'pick', sortable: false },
-  { title: 'To', key: 'destination', sortable: false, width: '200px' },
+  { title: t('teamTradeCard.headers.pick'), key: 'pick', sortable: false },
+  { title: t('teamTradeCard.headers.to'), key: 'destination', sortable: false, width: '200px' },
   { title: '', key: 'actions', sortable: false, width: '50px', align: 'center' as const },
 ];
 </script>

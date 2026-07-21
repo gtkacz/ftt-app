@@ -11,9 +11,9 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
-				<v-btn rounded variant="outlined" class="action-btn" @click="cancel" prepend-icon="close">No</v-btn>
+				<v-btn rounded variant="outlined" class="action-btn" @click="cancel" prepend-icon="close">{{ t('confirmDialog.no') }}</v-btn>
 				<v-btn rounded variant="flat" color="primary" class="action-btn" @click="confirm"
-					prepend-icon="check">Yes</v-btn>
+					prepend-icon="check">{{ t('confirmDialog.yes') }}</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>
@@ -21,6 +21,9 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
 	title?: string

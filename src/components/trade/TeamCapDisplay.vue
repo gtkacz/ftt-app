@@ -10,7 +10,7 @@
         >
           <v-icon start size="small">attach_money</v-icon>
           <span class="text-caption">
-            Cap: {{ formatCurrency(currentSalary) }} / {{ formatCurrency(salaryCap) }}
+            {{ t('teamCapDisplay.cap', { current: formatCurrency(currentSalary), max: formatCurrency(salaryCap) }) }}
           </span>
         </v-chip>
       </v-col>
@@ -24,7 +24,7 @@
         >
           <v-icon start size="small">groups</v-icon>
           <span class="text-caption">
-            Roster: {{ currentPlayers }} / {{ maxPlayers }}
+            {{ t('teamCapDisplay.roster', { current: currentPlayers, max: maxPlayers }) }}
           </span>
         </v-chip>
       </v-col>
@@ -52,7 +52,7 @@
           >
             {{ impact.net_players > 0 ? 'arrow_upward' : 'arrow_downward' }}
           </v-icon>
-          {{ Math.abs(impact.net_players) }} player{{ Math.abs(impact.net_players) !== 1 ? 's' : '' }}
+          {{ t('teamCapDisplay.playerCount', { n: Math.abs(impact.net_players) }, Math.abs(impact.net_players)) }}
         </div>
       </v-col>
     </v-row>
@@ -61,7 +61,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TeamImpact } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   currentSalary: number;

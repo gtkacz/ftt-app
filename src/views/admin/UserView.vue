@@ -10,7 +10,7 @@
 					<v-row class="mb-4" align="center">
 						<!-- Search bar - 75% width -->
 						<v-col cols="9">
-							<v-text-field rounded v-model="search" prepend-inner-icon="search" label="Search users..."
+							<v-text-field rounded v-model="search" prepend-inner-icon="search" :label="t('adminUserView.search.placeholder')"
 								single-line hide-details clearable density="compact" variant="outlined"
 								class="search-field"></v-text-field>
 						</v-col>
@@ -21,7 +21,7 @@
 							<v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom">
 								<template #activator="{ props }">
 									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
-										aria-label="Filter users" title="Filter users"
+										:aria-label="t('adminUserView.filters.button')" :title="t('adminUserView.filters.button')"
 										:color="hasActiveFilters ? 'primary' : undefined">
 										<v-badge :content="activeFilterCount" :model-value="hasActiveFilters"
 											color="error">
@@ -30,42 +30,42 @@
 									</v-btn>
 								</template>
 								<v-card min-width="600" density="comfortable" class="pa-4">
-									<template #title class="text-h6">Filters</template>
+									<template #title class="text-h6">{{ t('adminUserView.filters.title') }}</template>
 									<template #append><v-btn variant="text" icon @click="filterMenu = false"
-										class="admin-icon-action" aria-label="Close filters"><v-icon icon="close" /></v-btn></template>
+										class="admin-icon-action" :aria-label="t('adminUserView.filters.close')"><v-icon icon="close" /></v-btn></template>
 									<v-divider />
 									<v-card-text>
 										<v-row>
 											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.team" :items="teams" label="Team"
+												<v-select rounded v-model="filters.team" :items="teams" :label="t('adminUserView.filters.team')"
 													clearable density="compact" variant="outlined"
 													prepend-inner-icon="recent_actors" multiple chips
 													closable-chips></v-select>
 											</v-col>
 											<v-col cols="12" class="py-2">
 												<v-select rounded v-model="filters.status" :items="statuses"
-													label="Status" clearable density="compact" variant="outlined"
+													:label="t('adminUserView.filters.status')" clearable density="compact" variant="outlined"
 													prepend-inner-icon="info" multiple chips closable-chips></v-select>
 											</v-col>
 											<v-col cols="12" class="py-2">
-												<v-select rounded v-model="filters.role" :items="roles" label="Role"
+												<v-select rounded v-model="filters.role" :items="roles" :label="t('adminUserView.filters.role')"
 													clearable density="compact" variant="outlined"
 													prepend-inner-icon="badge" multiple chips closable-chips></v-select>
 											</v-col>
 											<v-col cols="12">
 												<v-divider class="my-3" />
-												<div class="text-subtitle-2 mb-2">Date Filters</div>
+												<div class="text-subtitle-2 mb-2">{{ t('adminUserView.filters.dateFilters') }}</div>
 											</v-col>
 											<v-col cols="12" class="py-2">
-												<div class="text-body-2 mb-2">Date Joined</div>
+												<div class="text-body-2 mb-2">{{ t('adminUserView.filters.dateJoined') }}</div>
 												<v-row v-if="!useRelativeDates">
 													<v-col cols="6">
-														<v-text-field v-model="filters.dateJoinedStart" label="From"
+														<v-text-field v-model="filters.dateJoinedStart" :label="t('adminUserView.filters.from')"
 															type="date" density="compact" variant="outlined"
 															clearable></v-text-field>
 													</v-col>
 													<v-col cols="6">
-														<v-text-field v-model="filters.dateJoinedEnd" label="To"
+														<v-text-field v-model="filters.dateJoinedEnd" :label="t('adminUserView.filters.to')"
 															type="date" density="compact" variant="outlined"
 															clearable></v-text-field>
 													</v-col>
@@ -75,7 +75,7 @@
 														:min="0" :step="1" hide-details class="mt-4"
 														thumb-label="always">
 														<template #thumb-label="{ modelValue }">
-															{{ modelValue }}d
+															{{ t('adminUserView.filters.daysSuffix', { value: modelValue }) }}
 														</template>
 													</v-range-slider>
 													<div class="text-caption text-center mt-2">
@@ -84,15 +84,15 @@
 												</div>
 											</v-col>
 											<v-col cols="12" class="py-2">
-												<div class="text-body-2 mb-2">Last Login</div>
+												<div class="text-body-2 mb-2">{{ t('adminUserView.filters.lastLogin') }}</div>
 												<v-row v-if="!useRelativeDates">
 													<v-col cols="6">
-														<v-text-field v-model="filters.lastLoginStart" label="From"
+														<v-text-field v-model="filters.lastLoginStart" :label="t('adminUserView.filters.from')"
 															type="date" density="compact" variant="outlined"
 															clearable></v-text-field>
 													</v-col>
 													<v-col cols="6">
-														<v-text-field v-model="filters.lastLoginEnd" label="To"
+														<v-text-field v-model="filters.lastLoginEnd" :label="t('adminUserView.filters.to')"
 															type="date" density="compact" variant="outlined"
 															clearable></v-text-field>
 													</v-col>
@@ -101,7 +101,7 @@
 													<v-range-slider v-model="filters.lastLoginRange" :max="365" :min="0"
 														:step="1" hide-details class="mt-4" thumb-label="always">
 														<template #thumb-label="{ modelValue }">
-															{{ modelValue }}d
+															{{ t('adminUserView.filters.daysSuffix', { value: modelValue }) }}
 														</template>
 													</v-range-slider>
 													<div class="text-caption text-center mt-2">
@@ -114,7 +114,7 @@
 									<v-card-actions>
 										<v-spacer></v-spacer>
 										<v-btn @click="clearFilters" icon variant="outlined" class="admin-icon-action"
-											:disabled="!hasActiveFilters" aria-label="Clear all filters" title="Clear all filters">
+											:disabled="!hasActiveFilters" :aria-label="t('adminUserView.filters.clearAll')" :title="t('adminUserView.filters.clearAll')">
 											<v-icon icon="filter_alt_off" />
 										</v-btn>
 									</v-card-actions>
@@ -126,12 +126,12 @@
 								:close-on-content-click="false" location="bottom">
 								<template #activator="{ props }">
 									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
-										aria-label="Manage columns" title="Manage columns">
+										:aria-label="t('adminUserView.columns.manageButton')" :title="t('adminUserView.columns.manageButton')">
 										<v-icon icon="view_column" />
 									</v-btn>
 								</template>
 								<v-card min-width="500" density="comfortable" class="pa-4">
-									<v-card-title>Manage Columns</v-card-title>
+									<v-card-title>{{ t('adminUserView.columns.manageTitle') }}</v-card-title>
 									<v-divider />
 									<v-card-text>
 										<v-list>
@@ -142,7 +142,7 @@
 														style="cursor: move;">drag_handle</v-icon>
 													<v-icon v-else>lock</v-icon>
 												</template>
-												<v-list-item-title>{{ header.title }}</v-list-item-title>
+												<v-list-item-title>{{ columnTitle(header.key) }}</v-list-item-title>
 												<template #append>
 													<v-checkbox v-model="header.visible"
 														:disabled="header.key === 'user'" hide-details
@@ -154,7 +154,7 @@
 									<v-card-actions>
 										<v-spacer></v-spacer>
 										<v-btn icon variant="outlined" @click="saveColumnSettings" color="success"
-											class="admin-icon-action" aria-label="Save column settings"><v-icon icon="check" /></v-btn>
+											class="admin-icon-action" :aria-label="t('adminUserView.columns.save')"><v-icon icon="check" /></v-btn>
 									</v-card-actions>
 								</v-card>
 							</v-menu>
@@ -164,24 +164,24 @@
 								:close-on-content-click="false" location="bottom">
 								<template #activator="{ props }">
 									<v-btn v-bind="props" icon variant="outlined" class="admin-icon-action"
-										aria-label="Display settings" title="Display settings">
+										:aria-label="t('adminUserView.display.button')" :title="t('adminUserView.display.button')">
 										<v-icon icon="settings" />
 									</v-btn>
 								</template>
 								<v-card min-width="500" density="comfortable" class="pa-4">
-									<v-card-title>Display Settings</v-card-title>
+									<v-card-title>{{ t('adminUserView.display.title') }}</v-card-title>
 									<v-divider />
 									<v-card-text>
 										<v-list>
 											<v-list-item>
-												<v-list-item-title>Use relative dates</v-list-item-title>
+												<v-list-item-title>{{ t('adminUserView.display.relativeDates') }}</v-list-item-title>
 												<template #append>
 													<v-checkbox v-model="useRelativeDates" hide-details
 														density="compact" />
 												</template>
 											</v-list-item>
 											<v-list-item>
-												<v-list-item-title>Show bulk action checkboxes</v-list-item-title>
+												<v-list-item-title>{{ t('adminUserView.display.showCheckboxes') }}</v-list-item-title>
 												<template #append>
 													<v-checkbox v-model="showCheckboxes" hide-details
 														density="compact" />
@@ -200,7 +200,7 @@
 			<v-data-table v-if="!loading" v-model="selected" :headers="tableHeaders" :items="filteredUsers"
 				:search="search" :custom-filter="customSearch" :sort-by="[{ key: 'last_name', order: 'asc' }]"
 				fixed-header fixed-footer height="calc(100vh - 200px)" :loading="loading"
-				:no-data-text="'No users found'" :no-results-text="'No matching users'" density="comfortable"
+				:no-data-text="t('adminUserView.table.noData')" :no-results-text="t('adminUserView.table.noResults')" density="comfortable"
 				class="elevation-1 pa-4 bg-surface-variant" hide-no-data hover sort-asc-icon="arrow_drop_up"
 				sort-desc-icon="arrow_drop_down" :items-per-page="itemsPerPage" :page="page"
 				:show-select="showCheckboxes" item-value="id" @click:row="(event, { item }) => viewUser(item)">
@@ -215,9 +215,9 @@
 							<div class="font-weight-medium d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
-									title="Administrator" />
+									:title="t('adminUserView.table.administrator')" />
 								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
-									title="Commissioner" />
+									:title="t('adminUserView.table.commissioner')" />
 							</div>
 							<div class="text-caption text-grey">
 								@{{ item.username }}
@@ -237,9 +237,9 @@
 								class="font-weight-medium text-grey-darken-1 text-decoration-line-through d-flex align-center ga-1">
 								{{ item.last_name }}, {{ item.first_name }}
 								<v-icon icon="crown" v-if="item.is_superuser" color="warning" size="16"
-									title="Administrator" />
+									:title="t('adminUserView.table.administrator')" />
 								<v-icon icon="trip" v-if="item.is_staff" color="warning" size="16"
-									title="Commissioner" />
+									:title="t('adminUserView.table.commissioner')" />
 							</div>
 							<div class="text-caption text-grey-darken-1 text-decoration-line-through">
 								@{{ item.username }}
@@ -264,26 +264,26 @@
 				<!-- Team -->
 				<template #item.team_name="{ item }">
 					<span v-if="item.team">{{ item.team.name }}</span>
-					<span v-else class="text-grey-darken-1">No Team</span>
+					<span v-else class="text-grey-darken-1">{{ t('adminUserView.table.noTeam') }}</span>
 				</template>
 
 				<!-- Status badges -->
 				<template #item.status="{ item }">
 					<v-chip-group column>
-						<v-chip v-if="item.is_active" color="success" size="x-small" title="Active">
-							Active
+						<v-chip v-if="item.is_active" color="success" size="x-small" :title="t('adminUserView.table.active')">
+							{{ t('adminUserView.table.active') }}
 						</v-chip>
-						<v-chip v-else color="error" size="x-small" title="Inactive">
-							Inactive
+						<v-chip v-else color="error" size="x-small" :title="t('adminUserView.table.inactive')">
+							{{ t('adminUserView.table.inactive') }}
 						</v-chip>
-						<v-chip v-if="item.is_approved" color="primary" size="x-small" title="Approved">
-							Approved
+						<v-chip v-if="item.is_approved" color="primary" size="x-small" :title="t('adminUserView.table.approved')">
+							{{ t('adminUserView.table.approved') }}
 						</v-chip>
-						<v-chip v-else color="warning" size="x-small" title="Not Approved">
-							Not Approved
+						<v-chip v-else color="warning" size="x-small" :title="t('adminUserView.table.notApproved')">
+							{{ t('adminUserView.table.notApproved') }}
 						</v-chip>
-						<v-chip v-if="item.is_staff" color="warning" size="x-small" title="Commissioner">
-							Commissioner
+						<v-chip v-if="item.is_staff" color="warning" size="x-small" :title="t('adminUserView.table.commissioner')">
+							{{ t('adminUserView.table.commissioner') }}
 						</v-chip>
 					</v-chip-group>
 				</template>
@@ -300,7 +300,7 @@
 					<span v-if="item?.last_login">
 						{{ formatDate(item.last_login) }}
 					</span>
-					<span v-else class="text-grey-darken-1">Never</span>
+					<span v-else class="text-grey-darken-1">{{ t('adminUserView.table.never') }}</span>
 				</template>
 
 				<!-- Updated At -->
@@ -308,7 +308,7 @@
 					<span v-if="item?.updated_at">
 						{{ formatDate(item.updated_at) }}
 					</span>
-					<span v-else class="text-grey-darken-1">Never</span>
+					<span v-else class="text-grey-darken-1">{{ t('adminUserView.table.never') }}</span>
 				</template>
 
 				<!-- Pagination footer -->
@@ -318,13 +318,13 @@
 						<v-row justify="space-between" align="center">
 							<v-col cols="3">
 								<span class="text-caption">
-									Showing {{ paginationText }}
+									{{ t('adminUserView.table.showing', { range: paginationText }) }}
 								</span>
 							</v-col>
 							<v-col cols="6" class="d-flex ga-2">
 								<v-row class="ga-2" align="center" justify="end">
 									<v-select rounded v-model="itemsPerPage" :items="[10, 25, 50, 100, -1]"
-										:item-title="item => item === -1 ? 'All' : item" label="Items per page"
+										:item-title="item => item === -1 ? t('adminUserView.table.allItems') : item" :label="t('adminUserView.table.itemsPerPage')"
 										density="compact" variant="outlined" hide-details
 										class="items-per-page-select" />
 									<v-btn variant="text" @click="page = 1" :disabled="page === 1" :icon="true"
@@ -356,27 +356,27 @@
 			<v-container>
 				<v-row align="center">
 					<v-col cols="auto">
-						<span class="text-h6 mr-2">{{ selected.length }} users selected</span>
+						<span class="text-h6 mr-2">{{ t('adminUserView.bulkActions.selectedCount', { count: selected.length }) }}</span>
 					</v-col>
 					<v-col>
 						<div class="d-flex flex-wrap ga-2">
 							<v-chip v-if="pendingChanges.toggleActive !== null" closable
 								@click:close="pendingChanges.toggleActive = null"
 								:color="pendingChanges.toggleActive ? 'success' : 'error'">
-								{{ pendingChanges.toggleActive ? 'Activate' : 'Deactivate' }}
+								{{ pendingChanges.toggleActive ? t('adminUserView.bulkActions.activate') : t('adminUserView.bulkActions.deactivate') }}
 							</v-chip>
 							<v-chip v-if="pendingChanges.toggleApproved !== null" closable
 								@click:close="pendingChanges.toggleApproved = null"
 								:color="pendingChanges.toggleApproved ? 'primary' : 'warning'">
-								{{ pendingChanges.toggleApproved ? 'Approve' : 'Unapprove' }}
+								{{ pendingChanges.toggleApproved ? t('adminUserView.bulkActions.approve') : t('adminUserView.bulkActions.unapprove') }}
 							</v-chip>
 							<v-chip v-if="pendingChanges.toggleStaff !== null" closable
 								@click:close="pendingChanges.toggleStaff = null" color="warning">
-								{{ pendingChanges.toggleStaff ? 'Make Commissioner' : 'Remove Commissioner' }}
+								{{ pendingChanges.toggleStaff ? t('adminUserView.bulkActions.makeCommissioner') : t('adminUserView.bulkActions.removeCommissioner') }}
 							</v-chip>
 							<v-chip v-if="pendingChanges.delete" closable @click:close="pendingChanges.delete = false"
 								color="error">
-								Delete
+								{{ t('adminUserView.bulkActions.delete') }}
 							</v-chip>
 						</div>
 					</v-col>
@@ -412,7 +412,7 @@
 										<template #prepend>
 											<v-icon icon="delete" color="error" />
 										</template>
-										<v-list-item-title class="text-error">Delete Users</v-list-item-title>
+										<v-list-item-title class="text-error">{{ t('adminUserView.bulkActions.deleteUsers') }}</v-list-item-title>
 									</v-list-item>
 								</v-list>
 							</v-card>
@@ -432,9 +432,9 @@
 		<!-- Confirmation Dialog -->
 		<v-dialog v-model="confirmDialog" max-width="500" persistent transition="fade-transition" class="pa-4">
 			<v-card class="pa-4" elevation="2">
-				<v-card-title>Confirm Bulk Actions</v-card-title>
+				<v-card-title>{{ t('adminUserView.confirmDialog.title') }}</v-card-title>
 				<v-card-text>
-					<p class="mb-3">You are about to apply the following changes to {{ selected.length }} users:</p>
+					<p class="mb-3">{{ t('adminUserView.confirmDialog.intro', { count: selected.length }) }}</p>
 					<v-list density="compact">
 						<v-list-item v-if="pendingChanges.toggleActive !== null">
 							<template #prepend>
@@ -442,7 +442,7 @@
 									:color="pendingChanges.toggleActive ? 'success' : 'error'" />
 							</template>
 							<v-list-item-title>
-								{{ pendingChanges.toggleActive ? 'Activate' : 'Deactivate' }} users
+								{{ pendingChanges.toggleActive ? t('adminUserView.confirmDialog.activateUsers') : t('adminUserView.confirmDialog.deactivateUsers') }}
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.toggleApproved !== null">
@@ -451,7 +451,7 @@
 									:color="pendingChanges.toggleApproved ? 'primary' : 'warning'" />
 							</template>
 							<v-list-item-title>
-								{{ pendingChanges.toggleApproved ? 'Approve' : 'Unapprove' }} users
+								{{ pendingChanges.toggleApproved ? t('adminUserView.confirmDialog.approveUsers') : t('adminUserView.confirmDialog.unapproveUsers') }}
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.toggleStaff !== null">
@@ -459,7 +459,7 @@
 								<v-icon icon="badge" color="warning" />
 							</template>
 							<v-list-item-title>
-								{{ pendingChanges.toggleStaff ? 'Make' : 'Remove' }} commissioners
+								{{ pendingChanges.toggleStaff ? t('adminUserView.confirmDialog.makeCommissioners') : t('adminUserView.confirmDialog.removeCommissioners') }}
 							</v-list-item-title>
 						</v-list-item>
 						<v-list-item v-if="pendingChanges.delete">
@@ -467,16 +467,16 @@
 								<v-icon icon="delete_forever" color="error" />
 							</template>
 							<v-list-item-title class="text-error">
-								Delete users permanently
+								{{ t('adminUserView.confirmDialog.deleteUsersPermanently') }}
 							</v-list-item-title>
 						</v-list-item>
 					</v-list>
-					<p class="mt-3 text-body-2">Are you sure you want to proceed?</p>
+					<p class="mt-3 text-body-2">{{ t('adminUserView.confirmDialog.confirmQuestion') }}</p>
 				</v-card-text>
 				<v-card-actions>
 					<v-spacer></v-spacer>
-					<v-btn @click="confirmDialog = false" variant="text">Cancel</v-btn>
-					<v-btn @click="executeBulkActions" color="primary" variant="flat" v-confirm>Confirm</v-btn>
+					<v-btn @click="confirmDialog = false" variant="text">{{ t('adminUserView.confirmDialog.cancel') }}</v-btn>
+					<v-btn @click="executeBulkActions" color="primary" variant="flat" v-confirm>{{ t('adminUserView.confirmDialog.confirm') }}</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
@@ -485,10 +485,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import dayjs from '@/utils/dayjs'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const isAdmin = computed(() => {
 	return authStore.user?.is_superuser && authStore.user?.is_staff
@@ -532,7 +534,6 @@ const filters = ref({
 // Column configuration
 const allHeaders = ref([
 	{
-		title: 'User',
 		key: 'user',
 		value: 'last_name',
 		sortable: true,
@@ -541,64 +542,71 @@ const allHeaders = ref([
 		locked: true
 	},
 	{
-		title: 'Email',
 		key: 'email',
 		sortable: true,
 		visible: true
 	},
 	{
-		title: 'Team',
 		key: 'team_name',
 		value: item => item.team?.name || '',
 		sortable: true,
 		visible: true
 	},
 	{
-		title: 'Status',
 		key: 'status',
 		sortable: false,
 		visible: true
 	},
 	{
-		title: 'Date Joined',
 		key: 'date_joined',
 		sortable: true,
 		visible: true
 	},
 	{
-		title: 'Last Login',
 		key: 'last_login',
 		sortable: true,
 		visible: true
 	},
 	{
-		title: 'Updated At',
 		key: 'updated_at',
 		sortable: true,
 		visible: true
 	},
 ])
 
+// Map data-table header keys to their i18n message keys
+const columnTitleKeys = {
+	user: 'user',
+	email: 'email',
+	team_name: 'team',
+	status: 'status',
+	date_joined: 'dateJoined',
+	last_login: 'lastLogin',
+	updated_at: 'updatedAt'
+}
+
+const columnTitle = (key) => t(`adminUserView.columns.${columnTitleKeys[key]}`)
+
 const visibleHeaders = computed(() => {
 	return allHeaders.value.filter(h => h.visible)
 })
 
 const tableHeaders = computed(() => {
-	return visibleHeaders.value
+	return visibleHeaders.value.map(h => ({ ...h, title: columnTitle(h.key) }))
 })
 
-const statuses = [
-	{ title: 'Active', value: 'is_active' },
-	{ title: 'Approved', value: 'is_approved' },
-	{ title: 'Not Approved', value: 'not_approved' },
-	{ title: 'Inactive', value: 'inactive' }
-]
+const statuses = computed(() => [
+	{ title: t('adminUserView.table.active'), value: 'is_active' },
+	{ title: t('adminUserView.table.approved'), value: 'is_approved' },
+	{ title: t('adminUserView.table.notApproved'), value: 'not_approved' },
+	{ title: t('adminUserView.table.inactive'), value: 'inactive' }
+])
 
-const roles = [
-	{ title: 'Admin', value: 'is_superuser' },
-	{ title: 'Staff', value: 'is_staff' },
-	{ title: 'Regular User', value: 'regular' }
-]
+const roles = computed(() => [
+	{ title: t('adminUserView.roles.admin'), value: 'is_superuser' },
+	{ title: t('adminUserView.roles.staff'), value: 'is_staff' },
+	{ title: t('adminUserView.roles.regular'), value: 'regular' }
+])
 
 // Computed values for teams dropdown
 const teams = computed(() => {
@@ -614,12 +622,12 @@ const teams = computed(() => {
 // Date range text
 const dateJoinedRangeText = computed(() => {
 	const [start, end] = filters.value.dateJoinedRange
-	return `Between ${start} and ${end} days ago`
+	return t('adminUserView.filters.daysAgoRange', { start, end })
 })
 
 const lastLoginRangeText = computed(() => {
 	const [start, end] = filters.value.lastLoginRange
-	return `Between ${start} and ${end} days ago`
+	return t('adminUserView.filters.daysAgoRange', { start, end })
 })
 
 // Check if there are pending changes
@@ -772,12 +780,12 @@ const pageCount = computed(() => {
 
 const paginationText = computed(() => {
 	const total = filteredUsers.value.length
-	if (total === 0) return '0 of 0 entries'
-	if (itemsPerPage.value === -1) return `${total} of ${total} entries`
+	if (total === 0) return t('adminUserView.table.paginationEmpty')
+	if (itemsPerPage.value === -1) return t('adminUserView.table.paginationAll', { total })
 
 	const start = (page.value - 1) * itemsPerPage.value + 1
 	const end = Math.min(page.value * itemsPerPage.value, total)
-	return `${start}-${end} of ${total} entries`
+	return t('adminUserView.table.paginationRange', { start, end, total })
 })
 
 // Watch for selection changes
@@ -795,7 +803,7 @@ const fetchAllUsers = async () => {
 		users.value = response.data.results || response.data
 	} catch (err) {
 		console.error('Error fetching users:', err)
-		error.value = 'Failed to load users. Please try again later.'
+		error.value = t('adminUserView.errors.loadFailed')
 	} finally {
 		loading.value = false
 	}
@@ -897,17 +905,17 @@ const getToggleText = (type) => {
 	const total = selectedUsers.value.length
 
 	if (type === 'active') {
-		if (counts.active === total) return 'Deactivate All'
-		if (counts.active === 0) return 'Activate All'
-		return `Toggle Active (${counts.active}/${total} active)`
+		if (counts.active === total) return t('adminUserView.bulkActions.deactivateAll')
+		if (counts.active === 0) return t('adminUserView.bulkActions.activateAll')
+		return t('adminUserView.bulkActions.toggleActive', { active: counts.active, total })
 	} else if (type === 'approved') {
-		if (counts.approved === total) return 'Unapprove All'
-		if (counts.approved === 0) return 'Approve All'
-		return `Toggle Approved (${counts.approved}/${total} approved)`
+		if (counts.approved === total) return t('adminUserView.bulkActions.unapproveAll')
+		if (counts.approved === 0) return t('adminUserView.bulkActions.approveAll')
+		return t('adminUserView.bulkActions.toggleApproved', { approved: counts.approved, total })
 	} else if (type === 'staff') {
-		if (counts.staff === total) return 'Remove Commissioner Status'
-		if (counts.staff === 0) return 'Make Commissioners'
-		return `Toggle Commissioner (${counts.staff}/${total} staff)`
+		if (counts.staff === total) return t('adminUserView.bulkActions.removeCommissionerStatus')
+		if (counts.staff === 0) return t('adminUserView.bulkActions.makeCommissioners')
+		return t('adminUserView.bulkActions.toggleCommissioner', { staff: counts.staff, total })
 	}
 }
 
@@ -990,7 +998,7 @@ const executeBulkActions = async () => {
 		await fetchAllUsers()
 	} catch (err) {
 		console.error('Error executing bulk actions:', err)
-		error.value = 'Failed to update users. Please try again.'
+		error.value = t('adminUserView.errors.updateFailed')
 	}
 }
 

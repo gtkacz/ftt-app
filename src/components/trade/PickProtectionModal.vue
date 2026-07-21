@@ -7,20 +7,20 @@
     <v-card v-if="pick">
       <v-card-title class="d-flex align-center py-3 px-4 bg-surface-light border-b">
         <v-icon start color="primary">shield</v-icon>
-        Configure Protection
+        {{ t('pickProtectionModal.title') }}
       </v-card-title>
 
       <v-card-text class="pt-4 pb-2">
         <div class="text-subtitle-1 font-weight-bold mb-1">
-          {{ pick.draft_year }} Round {{ pick.round_number || pick.round }}
+          {{ t('pickProtectionModal.roundLabel', { year: pick.draft_year, round: pick.round_number || pick.round }) }}
         </div>
         <div class="text-caption text-medium-emphasis mb-4">
-           Originally via {{ getOriginalTeamName(pick) }}
+           {{ t('pickProtectionModal.originallyVia', { team: getOriginalTeamName(pick) }) }}
         </div>
 
         <!-- Protection Type Selection -->
         <div class="mb-4">
-          <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-2 d-block">Protection Type</label>
+          <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-2 d-block">{{ t('pickProtectionModal.protectionTypeLabel') }}</label>
           
           <v-item-group v-model="selectedType" mandatory class="d-flex flex-column gap-2">
             <!-- Unprotected -->
@@ -36,8 +36,8 @@
                   {{ isSelected ? 'radio_button_checked' : 'radio_button_unchecked' }}
                 </v-icon>
                 <div>
-                  <div class="font-weight-bold text-body-2">Unprotected</div>
-                  <div class="text-caption text-medium-emphasis">Pick conveys regardless of position</div>
+                  <div class="font-weight-bold text-body-2">{{ t('pickProtectionModal.unprotected.title') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('pickProtectionModal.unprotected.description') }}</div>
                 </div>
               </v-card>
             </v-item>
@@ -55,8 +55,8 @@
                   {{ isSelected ? 'radio_button_checked' : 'radio_button_unchecked' }}
                 </v-icon>
                 <div>
-                  <div class="font-weight-bold text-body-2">Top X Protected</div>
-                  <div class="text-caption text-medium-emphasis">Protects pick if it falls within top N selections</div>
+                  <div class="font-weight-bold text-body-2">{{ t('pickProtectionModal.topX.title') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('pickProtectionModal.topX.description') }}</div>
                 </div>
               </v-card>
             </v-item>
@@ -74,8 +74,8 @@
                   {{ isSelected ? 'radio_button_checked' : 'radio_button_unchecked' }}
                 </v-icon>
                 <div>
-                  <div class="font-weight-bold text-body-2">Lottery Protected</div>
-                  <div class="text-caption text-medium-emphasis">Protects picks 1-14 (Non-playoff teams)</div>
+                  <div class="font-weight-bold text-body-2">{{ t('pickProtectionModal.lottery.title') }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ t('pickProtectionModal.lottery.description') }}</div>
                 </div>
               </v-card>
             </v-item>
@@ -86,7 +86,7 @@
         <v-expand-transition>
           <div v-if="selectedType === 'top_x'" class="mb-4 px-1">
              <div class="d-flex align-center justify-space-between mb-2">
-               <span class="text-body-2 font-weight-medium">Protected Range: 1 - {{ topXValue }}</span>
+               <span class="text-body-2 font-weight-medium">{{ t('pickProtectionModal.protectedRange', { value: topXValue }) }}</span>
              </div>
              <v-slider
                v-model="topXValue"
@@ -111,7 +111,7 @@
              </v-slider>
              <div class="text-caption text-medium-emphasis mt-2">
                <v-icon size="x-small" class="mr-1">info</v-icon>
-               Pick stays with original team if it lands between 1 and {{ topXValue }}. Otherwise, it conveys.
+               {{ t('pickProtectionModal.rangeHint', { value: topXValue }) }}
              </div>
           </div>
         </v-expand-transition>
@@ -122,9 +122,9 @@
 
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn variant="text" @click="$emit('update:modelValue', false)">Cancel</v-btn>
+        <v-btn variant="text" @click="$emit('update:modelValue', false)">{{ t('pickProtectionModal.cancel') }}</v-btn>
         <v-btn color="primary" variant="flat" @click="saveProtection">
-          Save Protection
+          {{ t('pickProtectionModal.save') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -133,7 +133,10 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pick } from '@/types/trade';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: boolean;
@@ -185,7 +188,7 @@ function saveProtection() {
 function getOriginalTeamName(pickDetail: any): string {
   if (pickDetail.original_team_name) return pickDetail.original_team_name;
   if (pickDetail.original_team && typeof pickDetail.original_team === 'object') return pickDetail.original_team.name;
-  return `Team ${typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team}`;
+  return t('pickProtectionModal.defaultTeamName', { id: typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team });
 }
 </script>
 

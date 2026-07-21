@@ -14,7 +14,7 @@
 
     <div class="page-header">
       <h1 class="page-title">{{ user.first_name }} {{ user.last_name }}</h1>
-      <p class="page-subtitle">Update your profile information</p>
+      <p class="page-subtitle">{{ t('userView.subtitle') }}</p>
     </div>
 
     <div class="coming-soon">
@@ -23,30 +23,30 @@
           <v-col cols="18" sm="12" md="9" lg="6">
             <v-card rounded="xl" class="pa-8 text-on-secondary" variant="flat">
               <v-form @submit.prevent="handleSignup" v-model="formValid">
-                <v-text-field rounded v-model="username" label="Username" variant="outlined"
+                <v-text-field rounded v-model="username" :label="t('userView.form.usernameLabel')" variant="outlined"
                   append-inner-icon="account_box" :rules="[rules.required]" class="mb-3" color="secondary" />
 
                 <v-row>
                   <v-col cols="12" sm="6">
-                    <v-text-field rounded v-model="firstName" label="First Name" variant="outlined"
+                    <v-text-field rounded v-model="firstName" :label="t('userView.form.firstNameLabel')" variant="outlined"
                       append-inner-icon="face" :rules="[rules.required]" class="mb-3" color="secondary" />
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-text-field rounded v-model="lastName" label="Last Name" variant="outlined"
+                    <v-text-field rounded v-model="lastName" :label="t('userView.form.lastNameLabel')" variant="outlined"
                       append-inner-icon="fingerprint" :rules="[rules.required]" class="mb-3" color="secondary" />
                   </v-col>
                 </v-row>
 
-                <v-text-field rounded v-model="email" label="Email" type="email" variant="outlined"
+                <v-text-field rounded v-model="email" :label="t('userView.form.emailLabel')" type="email" variant="outlined"
                   append-inner-icon="email" :rules="[rules.required, rules.email]" class="mb-3" color="secondary" />
 
                 <v-row>
                   <v-col cols="12" sm="6">
-                    <v-text-field rounded v-model="password" label="Password" type="password" variant="outlined"
+                    <v-text-field rounded v-model="password" :label="t('userView.form.passwordLabel')" type="password" variant="outlined"
                       append-inner-icon="lock" :rules="[rules.required, rules.min(8)]" class="mb-3" color="secondary" />
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-text-field rounded v-model="passwordConfirm" label="Confirm Password" type="password"
+                    <v-text-field rounded v-model="passwordConfirm" :label="t('userView.form.confirmPasswordLabel')" type="password"
                       variant="outlined" append-inner-icon="lock" :rules="[rules.required, rules.passwordMatch]"
                       class="mb-6" color="secondary" />
                   </v-col>
@@ -54,7 +54,7 @@
 
                 <v-btn v-confirm type="submit" block size="large" :loading="loading"
                   :disabled="!formValid || authStore.isLoading" color="secondary" rounded="xl" class="mb-4">
-                  Update
+                  {{ t('userView.form.submit') }}
                 </v-btn>
               </v-form>
             </v-card>
@@ -67,9 +67,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import api from '@/api/axios';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const user = ref(authStore.user);
 
@@ -89,10 +91,10 @@ const notificationSnackbar = ref({
 });
 
 const rules = {
-  required: (value: string) => !!value || 'This field is required',
-  email: (value: string) => /\S+@\S+\.\S+/.test(value) || 'Must be a valid email',
-  min: (length: number) => (value: string) => value.length >= length || `Minimum ${length} characters`,
-  passwordMatch: (value: string) => value === password.value || 'Passwords must match',
+  required: (value: string) => !!value || t('userView.validation.required'),
+  email: (value: string) => /\S+@\S+\.\S+/.test(value) || t('userView.validation.email'),
+  min: (length: number) => (value: string) => value.length >= length || t('userView.validation.min', { length }),
+  passwordMatch: (value: string) => value === password.value || t('userView.validation.passwordMatch'),
 };
 
 const handleSignup = async () => {
@@ -112,7 +114,7 @@ const handleSignup = async () => {
 
   notificationSnackbar.value = {
     show: true,
-    message: 'Profile updated successfully!',
+    message: t('userView.notifications.updateSuccess'),
     timeout: 6000,
     color: 'success'
   };

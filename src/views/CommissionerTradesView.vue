@@ -5,10 +5,10 @@
       <v-col>
         <h1 class="text-h4 mb-2">
           <v-icon class="mr-2">gavel</v-icon>
-          Commissioner Trade Review
+          {{ t('commissionerTradesView.header.title') }}
         </h1>
         <p class="text-subtitle-1 text-medium-emphasis">
-          Review and approve pending trades
+          {{ t('commissionerTradesView.header.subtitle') }}
         </p>
       </v-col>
     </v-row>
@@ -22,7 +22,7 @@
               {{ waitingApprovalTrades.length }}
             </div>
             <div class="text-caption text-center text-medium-emphasis">
-              Awaiting Approval
+              {{ t('commissionerTradesView.stats.awaitingApproval') }}
             </div>
           </v-card-text>
         </v-card>
@@ -34,7 +34,7 @@
               {{ needsYourVote.length }}
             </div>
             <div class="text-caption text-center text-medium-emphasis">
-              Need Your Vote
+              {{ t('commissionerTradesView.stats.needYourVote') }}
             </div>
           </v-card-text>
         </v-card>
@@ -46,7 +46,7 @@
               {{ approvedTrades.length }}
             </div>
             <div class="text-caption text-center text-medium-emphasis">
-              Ready for Execution
+              {{ t('commissionerTradesView.stats.readyForExecution') }}
             </div>
           </v-card-text>
         </v-card>
@@ -62,13 +62,12 @@
           class="mb-4"
         >
           <v-icon class="mr-2">priority_high</v-icon>
-          <strong>{{ needsYourVote.length }}</strong> trade{{ needsYourVote.length !== 1 ? 's' : '' }}
-          waiting for your vote
+          <strong>{{ needsYourVote.length }}</strong> {{ t('commissionerTradesView.alerts.needsVote', needsYourVote.length) }}
         </v-alert>
 
         <h2 class="text-h5 mb-4">
           <v-icon class="mr-2">priority_high</v-icon>
-          Needs Your Vote
+          {{ t('commissionerTradesView.sections.needsYourVote') }}
         </h2>
 
         <v-row>
@@ -80,15 +79,15 @@
             <v-card>
               <v-card-title class="d-flex align-center">
                 <v-icon class="mr-2" color="warning">schedule</v-icon>
-                Trade #{{ trade.id }}
+                {{ t('commissionerTradesView.trade.title', { id: trade.id }) }}
                 <v-spacer />
-                <v-chip size="small" color="warning">Needs Vote</v-chip>
+                <v-chip size="small" color="warning">{{ t('commissionerTradesView.chip.needsVote') }}</v-chip>
               </v-card-title>
 
               <v-card-text>
                 <!-- Teams -->
                 <div class="mb-3">
-                  <div class="text-caption text-medium-emphasis mb-1">Teams:</div>
+                  <div class="text-caption text-medium-emphasis mb-1">{{ t('commissionerTradesView.teamsLabel') }}</div>
                   <v-chip-group>
                     <v-chip
                       v-for="team in trade.teams_detail"
@@ -104,7 +103,7 @@
                 <!-- Vote Progress -->
                 <div v-if="trade.approval_status" class="mb-3">
                   <div class="text-caption text-medium-emphasis mb-1">
-                    Vote Progress:
+                    {{ t('commissionerTradesView.vote.progressLabel') }}
                   </div>
                   <v-progress-linear
                     :model-value="(trade.approval_status.approve_votes / trade.approval_status.majority_needed) * 100"
@@ -113,7 +112,7 @@
                   >
                     <template #default>
                       <span class="text-caption">
-                        {{ trade.approval_status.approve_votes }} / {{ trade.approval_status.majority_needed }} Approvals
+                        {{ t('commissionerTradesView.vote.progressCount', { approved: trade.approval_status.approve_votes, needed: trade.approval_status.majority_needed }) }}
                       </span>
                     </template>
                   </v-progress-linear>
@@ -127,7 +126,7 @@
                     :loading="loading[`vote_${trade.id}`]"
                   >
                     <v-icon start>check</v-icon>
-                    Approve
+                    {{ t('commissionerTradesView.actions.approve') }}
                   </v-btn>
                   <v-btn
                     color="error"
@@ -135,14 +134,14 @@
                     :loading="loading[`vote_${trade.id}`]"
                   >
                     <v-icon start>close</v-icon>
-                    Veto
+                    {{ t('commissionerTradesView.actions.veto') }}
                   </v-btn>
                   <v-btn
                     variant="outlined"
                     :to="{ name: 'trade-detail', params: { id: trade.id } }"
                   >
                     <v-icon start>visibility</v-icon>
-                    View Details
+                    {{ t('commissionerTradesView.actions.viewDetails') }}
                   </v-btn>
                 </div>
               </v-card-text>
@@ -155,7 +154,7 @@
     <!-- All Pending Trades -->
     <v-row v-if="waitingApprovalTrades.length > 0">
       <v-col>
-        <h2 class="text-h5 mb-4">All Pending Approval</h2>
+        <h2 class="text-h5 mb-4">{{ t('commissionerTradesView.sections.allPending') }}</h2>
 
         <v-row>
           <v-col
@@ -167,9 +166,9 @@
             <v-card>
               <v-card-title class="d-flex align-center">
                 <v-icon class="mr-2">handshake</v-icon>
-                Trade #{{ trade.id }}
+                {{ t('commissionerTradesView.trade.title', { id: trade.id }) }}
                 <v-spacer />
-                <v-chip size="small" color="warning">Pending</v-chip>
+                <v-chip size="small" color="warning">{{ t('commissionerTradesView.chip.pending') }}</v-chip>
               </v-card-title>
 
               <v-card-text>
@@ -207,7 +206,7 @@
                     {{ trade.approval_status.veto_votes }}
                   </v-chip>
                   <span class="text-caption text-medium-emphasis ml-2">
-                    (Need {{ trade.approval_status.majority_needed }})
+                    {{ t('commissionerTradesView.vote.needCount', { needed: trade.approval_status.majority_needed }) }}
                   </span>
                 </div>
 
@@ -218,7 +217,7 @@
                   block
                   class="mt-2"
                 >
-                  Review & Vote
+                  {{ t('commissionerTradesView.actions.reviewVote') }}
                 </v-btn>
               </v-card-text>
             </v-card>
@@ -232,7 +231,7 @@
       <v-col>
         <h2 class="text-h5 mb-4">
           <v-icon class="mr-2">check_circle</v-icon>
-          Approved - Ready to Execute
+          {{ t('commissionerTradesView.sections.approvedReady') }}
         </h2>
 
         <v-row>
@@ -245,9 +244,9 @@
             <v-card>
               <v-card-title class="d-flex align-center">
                 <v-icon class="mr-2" color="success">check_circle</v-icon>
-                Trade #{{ trade.id }}
+                {{ t('commissionerTradesView.trade.title', { id: trade.id }) }}
                 <v-spacer />
-                <v-chip size="small" color="success">Approved</v-chip>
+                <v-chip size="small" color="success">{{ t('commissionerTradesView.chip.approved') }}</v-chip>
               </v-card-title>
 
               <v-card-text>
@@ -273,13 +272,13 @@
                     :loading="loading[`execute_${trade.id}`]"
                   >
                     <v-icon start>play_arrow</v-icon>
-                    Execute Trade
+                    {{ t('commissionerTradesView.actions.executeTrade') }}
                   </v-btn>
                   <v-btn
                     variant="outlined"
                     :to="{ name: 'trade-detail', params: { id: trade.id } }"
                   >
-                    View Details
+                    {{ t('commissionerTradesView.actions.viewDetails') }}
                   </v-btn>
                 </div>
               </v-card-text>
@@ -295,9 +294,9 @@
         <v-card variant="outlined">
           <v-card-text class="text-center py-8">
             <v-icon size="64" color="grey-lighten-1">gavel</v-icon>
-            <p class="text-h6 mt-4">No trades need your attention</p>
+            <p class="text-h6 mt-4">{{ t('commissionerTradesView.empty.title') }}</p>
             <p class="text-body-2 text-medium-emphasis">
-              Check back later for trades awaiting commissioner approval
+              {{ t('commissionerTradesView.empty.subtitle') }}
             </p>
           </v-card-text>
         </v-card>
@@ -317,10 +316,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useTradeStore } from '@/stores/trade'
 import { useRouter } from 'vue-router'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const tradeStore = useTradeStore()
 const router = useRouter()
@@ -358,7 +359,7 @@ async function quickVote(tradeId: number, vote: 'approve' | 'veto') {
     await tradeStore.voteOnTrade(tradeId, vote, '')
     snackbar.value = {
       show: true,
-      message: `Trade ${vote === 'approve' ? 'approved' : 'vetoed'} successfully`,
+      message: vote === 'approve' ? t('commissionerTradesView.messages.approvedSuccess') : t('commissionerTradesView.messages.vetoedSuccess'),
       color: 'success'
     }
     // Refresh trades
@@ -366,7 +367,7 @@ async function quickVote(tradeId: number, vote: 'approve' | 'veto') {
   } catch (error: any) {
     snackbar.value = {
       show: true,
-      message: error.message || 'Failed to submit vote',
+      message: error.message || t('commissionerTradesView.messages.voteFailed'),
       color: 'error'
     }
   } finally {
@@ -383,7 +384,7 @@ async function executeTrade(tradeId: number) {
     await tradeStore.executeTrade(tradeId)
     snackbar.value = {
       show: true,
-      message: 'Trade executed successfully',
+      message: t('commissionerTradesView.messages.executeSuccess'),
       color: 'success'
     }
     // Refresh trades
@@ -391,7 +392,7 @@ async function executeTrade(tradeId: number) {
   } catch (error: any) {
     snackbar.value = {
       show: true,
-      message: error.message || 'Failed to execute trade',
+      message: error.message || t('commissionerTradesView.messages.executeFailed'),
       color: 'error'
     }
   } finally {
@@ -405,7 +406,7 @@ onMounted(async () => {
   if (!isCommissioner.value) {
     snackbar.value = {
       show: true,
-      message: 'You must be a commissioner to access this page',
+      message: t('commissionerTradesView.messages.commissionerOnly'),
       color: 'error'
     }
     router.push({ name: 'trade-overview' })

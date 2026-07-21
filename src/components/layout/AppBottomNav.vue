@@ -1,5 +1,5 @@
 <template>
-  <nav class="bottom-nav" aria-label="Primary">
+  <nav class="bottom-nav" :aria-label="t('appBottomNav.ariaLabel')">
     <button v-for="item in primaryItems" :key="item.routeName" type="button" class="bottom-nav__item"
       :class="{ active: isItemActive(item) }" :aria-label="item.label"
       :aria-current="isItemActive(item) ? 'page' : undefined" @click="go(item)">
@@ -9,12 +9,12 @@
       <span class="bottom-nav__label">{{ item.label }}</span>
     </button>
 
-    <button type="button" class="bottom-nav__item" :class="{ active: sheet }" aria-label="More navigation"
+    <button type="button" class="bottom-nav__item" :class="{ active: sheet }" :aria-label="t('appBottomNav.moreAriaLabel')"
       :aria-expanded="sheet" @click="sheet = true">
       <span class="bottom-nav__icon">
         <v-icon icon="apps" size="24" />
       </span>
-      <span class="bottom-nav__label">More</span>
+      <span class="bottom-nav__label">{{ t('appBottomNav.more') }}</span>
     </button>
   </nav>
 
@@ -45,10 +45,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { MOBILE_PRIMARY_ROUTES, useNavigationGroups } from '@/components/layout/navItems'
 import type { NavItemDef } from '@/components/layout/navItems'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -59,17 +61,17 @@ const isDev = import.meta.env.DEV
 const sheet = ref(false)
 
 // Short labels fit the bottom bar better than the full nav names
-const SHORT_LABELS: Record<string, string> = {
-  team: 'Team',
-  'trade-overview': 'Trades',
-}
+const shortLabels = computed<Record<string, string>>(() => ({
+  team: t('appBottomNav.shortLabels.team'),
+  'trade-overview': t('appBottomNav.shortLabels.tradeOverview'),
+}))
 
 const allItems = computed(() => navigationGroups.value.flatMap((group) => group.items))
 
 const primaryItems = computed(() =>
   MOBILE_PRIMARY_ROUTES.map((routeName) => {
     const item = allItems.value.find((candidate) => candidate.routeName === routeName)
-    return item ? { ...item, label: SHORT_LABELS[routeName] ?? item.label } : null
+    return item ? { ...item, label: shortLabels.value[routeName] ?? item.label } : null
   }).filter((item): item is NavItemDef => item !== null),
 )
 

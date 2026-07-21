@@ -2,13 +2,13 @@
   <v-container fluid class="trade-editor-view page-view pa-0">
     <!-- Header -->
     <header class="trade-editor-header page-header">
-      <v-btn icon variant="tonal" aria-label="Back to trade overview" @click="handleCancel">
+      <v-btn icon variant="tonal" :aria-label="t('tradeEditorView.header.backAriaLabel')" @click="handleCancel">
         <v-icon>arrow_back</v-icon>
       </v-btn>
       <div>
-        <p class="eyebrow">Trade desk</p>
-        <h1 class="page-title">{{ isCounteroffer ? 'Create Counteroffer' : 'Build a New Trade' }}</h1>
-        <p class="page-subtitle">Choose the teams, route each asset, then validate the deal before proposing it.</p>
+        <p class="eyebrow">{{ t('tradeEditorView.header.eyebrow') }}</p>
+        <h1 class="page-title">{{ isCounteroffer ? t('tradeEditorView.header.titleCounteroffer') : t('tradeEditorView.header.titleCreate') }}</h1>
+        <p class="page-subtitle">{{ t('tradeEditorView.header.subtitle') }}</p>
       </div>
     </header>
 
@@ -16,7 +16,7 @@
     <v-row>
       <v-col cols="12">
         <v-card class="trade-setup-card" variant="flat">
-          <v-card-title>Teams in Trade</v-card-title>
+          <v-card-title>{{ t('tradeEditorView.teamsCard.title') }}</v-card-title>
           <v-card-text>
             <div class="d-flex flex-wrap gap-2 align-center">
               <v-chip
@@ -36,7 +36,7 @@
                 @click="showTeamSelector = true"
               >
                 <v-icon start>add</v-icon>
-                Add Team
+                {{ t('tradeEditorView.teamsCard.addTeam') }}
               </v-btn>
             </div>
             <v-alert
@@ -46,7 +46,7 @@
               density="compact"
               class="mt-2"
             >
-              You must add at least one other team to create a trade.
+              {{ t('tradeEditorView.teamsCard.minTeamsWarning') }}
             </v-alert>
           </v-card-text>
         </v-card>
@@ -111,14 +111,14 @@
               @click="handlePropose"
             >
               <v-icon start>send</v-icon>
-              {{ isCounteroffer ? 'Propose Counteroffer' : 'Propose Trade' }}
+              {{ isCounteroffer ? t('tradeEditorView.actions.proposeCounteroffer') : t('tradeEditorView.actions.proposeTrade') }}
             </v-btn>
             <v-btn
               variant="text"
               size="large"
               @click="handleCancel"
             >
-              Cancel
+              {{ t('tradeEditorView.actions.cancel') }}
             </v-btn>
             <v-spacer />
             <v-btn
@@ -129,7 +129,7 @@
               @click="validateTrade"
             >
               <v-icon start>check_circle</v-icon>
-              Validate
+              {{ t('tradeEditorView.actions.validate') }}
             </v-btn>
           </v-card-text>
         </v-card>
@@ -140,18 +140,18 @@
     <v-dialog v-model="showTeamSelector" max-width="700px" scrollable>
       <v-card class="h-100">
         <v-card-title class="d-flex align-center py-3 px-4 border-b">
-          <span class="text-h6">Add Team to Trade</span>
+          <span class="text-h6">{{ t('tradeEditorView.teamSelectorDialog.title') }}</span>
           <v-spacer />
-          <v-btn icon variant="text" size="small" aria-label="Close team selector" @click="showTeamSelector = false">
+          <v-btn icon variant="text" size="small" :aria-label="t('tradeEditorView.teamSelectorDialog.closeAriaLabel')" @click="showTeamSelector = false">
             <v-icon>close</v-icon>
           </v-btn>
         </v-card-title>
-        
+
         <v-card-text class="pa-0">
           <div class="px-4 pt-4 pb-2 sticky-search bg-surface">
             <v-text-field
               v-model="teamSearchQuery"
-              placeholder="Search teams by name or owner..."
+              :placeholder="t('tradeEditorView.teamSelectorDialog.searchPlaceholder')"
               prepend-inner-icon="search"
               variant="outlined"
               density="comfortable"
@@ -180,19 +180,19 @@
                     <div class="text-subtitle-1 font-weight-bold text-truncate">{{ team.name }}</div>
                     <div class="text-caption text-medium-emphasis d-flex align-center">
                       <v-icon size="x-small" class="mr-1">person</v-icon>
-                      {{ team.owner_username || 'Unknown Owner' }}
+                      {{ team.owner_username || t('tradeEditorView.teamSelectorDialog.unknownOwner') }}
                     </div>
                   </div>
-                  
+
                   <v-icon color="primary" class="ml-2">add_circle_outline</v-icon>
                 </v-card-text>
               </v-card>
             </div>
-            
+
             <div v-else class="text-center py-8">
                <v-icon size="64" color="grey-lighten-1" class="mb-2">search_off</v-icon>
-               <div class="text-h6 text-medium-emphasis">No teams found</div>
-               <p class="text-body-2 text-medium-emphasis">Try adjusting your search or all teams may be selected.</p>
+               <div class="text-h6 text-medium-emphasis">{{ t('tradeEditorView.teamSelectorDialog.noTeamsFound') }}</div>
+               <p class="text-body-2 text-medium-emphasis">{{ t('tradeEditorView.teamSelectorDialog.noTeamsHint') }}</p>
             </div>
           </div>
         </v-card-text>
@@ -203,7 +203,7 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
       <template #actions>
-        <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
+        <v-btn variant="text" @click="snackbar.show = false">{{ t('tradeEditorView.snackbar.close') }}</v-btn>
       </template>
     </v-snackbar>
   </v-container>
@@ -212,6 +212,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
@@ -226,6 +227,7 @@ import TradeValidationDisplay from '@/components/trade/TradeValidationDisplay.vu
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
@@ -313,7 +315,7 @@ const canPropose = computed(() => {
 function getTeam(teamId: number): Team {
   return allTeams.value.find((t) => t.id === teamId) || {
     id: teamId,
-    name: 'Unknown Team',
+    name: t('tradeEditorView.unknownTeam'),
     owner: 0,
   };
 }
@@ -399,13 +401,13 @@ function addTeam(teamId: number) {
     loadTeamAssets(teamId);
     showTeamSelector.value = false;
     teamSearchQuery.value = ''; // Reset search
-    showSnackbar('Team added to trade', 'success');
+    showSnackbar(t('tradeEditorView.messages.teamAdded'), 'success');
   }
 }
 
 function removeTeam(teamId: number) {
   if (teamId === userTeamId.value) {
-    showSnackbar('Cannot remove your own team', 'warning');
+    showSnackbar(t('tradeEditorView.messages.cannotRemoveOwnTeam'), 'warning');
     return;
   }
   selectedTeamIds.value = selectedTeamIds.value.filter((id) => id !== teamId);
@@ -413,7 +415,7 @@ function removeTeam(teamId: number) {
   selectedAssets.value = selectedAssets.value.filter(
     (a) => a.giving_team !== teamId && a.receiving_team !== teamId
   );
-  showSnackbar('Team removed from trade', 'info');
+  showSnackbar(t('tradeEditorView.messages.teamRemoved'), 'info');
   validateTrade();
 }
 
@@ -423,7 +425,7 @@ async function loadTeamAssets(teamId: number) {
     await tradeStore.loadAvailablePicks(teamId);
   } catch (error) {
     console.error('Failed to load team assets:', error);
-    showSnackbar('Failed to load team assets', 'error');
+    showSnackbar(t('tradeEditorView.messages.failedToLoadTeamAssets'), 'error');
   }
 }
 
@@ -470,9 +472,9 @@ async function validateTrade() {
     } else if (status === 400 || status === 422) {
       // Actual validation failure
       console.error('Validation failed:', error);
-      const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          'Trade validation failed';
+      const errorMessage = error.response?.data?.detail ||
+                          error.response?.data?.message ||
+                          t('tradeEditorView.messages.tradeValidationFailed');
       showSnackbar(errorMessage, 'error');
       tradeStore.validationResult = null;
     } else {
@@ -487,7 +489,7 @@ async function validateTrade() {
 
 async function handlePropose() {
   if (!canPropose.value) {
-    showSnackbar('Cannot propose: trade validation failed or requirements not met', 'warning');
+    showSnackbar(t('tradeEditorView.messages.cannotProposeIncomplete'), 'warning');
     return;
   }
 
@@ -544,14 +546,14 @@ async function handlePropose() {
           offer: payload, // Pass the AssetPayload array directly
         });
         
-        showSnackbar('Counteroffer created successfully!', 'success');
+        showSnackbar(t('tradeEditorView.messages.counterofferCreated'), 'success');
         router.push({ name: 'trade-overview' });
         return;
       } catch (counterError: any) {
         console.error('Counteroffer action error:', counterError);
-        const errorMessage = counterError.response?.data?.detail || 
-                           counterError.message || 
-                           'Failed to create counteroffer';
+        const errorMessage = counterError.response?.data?.detail ||
+                           counterError.message ||
+                           t('tradeEditorView.messages.failedToCreateCounteroffer');
         showSnackbar(errorMessage, 'error');
         return;
       }
@@ -560,16 +562,16 @@ async function handlePropose() {
     // For regular trades, create the trade normally
     // Submit trade - backend expects array of AssetPayload
     const createResponse = await TradeService.createTrade(payload as any);
-    
-    showSnackbar('Trade created successfully!', 'success');
-    
+
+    showSnackbar(t('tradeEditorView.messages.tradeCreated'), 'success');
+
     router.push({ name: 'trade-overview' });
   } catch (error: any) {
     console.error('Propose error:', error);
-    const errorMessage = error.response?.data?.detail || 
-                        error.response?.data?.status || 
-                        error.message || 
-                        'Failed to create trade';
+    const errorMessage = error.response?.data?.detail ||
+                        error.response?.data?.status ||
+                        error.message ||
+                        t('tradeEditorView.messages.failedToCreateTrade');
     showSnackbar(errorMessage, 'error');
   } finally {
     submitting.value = false;
@@ -765,7 +767,7 @@ async function loadOriginalTradeForCounteroffer(tradeId: number) {
     }
   } catch (error) {
     console.error('Failed to load original trade:', error);
-    showSnackbar('Failed to load original trade for counteroffer', 'error');
+    showSnackbar(t('tradeEditorView.messages.failedToLoadOriginalTrade'), 'error');
     // Navigate back if we can't load the trade
     router.push({ name: 'trade-overview' });
   }
@@ -802,13 +804,13 @@ onMounted(async () => {
         // Load players and picks for user's team
         await loadTeamAssets(userTeam);
       } else {
-        showSnackbar('You must be on a team to create trades', 'error');
+        showSnackbar(t('tradeEditorView.messages.mustBeOnTeam'), 'error');
         router.push({ name: 'trade-overview' });
       }
     }
   } catch (error) {
     console.error('Failed to load trade data:', error);
-    showSnackbar('Failed to load trade data', 'error');
+    showSnackbar(t('tradeEditorView.messages.failedToLoadTradeData'), 'error');
   }
 });
 </script>

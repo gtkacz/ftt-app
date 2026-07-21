@@ -1,9 +1,9 @@
 <template>
   <div class="app-layout">
     <div v-if="isDev" class="dev-indicator" :class="{ 'above-bottom-nav': showNavigation && mobile }"
-      aria-label="Development build">
+      :aria-label="t('appLayout.devIndicator.ariaLabel')">
       <span class="dev-indicator__dot" aria-hidden="true" />
-      Dev build
+      {{ t('appLayout.devIndicator.label') }}
     </div>
 
     <AppNavigation v-if="hasDesktopNavigation" />
@@ -31,11 +31,13 @@
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import AppBottomNav from '@/components/layout/AppBottomNav.vue';
 import AppNavigation from '@/components/layout/AppNavigation.vue';
 import AppTopBar from '@/components/layout/AppTopBar.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const route = useRoute();
 const { mobile } = useDisplay();

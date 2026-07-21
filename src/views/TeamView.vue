@@ -20,7 +20,9 @@ import PlayerCard from '@/components/core/PlayerCard.vue';
 import PlayersTable from '@/components/core/PlayersTable.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const route = useRoute();
 const id = route.params.id as string;
 
@@ -31,11 +33,11 @@ const teamData = ref(null);
 const pick = ref(null);
 
 const tableHeaders = [
-	{ title: 'Player', key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
-	{ title: 'FP/G', key: 'relevancy', align: 'start', width: '60px', visible: true, sortable: true },
-	{ title: 'Position', key: 'primary_position', width: '60px', visible: true, sortable: true },
-	{ title: 'Contract', key: 'contract_info', align: 'start', width: '75px', visible: true, sortable: true },
-	{ title: 'Status', key: 'status', width: '60px', visible: true, sortable: false },
+	{ title: t('teamView.tableHeaders.player'), key: 'player', value: 'last_name', sortable: true, width: '50px', visible: true, locked: true },
+	{ title: t('teamView.tableHeaders.fpg'), key: 'relevancy', align: 'start', width: '60px', visible: true, sortable: true },
+	{ title: t('teamView.tableHeaders.position'), key: 'primary_position', width: '60px', visible: true, sortable: true },
+	{ title: t('teamView.tableHeaders.contract'), key: 'contract_info', align: 'start', width: '75px', visible: true, sortable: true },
+	{ title: t('teamView.tableHeaders.status'), key: 'status', width: '60px', visible: true, sortable: false },
 ]
 const onPlayerSelected = (player: any) => {
 	playerData.value = player

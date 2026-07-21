@@ -1,17 +1,17 @@
 <template>
 	<div class="page-view">
 		<div class="page-header draft-header">
-			<p class="eyebrow">League war room</p>
-			<h1 class="page-title">League Draft</h1>
-			<p class="page-subtitle">Follow the lottery, manage your queue, and track every pick from one board.</p>
+			<p class="eyebrow">{{ t('leagueDraftView.header.eyebrow') }}</p>
+			<h1 class="page-title">{{ t('leagueDraftView.header.title') }}</h1>
+			<p class="page-subtitle">{{ t('leagueDraftView.header.subtitle') }}</p>
 		</div>
 
 		<v-card class="draft-workspace" variant="flat">
 			<!-- If loading show loader -->
 			<v-tabs v-model="tab" class="draft-tabs" density="comfortable" color="secondary" :disabled="loading"
 				mandatory grow>
-				<v-tab value="lottery">Lottery</v-tab>
-				<v-tab value="draft">Draft</v-tab>
+				<v-tab value="lottery">{{ t('leagueDraftView.tabs.lottery') }}</v-tab>
+				<v-tab value="draft">{{ t('leagueDraftView.tabs.draft') }}</v-tab>
 			</v-tabs>
 			<v-progress-linear v-if="loading" indeterminate class="mb-4" color="secondary" />
 
@@ -22,15 +22,15 @@
 							<v-row align="center" justify="center" v-if="!isLotteryHappened" class="draft-state">
 								<v-col cols="auto">
 									<p class="d-flex align-center justify-center flex-column ga-2">
-										<span>The lottery will start in</span>
+										<span>{{ t('leagueDraftView.lottery.startingIn') }}</span>
 										<countdown :value="lotteryStartsAt" timestamp @expired="startLottery" />
-										<v-btn size="small" variant="tonal" color="info" aria-label="Refresh draft"
-											title="Refresh" @click="fetchAllData" class="mt-4 draft-icon-action" :loading="loading" icon>
+										<v-btn size="small" variant="tonal" color="info" :aria-label="t('leagueDraftView.actions.refreshAriaLabel')"
+											:title="t('leagueDraftView.actions.refreshTitle')" @click="fetchAllData" class="mt-4 draft-icon-action" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 										<v-btn v-if="isStaff" color="primary" @click="startLottery" v-confirm
 											:loading="loading">
-											Start Now
+											{{ t('leagueDraftView.actions.startNow') }}
 										</v-btn>
 									</p>
 								</v-col>
@@ -52,9 +52,9 @@
 											@{{ team.owner_username }}
 										</template>
 										<template #text>
-											Draft Seed:
+											{{ t('leagueDraftView.lottery.draftSeed') }}
 											<h2>{{ lotteryData && lotteryData[team.id] ? '#' +
-												lotteryData[team.id][0].overall_pick : 'N/A' }}</h2>
+												lotteryData[team.id][0].overall_pick : t('leagueDraftView.lottery.notAvailable') }}</h2>
 										</template>
 									</v-card>
 								</v-col>
@@ -65,12 +65,12 @@
 						<v-sheet v-if="isLotteryHappened" class="draft-surface">
 							<v-container fluid v-if="!isDraftStarted">
 								<v-row align="center" justify="center" class="w-100 flex-column">
-									<span>The draft will start in</span>
+									<span>{{ t('leagueDraftView.draft.startingIn') }}</span>
 									<countdown :value="dayjs(draftData.starts_at).unix()" timestamp
 										@expired="startDraft" />
 									<v-btn v-if="isStaff" color="primary" @click="startDraft" v-confirm class="mt-4"
 										:loading="loading">
-										Start Now
+										{{ t('leagueDraftView.actions.startNow') }}
 									</v-btn>
 								</v-row>
 							</v-container>
@@ -81,17 +81,16 @@
 									<div>
 										<div class="d-flex justify-center flex-column align-center text-center">
 											<h5 class="text-h5">{{ nextUnmadePick?.team?.name ===
-												authStore.user?.team?.name ? 'You are' :
-												nextUnmadePick?.team?.name + ' is' }} on the clock (#{{
-													nextUnmadePick?.pick.overall_pick }})</h5>
+												authStore.user?.team?.name
+												? t('leagueDraftView.draft.onTheClockYou', { pick: nextUnmadePick?.pick.overall_pick })
+												: t('leagueDraftView.draft.onTheClockTeam', { team: nextUnmadePick?.team?.name, pick: nextUnmadePick?.pick.overall_pick }) }}</h5>
 											<countdown :value="nextUnmadePick?.pick.time_to_pick" :show-progress="false"
 												#label="{ formattedTime }" @expired="fetchAllData">
 												<h5 class="text-h5 text-center">{{ formattedTime }}</h5>
 											</countdown>
 											<span class="text-caption"
-												v-if="nextUnmadePick?.team?.name !== authStore.user?.team?.name && myNextUnmadePick">Picks
-												until you: {{
-													myNextUnmadePick?.pick.overall_pick - nextUnmadePick?.pick.overall_pick
+												v-if="nextUnmadePick?.team?.name !== authStore.user?.team?.name && myNextUnmadePick">{{
+													t('leagueDraftView.draft.picksUntilYou', { count: myNextUnmadePick?.pick.overall_pick - nextUnmadePick?.pick.overall_pick })
 												}}</span>
 										</div>
 									</div>
@@ -101,12 +100,12 @@
 									<div class="draft-actions d-flex flex-column flex-lg-row ga-2 justify-center align-center">
 										<v-btn color="info" variant="tonal" prepend-icon="skip_next"
 											@click="goToNextPick" :disabled="!nextUnmadePick" class="pick-btn" rounded>
-											Go to Next Pick
+											{{ t('leagueDraftView.actions.goToNextPick') }}
 										</v-btn>
 										<v-btn color="secondary" variant="tonal" prepend-icon="resume"
 											@click="goToMyNextPick" :disabled="!myNextUnmadePick" class="pick-btn"
 											rounded>
-											Go to My Next Pick
+											{{ t('leagueDraftView.actions.goToMyNextPick') }}
 										</v-btn>
 										<!-- <v-btn color="warning" variant="tonal" prepend-icon="compress"
 											@click="collapsePastRounds"
@@ -116,17 +115,17 @@
 										</v-btn> -->
 									</div>
 									<div justify="center" align="center">
-										<v-btn size="small" variant="tonal" color="info" aria-label="Refresh draft"
-											title="Refresh" @click="fetchAllData" class="draft-icon-action" :loading="loading" icon>
+										<v-btn size="small" variant="tonal" color="info" :aria-label="t('leagueDraftView.actions.refreshAriaLabel')"
+											:title="t('leagueDraftView.actions.refreshTitle')" @click="fetchAllData" class="draft-icon-action" :loading="loading" icon>
 											<v-icon icon="refresh" />
 										</v-btn>
 									</div>
 								</v-container>
 								<v-container v-if="draftData?.is_completed" class="draft-complete text-center">
-									<h3 class="text-h3">The {{ currentDate.year() }} {{ draftData?.is_league_draft ?
-										'league' : '' }} draft
-										has been completed.</h3>
-									<p class="text-caption">You can still view the draft results below.</p>
+									<h3 class="text-h3">{{ draftData?.is_league_draft
+										? t('leagueDraftView.draft.completeLeague', { year: currentDate.year() })
+										: t('leagueDraftView.draft.completeGeneric', { year: currentDate.year() }) }}</h3>
+									<p class="text-caption">{{ t('leagueDraftView.draft.completeCaption') }}</p>
 								</v-container>
 								<!-- Collapsed rounds section - shows divider for collapsed rounds with load button -->
 								<v-container v-for="(round, index) in visibleRounds" :key="round.roundNumber"
@@ -137,13 +136,12 @@
 												@click="loadCollapsedRounds" :loading="loadingMoreRounds"
 												:disabled="loadingMoreRounds" class="round-btn mb-4"
 												v-if="collapsedRoundsCount > 0 && index === 0"
-												:title="`Load ${collapsedRoundsCount} collapsed round${collapsedRoundsCount > 1 ? 's' : ''}`"
+												:title="t('leagueDraftView.rounds.loadPastRoundsTitle', { count: collapsedRoundsCount }, collapsedRoundsCount)"
 												rounded>
-												Load Past Rounds
+												{{ t('leagueDraftView.rounds.loadPastRounds') }}
 											</v-btn>
 											<labeled-divider>
-												<h2 class="text-h5 text-center draft-round-title">Round {{
-													round.roundNumber }}</h2>
+												<h2 class="text-h5 text-center draft-round-title">{{ t('leagueDraftView.rounds.title', { round: round.roundNumber }) }}</h2>
 											</labeled-divider>
 										</v-col>
 									</v-row>
@@ -160,7 +158,7 @@
 														<v-icon icon="attribution" size="small" variant="tonal"
 															v-if="pick.team.owner_username === authStore.user?.username" />
 																<v-icon size="small" icon="smart_toy"
-																	v-if="pick?.pick.is_auto_pick" title="Auto-picked" />
+																	v-if="pick?.pick.is_auto_pick" :title="t('leagueDraftView.draft.autoPicked')" />
 													</div>
 												</template>
 												<template #append>
@@ -173,7 +171,7 @@
 													@{{ pick?.team?.owner_username }}
 												</template>
 												<template #text>
-													Pick
+													{{ t('leagueDraftView.draft.pickLabel') }}
 													<h2>#{{ pick?.pick.overall_pick }}</h2>
 													<countdown :value="pick?.pick.time_to_pick" :show-progress="false"
 														v-if="!pick?.pick.is_pick_made" #label="{ formattedTime }"
@@ -187,12 +185,12 @@
 												<template #actions
 													v-if="getTeamFuturePicks(pick.team.id, round.roundNumber).length > 0">
 													<p>
-														<span>Next Picks:</span>
+														<span>{{ t('leagueDraftView.draft.nextPicksLabel') }}</span>
 														<v-chip-group column>
 															<v-chip
 																v-for="futurePick in getTeamFuturePicks(pick.team.id, round.roundNumber)"
 																		:key="futurePick.id" size="small" class="future-pick-chip"
-																		:title="`Round ${futurePick.pick__round_number} - Pick #${futurePick.pick_number}`"
+																		:title="t('leagueDraftView.draft.futurePickTitle', { round: futurePick.pick__round_number, pick: futurePick.pick_number })"
 																@click="navigateToPick(futurePick.overall_pick)">
 																#{{ futurePick.overall_pick }}
 															</v-chip>
@@ -213,14 +211,14 @@
 													<v-btn rounded size="small" variant="tonal" color="info"
 														@click="loadNextRound" :loading="loadingMoreRounds"
 														:disabled="loadingMoreRounds"
-														:title="`Load Round ${nextRoundNumber}`" class="round-btn">
-														Load Next Round
+														:title="t('leagueDraftView.rounds.loadNextRoundTitle', { round: nextRoundNumber })" class="round-btn">
+														{{ t('leagueDraftView.rounds.loadNextRound') }}
 													</v-btn>
 													<v-btn rounded size="small" variant="tonal" color="info"
 														@click="loadAllRounds" :loading="loadingMoreRounds"
-														:disabled="loadingMoreRounds" title="Load all rounds"
+														:disabled="loadingMoreRounds" :title="t('leagueDraftView.rounds.loadAllRoundsTitle')"
 														class="round-btn">
-														Load All Rounds
+														{{ t('leagueDraftView.rounds.loadAllRounds') }}
 													</v-btn>
 												</div>
 											</labeled-divider>
@@ -239,7 +237,7 @@
 					</v-tabs-window-item>
 					<v-dialog v-model="startDialog" max-width="320" persistent>
 						<v-list class="py-2" color="primary" elevation="12" rounded="lg">
-							<v-list-item :title="`Starting ${dialogAction}...`">
+							<v-list-item :title="t('leagueDraftView.dialog.startingTitle', { action: dialogActionLabel })">
 								<template #prepend>
 									<app-logo class="mr-4" />
 								</template>
@@ -263,10 +261,12 @@ import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
 import dayjs from '@/utils/dayjs';
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const DraftQueue = defineAsyncComponent(() => import('@/components/core/DraftQueue.vue'))
 const PlayerDraftDialog = defineAsyncComponent(() => import('@/components/core/PlayerDraftDialog.vue'))
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const isStaff = computed(() => {
 	return authStore.user?.is_superuser
@@ -276,7 +276,8 @@ const isDark = computed(() => themeStore.isDark)
 
 const loading = ref(true)
 const startDialog = ref(false)
-const dialogAction = ref('Draft')
+const dialogAction = ref('draft')
+const dialogActionLabel = computed(() => dialogAction.value === 'lottery' ? t('leagueDraftView.dialog.actionLottery') : t('leagueDraftView.dialog.actionDraft'))
 const draftData = ref(null)
 const teamsData = ref(null)
 const lotteryData = ref(null)
@@ -512,7 +513,7 @@ const fetchLotteryData = async () => {
 
 const startLottery = async () => {
 	try {
-		dialogAction.value = 'Lottery'
+		dialogAction.value = 'lottery'
 		startDialog.value = true
 
 		if (isStaff.value) {
@@ -531,7 +532,7 @@ const startLottery = async () => {
 
 const startDraft = async () => {
 	if (!isStaff.value) return
-	dialogAction.value = 'Draft'
+	dialogAction.value = 'draft'
 	startDialog.value = true
 	fetchDraftData()
 	startDialog.value = false

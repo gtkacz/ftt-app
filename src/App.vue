@@ -18,9 +18,11 @@
 <script setup lang="ts">
 import { onErrorCaptured, onMounted, ref, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { useAuthStore } from "@/stores/auth";
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -48,7 +50,7 @@ const showError = (message: string) => {
 // Global error handler for Vue errors
 onErrorCaptured((error: Error) => {
   console.error('Global error caught:', error);
-  showError(error.message || 'An unexpected error occurred');
+  showError(error.message || t('app.unexpectedError'));
 
   // Return false to propagate the error
   return false;

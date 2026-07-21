@@ -1,4 +1,5 @@
 import { createVNode, render, type AppContext } from "vue";
+import { i18n } from "@/i18n";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
 export interface ConfirmOptions {
@@ -15,12 +16,14 @@ export function showConfirm(
     const container = document.createElement("div");
     document.body.appendChild(container);
 
+    const { t } = i18n.global;
+
     // Create component props
     const props = {
-      title: opts.title || "Are you sure?",
+      title: opts.title || t("confirmDialog.title"),
       text:
         opts.text ||
-        "This action cannot be undone. Please confirm if you want to proceed.",
+        t("confirmDialog.text", { action: t("confirmDialog.defaultAction") }),
       onConfirm() {
         cleanup();
         resolve(true);

@@ -6,36 +6,36 @@
       </div>
 
       <div class="home-hero__copy">
-        <p class="eyebrow">Front office online</p>
+        <p class="eyebrow">{{ t('homeView.hero.eyebrow') }}</p>
         <h1>{{ greeting }}, <span>{{ firstName }}</span>.</h1>
         <p>
-          Your league is ready. Check the roster, scout the player pool, or start working the next deal.
+          {{ t('homeView.hero.description') }}
         </p>
 
         <div class="home-hero__actions">
           <router-link :to="teamRoute" class="home-button home-button--primary">
-            Open my roster
+            {{ t('homeView.hero.openRoster') }}
             <v-icon icon="arrow_forward" size="20" />
           </router-link>
           <router-link :to="{ name: 'trade-overview' }" class="home-button home-button--quiet">
-            Trade center
+            {{ t('homeView.hero.tradeCenter') }}
           </router-link>
         </div>
       </div>
 
-      <aside class="team-spotlight" aria-label="Current team">
+      <aside class="team-spotlight" :aria-label="t('homeView.hero.spotlight.ariaLabel')">
         <div class="team-spotlight__topline">
-          <span class="team-spotlight__status"><i aria-hidden="true" /> Active team</span>
-          <span class="team-spotlight__season">League HQ</span>
+          <span class="team-spotlight__status"><i aria-hidden="true" /> {{ t('homeView.hero.spotlight.activeStatus') }}</span>
+          <span class="team-spotlight__season">{{ t('homeView.hero.spotlight.leagueHq') }}</span>
         </div>
 
         <div class="team-spotlight__identity">
           <v-avatar size="72" color="primary" class="team-spotlight__avatar">
-            <v-img v-if="user?.team?.avatar" :src="user.team.avatar" :alt="`${teamName} avatar`" cover />
+            <v-img v-if="user?.team?.avatar" :src="user.team.avatar" :alt="t('homeView.hero.spotlight.teamAvatarAlt', { team: teamName })" cover />
             <app-logo v-else size="48px" :reactive="false" />
           </v-avatar>
           <div>
-            <small>Your franchise</small>
+            <small>{{ t('homeView.hero.spotlight.yourFranchise') }}</small>
             <h2>{{ teamName }}</h2>
             <p>@{{ user?.username }}</p>
           </div>
@@ -43,8 +43,8 @@
 
         <router-link :to="{ name: 'dashboard', params: { id: teamId } }" class="team-spotlight__dashboard">
           <span>
-            <small>Team command center</small>
-            <strong>Lineups, cap and projections</strong>
+            <small>{{ t('homeView.hero.spotlight.dashboardLabel') }}</small>
+            <strong>{{ t('homeView.hero.spotlight.dashboardDescription') }}</strong>
           </span>
           <v-icon icon="arrow_outward" size="22" />
         </router-link>
@@ -54,10 +54,10 @@
     <section class="home-section" aria-labelledby="quick-actions-title">
       <div class="home-section__header">
         <div>
-          <p class="eyebrow">Quick actions</p>
-          <h2 id="quick-actions-title" class="section-title">What’s the next move?</h2>
+          <p class="eyebrow">{{ t('homeView.quickActions.eyebrow') }}</p>
+          <h2 id="quick-actions-title" class="section-title">{{ t('homeView.quickActions.title') }}</h2>
         </div>
-        <p>Everything your front office needs, one tap away.</p>
+        <p>{{ t('homeView.quickActions.subtitle') }}</p>
       </div>
 
       <div class="quick-grid">
@@ -77,12 +77,12 @@
     <section v-if="authStore.isStaff" class="commission-callout">
       <span class="commission-callout__icon"><v-icon icon="manage_accounts" size="24" /></span>
       <div>
-        <p class="eyebrow">Commissioner tools</p>
-        <h2 class="section-title">Keep the league moving</h2>
-        <p>Review members, settings and pending league actions from the commission desk.</p>
+        <p class="eyebrow">{{ t('homeView.commission.eyebrow') }}</p>
+        <h2 class="section-title">{{ t('homeView.commission.title') }}</h2>
+        <p>{{ t('homeView.commission.description') }}</p>
       </div>
       <router-link :to="{ name: 'commission' }" class="home-button home-button--quiet">
-        Open commission
+        {{ t('homeView.commission.openButton') }}
         <v-icon icon="arrow_forward" size="19" />
       </router-link>
     </section>
@@ -91,47 +91,49 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
-const firstName = computed(() => user.value?.first_name || user.value?.username || 'Manager')
-const teamName = computed(() => user.value?.team?.name || 'My team')
+const firstName = computed(() => user.value?.first_name || user.value?.username || t('homeView.hero.defaultManagerName'))
+const teamName = computed(() => user.value?.team?.name || t('homeView.hero.spotlight.defaultTeamName'))
 const teamId = computed(() => user.value?.team?.id || '')
 const teamRoute = computed(() => ({ name: 'team', params: { id: teamId.value } }))
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('homeView.hero.greetingMorning')
+  if (hour < 18) return t('homeView.hero.greetingAfternoon')
+  return t('homeView.hero.greetingEvening')
 })
 
 const quickActions = computed(() => [
   {
-    label: 'My team',
-    description: 'Review players, contracts and roster balance.',
+    label: t('homeView.quickActions.myTeam.label'),
+    description: t('homeView.quickActions.myTeam.description'),
     icon: 'person_play',
     tone: 'blue',
     to: teamRoute.value,
   },
   {
-    label: 'Player directory',
-    description: 'Scout the league and find the next addition.',
+    label: t('homeView.quickActions.playerDirectory.label'),
+    description: t('homeView.quickActions.playerDirectory.description'),
     icon: 'clinical_notes',
     tone: 'cyan',
     to: { name: 'players' },
   },
   {
-    label: 'Trade center',
-    description: 'Build offers and track every conversation.',
+    label: t('homeView.quickActions.tradeCenter.label'),
+    description: t('homeView.quickActions.tradeCenter.description'),
     icon: 'handshake',
     tone: 'orange',
     to: { name: 'trade-overview' },
   },
   {
-    label: 'Team analytics',
-    description: 'Model lineups, cap room and projections.',
+    label: t('homeView.quickActions.teamAnalytics.label'),
+    description: t('homeView.quickActions.teamAnalytics.description'),
     icon: 'analytics',
     tone: 'violet',
     to: { name: 'dashboard', params: { id: teamId.value } },

@@ -1,13 +1,13 @@
 <template>
-  <AuthShell brand-to="/create-team" brand-label="Fantasy Trash Talk team setup" compact-on-mobile>
+  <AuthShell brand-to="/create-team" :brand-label="t('teamCreateView.brandLabel')" compact-on-mobile>
     <div class="team-setup">
       <div class="team-setup__icon" aria-hidden="true">
         <v-icon icon="add_business" size="30" />
       </div>
-      <p class="eyebrow">One last step</p>
-      <h2>Name your franchise</h2>
+      <p class="eyebrow">{{ t('teamCreateView.eyebrow') }}</p>
+      <h2>{{ t('teamCreateView.title') }}</h2>
       <p class="team-setup__intro">
-        Create your team identity now. You can refine the logo and roster once you enter the league.
+        {{ t('teamCreateView.intro') }}
       </p>
 
       <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" class="team-setup__alert">
@@ -15,20 +15,20 @@
       </v-alert>
 
       <v-form v-model="formValid" class="team-setup__form" @submit.prevent="handleCreateTeam">
-        <v-text-field v-model.trim="teamName" label="Team name" autocomplete="organization"
+        <v-text-field v-model.trim="teamName" :label="t('teamCreateView.form.teamNameLabel')" autocomplete="organization"
           append-inner-icon="badge" :rules="[rules.required]" hide-details="auto" />
 
-        <v-file-input v-model="teamIcon" accept="image/png,image/jpeg,image/webp" label="Team logo (optional)"
+        <v-file-input v-model="teamIcon" accept="image/png,image/jpeg,image/webp" :label="t('teamCreateView.form.teamLogoLabel')"
           prepend-icon="" append-inner-icon="add_photo_alternate" show-size clearable hide-details="auto" />
 
         <p class="team-setup__hint">
           <v-icon icon="info" size="17" />
-          PNG, JPG or WebP works best with a square image.
+          {{ t('teamCreateView.form.hint') }}
         </p>
 
         <v-btn type="submit" block size="large" height="52" :loading="isLoading"
           :disabled="!formValid || isLoading" color="secondary">
-          Create team
+          {{ t('teamCreateView.form.submit') }}
           <v-icon icon="arrow_forward" end />
         </v-btn>
       </v-form>
@@ -39,9 +39,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AuthShell from '@/components/auth/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -52,7 +54,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const rules = {
-  required: (value: string) => !!value || 'Enter a team name',
+  required: (value: string) => !!value || t('teamCreateView.validation.required'),
 }
 
 async function handleCreateTeam() {
@@ -60,7 +62,7 @@ async function handleCreateTeam() {
 
   const ownerId = authStore.user?.id
   if (!ownerId) {
-    errorMessage.value = 'Your account could not be loaded. Sign in again and retry.'
+    errorMessage.value = t('teamCreateView.errors.accountNotLoaded')
     return
   }
 
@@ -77,7 +79,7 @@ async function handleCreateTeam() {
     await router.push({ name: 'home' })
   } catch (error) {
     console.error('Failed to create team:', error)
-    errorMessage.value = 'We could not create your team. Check the details and try again.'
+    errorMessage.value = t('teamCreateView.errors.createFailed')
   } finally {
     isLoading.value = false
   }

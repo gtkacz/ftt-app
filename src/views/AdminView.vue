@@ -2,7 +2,7 @@
   <div class="page-view">
     <div v-if="authStore.isStaff" class="admin-container">
       <div class="page-header">
-        <h1 class="page-title">Administrative Panel</h1>
+        <h1 class="page-title">{{ t('adminView.title') }}</h1>
       </div>
       <div class="side-submenu-layout">
         <nav class="side-nav-container">
@@ -20,17 +20,20 @@
     </div>
     <div v-else class="unauthorized-container">
       <v-icon icon="disabled_by_default" size="64" color="grey" />
-      <h1 class="page-title">Administrative Panel</h1>
-      <p class="page-subtitle">Sorry, the page you are looking for is only available to admins.</p>
+      <h1 class="page-title">{{ t('adminView.title') }}</h1>
+      <p class="page-subtitle">{{ t('adminView.unauthorized') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const authStore = useAuthStore();
+const { t } = useI18n()
 
 interface MenuItem {
   icon: string
@@ -38,30 +41,30 @@ interface MenuItem {
   routeName: string
 }
 
-const menuItems: MenuItem[] = [
+const menuItems = computed<MenuItem[]>(() => [
   {
     icon: 'settings_applications',
-    title: 'League Settings',
+    title: t('adminView.menu.settings'),
     routeName: 'settings',
   },
   {
     // icon: 'person_play',
     // icon: 'person_celebrate',
     icon: 'manage_accounts',
-    title: 'Users',
+    title: t('adminView.menu.users'),
     routeName: 'users',
   },
   {
     icon: 'diversity_3',
-    title: 'Teams',
+    title: t('adminView.menu.teams'),
     routeName: 'teams',
   },
   {
     icon: 'sports_kabaddi',
-    title: 'Players',
+    title: t('adminView.menu.players'),
     routeName: 'players',
   },
-]
+])
 
 const route = useRoute()
 

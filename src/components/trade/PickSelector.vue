@@ -3,7 +3,7 @@
     <v-card-title class="d-flex align-center justify-space-between">
       <div>
         <v-icon icon="emoji_events" class="mr-2" />
-        Select Draft Pick
+        {{ t('pickSelector.title') }}
       </div>
       <v-btn icon="close" variant="text" @click="$emit('close')" />
     </v-card-title>
@@ -14,7 +14,7 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <v-progress-circular indeterminate color="primary" />
-        <div class="text-caption text-medium-emphasis mt-2">Loading picks...</div>
+        <div class="text-caption text-medium-emphasis mt-2">{{ t('pickSelector.loading') }}</div>
       </div>
 
       <!-- Error State -->
@@ -30,7 +30,7 @@
             <v-select
               v-model="filters.year"
               :items="availableYears"
-              label="Draft Year"
+              :label="t('pickSelector.draftYearLabel')"
               variant="outlined"
               density="compact"
               clearable
@@ -41,7 +41,7 @@
             <v-select
               v-model="filters.round"
               :items="[1, 2]"
-              label="Round"
+              :label="t('pickSelector.roundLabel')"
               variant="outlined"
               density="compact"
               clearable
@@ -54,7 +54,7 @@
               :items="teamOptions"
               item-title="name"
               item-value="id"
-              label="Original Team"
+              :label="t('pickSelector.originalTeamLabel')"
               variant="outlined"
               density="compact"
               clearable
@@ -86,13 +86,13 @@
 
                   <div class="flex-grow-1">
                     <div class="text-subtitle-2 font-weight-bold">
-                      {{ pick.draft_year }} Round {{ pick.round_number }}
+                      {{ t('pickSelector.pickRound', { year: pick.draft_year, round: pick.round_number }) }}
                     </div>
                     <div class="text-caption text-medium-emphasis">
-                      Via {{ getTeamName(pick.original_team) }}
+                      {{ t('pickSelector.viaTeam', { team: getTeamName(pick.original_team) }) }}
                     </div>
                     <div class="text-caption">
-                      Currently owned by: {{ getTeamName(pick.current_team) }}
+                      {{ t('pickSelector.currentlyOwnedBy', { team: getTeamName(pick.current_team) }) }}
                     </div>
                   </div>
 
@@ -111,9 +111,9 @@
         <!-- Empty filtered state -->
         <div v-if="filteredPicks.length === 0" class="text-center py-8">
           <v-icon icon="search_off" size="64" class="text-medium-emphasis mb-2" />
-          <div class="text-body-1 text-medium-emphasis">No picks match your filters</div>
+          <div class="text-body-1 text-medium-emphasis">{{ t('pickSelector.noPicksMatchFilters') }}</div>
           <v-btn variant="text" color="primary" class="mt-2" @click="clearFilters">
-            Clear Filters
+            {{ t('pickSelector.clearFilters') }}
           </v-btn>
         </div>
       </div>
@@ -121,9 +121,9 @@
       <!-- Empty State -->
       <div v-else class="text-center py-8">
         <v-icon icon="inventory_2" size="64" class="text-medium-emphasis mb-2" />
-        <div class="text-body-1 text-medium-emphasis">No picks available</div>
+        <div class="text-body-1 text-medium-emphasis">{{ t('pickSelector.noPicksAvailable') }}</div>
         <div class="text-caption text-medium-emphasis">
-          This team doesn't have any draft picks available for trade
+          {{ t('pickSelector.noPicksAvailableHint') }}
         </div>
       </div>
     </v-card-text>
@@ -138,11 +138,11 @@
         prepend-icon="shield"
         @click="showProtectionConfig = true"
       >
-        Configure Protection
+        {{ t('pickSelector.configureProtection') }}
       </v-btn>
       <v-spacer />
       <v-btn variant="text" @click="$emit('close')">
-        Cancel
+        {{ t('pickSelector.cancel') }}
       </v-btn>
       <v-btn
         variant="flat"
@@ -150,7 +150,7 @@
         :disabled="!selectedPick"
         @click="confirmSelection"
       >
-        Add Pick
+        {{ t('pickSelector.addPick') }}
       </v-btn>
     </v-card-actions>
 
@@ -166,9 +166,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Pick, Team, PickProtectionType } from '@/types/trade';
 import { TradeService } from '@/api/trade';
 import PickProtectionConfig from './PickProtectionConfig.vue';
+
+const { t } = useI18n();
 
 interface Props {
   teamId: number;
@@ -240,8 +243,8 @@ function getTeamName(team: Team | number): string {
   if (typeof team === 'object') {
     return team.name;
   }
-  const foundTeam = props.allTeams.find(t => t.id === team);
-  return foundTeam?.name || `Team ${team}`;
+  const foundTeam = props.allTeams.find(entry => entry.id === team);
+  return foundTeam?.name || t('pickSelector.teamNumber', { id: team });
 }
 
 function selectPick(pick: Pick) {
@@ -282,7 +285,7 @@ async function loadPicks() {
     availablePicks.value = await TradeService.listPicks({ team: props.teamId });
   } catch (err: any) {
     console.error('Failed to load picks:', err);
-    error.value = err.response?.data?.message || 'Failed to load draft picks';
+    error.value = err.response?.data?.message || t('pickSelector.loadFailed');
   } finally {
     loading.value = false;
   }

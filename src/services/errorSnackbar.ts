@@ -1,4 +1,5 @@
 import { reactive } from "vue";
+import { i18n } from "@/i18n";
 
 interface SnackbarState {
   show: boolean;
@@ -31,6 +32,6 @@ export function showError(...items: (string | Error | null)[]) {
     .join(" ");
 
   errorSnackbar.show = true;
-  errorSnackbar.message = text || "An unexpected error occurred";
+  errorSnackbar.message = text || i18n.global.t("app.unexpectedError");
   errorSnackbar.timeout = 6_000;
 }

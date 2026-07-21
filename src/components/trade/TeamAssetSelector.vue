@@ -28,7 +28,7 @@
       <!-- Cap Space Visualization -->
       <div class="cap-space-viz">
         <div class="d-flex justify-space-between text-caption mb-1">
-          <span class="text-medium-emphasis">Cap Space</span>
+          <span class="text-medium-emphasis">{{ t('teamAssetSelector.capSpace') }}</span>
           <span :class="isOverCap ? 'text-error font-weight-bold' : 'text-success font-weight-bold'">
              {{ formatCurrency(availableCapSpace) }}
           </span>
@@ -51,11 +51,11 @@
     >
       <v-tab value="players">
         <v-icon start size="small">person</v-icon>
-        Players ({{ selectedPlayersCount }})
+        {{ t('teamAssetSelector.tabs.players', { count: selectedPlayersCount }) }}
       </v-tab>
       <v-tab value="picks">
         <v-icon start size="small">star</v-icon>
-        Picks ({{ selectedPicksCount }})
+        {{ t('teamAssetSelector.tabs.picks', { count: selectedPicksCount }) }}
       </v-tab>
     </v-tabs>
 
@@ -94,7 +94,7 @@
                     <span class="font-weight-medium mr-2">{{ player.position }}</span>
                     <span class="text-medium-emphasis">{{ formatCurrency(player.contract?.salary || 0) }}</span>
                     <span v-if="player.contract?.years_remaining" class="ml-auto text-medium-emphasis">
-                      {{ player.contract.years_remaining }}y left
+                      {{ t('teamAssetSelector.players.yearsLeft', { years: player.contract.years_remaining }) }}
                     </span>
                  </v-list-item-subtitle>
 
@@ -105,7 +105,7 @@
                       :items="availableDestinations"
                       item-title="name"
                       item-value="id"
-                      label="Send to"
+                      :label="t('teamAssetSelector.destination.label')"
                       density="compact"
                       variant="outlined"
                       hide-details
@@ -129,7 +129,7 @@
              </template>
              
              <v-list-item v-else class="text-center py-8">
-               <v-list-item-title class="text-medium-emphasis">No players available</v-list-item-title>
+               <v-list-item-title class="text-medium-emphasis">{{ t('teamAssetSelector.players.empty') }}</v-list-item-title>
              </v-list-item>
            </v-list>
         </v-window-item>
@@ -156,12 +156,12 @@
                  </template>
 
                  <v-list-item-title class="font-weight-medium">
-                   {{ pick.draft_year || pick.year }} Round {{ pick.round_number || pick.round }}
+                   {{ t('teamAssetSelector.picks.round', { year: pick.draft_year || pick.year, round: pick.round_number || pick.round }) }}
                  </v-list-item-title>
-                 
+
                  <v-list-item-subtitle class="d-flex flex-wrap gap-1 align-center mt-1">
                    <v-chip size="x-small" label variant="outlined" color="secondary" class="mr-1">
-                      via {{ getOriginalTeamName(pick) }}
+                      {{ t('teamAssetSelector.picks.via', { team: getOriginalTeamName(pick) }) }}
                    </v-chip>
                    <PickProtectionBadge
                       v-if="hasProtection(pick)"
@@ -182,7 +182,7 @@
                           color="secondary"
                           @click="openProtectionModal(pick)"
                        >
-                          {{ hasProtection(pick) ? 'Edit Protection' : 'Add Protection' }}
+                          {{ hasProtection(pick) ? t('teamAssetSelector.picks.editProtection') : t('teamAssetSelector.picks.addProtection') }}
                        </v-btn>
                     </div>
                     <v-select
@@ -190,7 +190,7 @@
                       :items="availableDestinations"
                       item-title="name"
                       item-value="id"
-                      label="Send to"
+                      :label="t('teamAssetSelector.destination.label')"
                       density="compact"
                       variant="outlined"
                       hide-details
@@ -214,7 +214,7 @@
              </template>
 
              <v-list-item v-else class="text-center py-8">
-               <v-list-item-title class="text-medium-emphasis">No picks available</v-list-item-title>
+               <v-list-item-title class="text-medium-emphasis">{{ t('teamAssetSelector.picks.empty') }}</v-list-item-title>
              </v-list-item>
           </v-list>
         </v-window-item>
@@ -233,9 +233,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Team, Player, Pick, TeamImpact, CreateTradeAssetData } from '@/types/trade';
 import PickProtectionBadge from './PickProtectionBadge.vue';
 import PickProtectionModal from './PickProtectionModal.vue';
+
+const { t } = useI18n();
 
 interface Props {
   teamId: number;
@@ -346,7 +349,7 @@ function getPickReceiver(pick: Pick): number {
 function getOriginalTeamName(pickDetail: any): string {
   if (pickDetail.original_team_name) return pickDetail.original_team_name;
   if (pickDetail.original_team && typeof pickDetail.original_team === 'object') return pickDetail.original_team.name;
-  return `Team ${typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team}`;
+  return t('teamAssetSelector.picks.teamFallback', { id: typeof pickDetail.original_team === 'object' ? pickDetail.original_team.id : pickDetail.original_team });
 }
 
 // Format currency
