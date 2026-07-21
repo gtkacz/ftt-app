@@ -10,6 +10,13 @@ export const AuthService = {
     }
     return response.data;
   },
+  async loginWithGoogle(credential: string) {
+    const response = await api.post("/auth/google/", { credential });
+    if (!response.data.user.is_active) {
+      throw new Error("User is not active");
+    }
+    return response.data;
+  },
   async register(data: RegisterData) {
     const response = await api.post("/auth/register/", data);
     return response.data;

@@ -27,6 +27,13 @@
         </v-btn>
       </v-form>
 
+      <div class="auth-form__divider" role="separator" aria-label="or">
+        <span>or</span>
+      </div>
+
+      <GoogleSignInButton :loading="authStore.isLoading" @credential="handleGoogleCredential"
+        @error="handleGoogleError" />
+
       <div class="auth-form__footer">
         <span>New to the league?</span>
         <router-link :to="{ name: 'signup' }">Create an account</router-link>
@@ -39,7 +46,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthShell from '@/components/auth/AuthShell.vue'
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue'
 import { useAuthStore } from '@/stores/auth'
+import { showError } from '@/services/errorSnackbar'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -66,6 +75,23 @@ async function handleLogin() {
     await router.push(redirectPath as string)
   }
 }
+
+async function handleGoogleCredential(credential: string) {
+  try {
+    const success = await authStore.loginWithGoogle(credential)
+
+    if (success) {
+      const redirectPath = router.currentRoute.value.query.redirect || '/'
+      await router.push(redirectPath as string)
+    }
+  } catch (error) {
+    showError('Google sign-in failed.', error instanceof Error ? error : null)
+  }
+}
+
+function handleGoogleError(message: string) {
+  showError(message)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -90,9 +116,27 @@ async function handleLogin() {
   margin-top: 30px;
 }
 
+.auth-form__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 20px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.85rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--surface-border);
+  }
+}
+
 .auth-form__footer {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 6px;
   margin-top: 26px;

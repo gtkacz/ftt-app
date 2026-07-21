@@ -78,10 +78,7 @@ const version = __APP_VERSION__
   padding: calc(88px + env(safe-area-inset-top)) max(22px, env(safe-area-inset-right))
     calc(30px + env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
   color: rgb(var(--v-theme-on-background));
-  background:
-    radial-gradient(circle at 12% 8%, rgba(var(--v-theme-secondary), 0.13), transparent 24rem),
-    radial-gradient(circle at 88% 88%, rgba(var(--v-theme-subtle), 0.12), transparent 28rem),
-    rgb(var(--v-theme-background));
+  background: rgb(var(--v-theme-background));
 }
 
 .auth-shell__header {
@@ -140,7 +137,7 @@ const version = __APP_VERSION__
     bottom: -12%;
     left: 46%;
     width: 1px;
-    background: linear-gradient(transparent, rgba(var(--v-theme-on-surface), 0.09) 18% 82%, transparent);
+    background: rgba(var(--v-theme-on-surface), 0.09);
   }
 }
 

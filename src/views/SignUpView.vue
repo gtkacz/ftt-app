@@ -142,6 +142,7 @@ async function handleSignup() {
 .auth-form__footer {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 6px;
   margin-top: 22px;

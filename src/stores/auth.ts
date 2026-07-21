@@ -53,6 +53,17 @@ export const useAuthStore = defineStore("auth", {
       return result ?? false;
     },
 
+    async loginWithGoogle(credential: string): Promise<boolean> {
+      const result = await this.withLoadingState(async () => {
+        const response = await AuthService.loginWithGoogle(credential);
+        this.setTokens(response.access, response.refresh);
+        this.setUser(response.user);
+        return true;
+      });
+
+      return result ?? false;
+    },
+
     async register(data: RegisterData): Promise<boolean> {
       const result = await this.withLoadingState(async () => {
         await AuthService.register(data);

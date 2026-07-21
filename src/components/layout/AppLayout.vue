@@ -64,9 +64,7 @@ const isDev = import.meta.env.DEV;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   padding: clamp(20px, 2.5vw, 36px);
-  background:
-    radial-gradient(circle at 100% 0%, rgba(var(--v-theme-secondary), 0.055), transparent 28rem),
-    rgb(var(--v-theme-background));
+  background: rgb(var(--v-theme-background));
   -webkit-overflow-scrolling: touch;
 
   &.has-top-bar {

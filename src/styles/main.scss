@@ -423,9 +423,7 @@ input:-webkit-autofill:active {
   padding: clamp(44px, 8vw, 96px) clamp(20px, 6vw, 72px);
   border: 1px solid var(--surface-border);
   border-radius: $border-radius-xl;
-  background:
-    radial-gradient(circle at 50% 110%, rgba(var(--v-theme-secondary), 0.14), transparent 26rem),
-    rgb(var(--v-theme-surface));
+  background: rgb(var(--v-theme-surface));
   box-shadow: $shadow-md;
   text-align: center;
 }

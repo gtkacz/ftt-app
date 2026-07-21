@@ -775,7 +775,7 @@ onMounted(async () => {
 
 .dialog-header {
   padding: 24px;
-  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.5), rgba(var(--v-theme-surface-variant), 0.2));
+  background: rgba(var(--v-theme-surface-variant), 0.35);
 }
 
 .dialog-header--success {

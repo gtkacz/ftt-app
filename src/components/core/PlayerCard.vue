@@ -194,36 +194,15 @@ const onDraftConfirm = () => {
 	position: relative;
 	left: 50%;
 	transform: translateX(-50%);
-	background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+	background: #1e3c72;
 	border-radius: 16px !important;
 	overflow: hidden;
 	transition: all 0.3s ease;
 	max-width: 19vw;
 	height: 10vh;
 
-	// Sheen effect
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: -100%;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(90deg,
-				transparent,
-				rgba(255, 255, 255, 0.2),
-				transparent);
-		transition: left 0.6s ease;
-		z-index: 1;
-		pointer-events: none;
-	}
-
 	&:hover {
 		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-
-		&::before {
-			left: 100%;
-		}
 	}
 
 	// Ensure content is above sheen
@@ -236,123 +215,123 @@ const onDraftConfirm = () => {
 	// NBA Teams - Official Colors in SCSS Format
 
 	&.team-atl {
-		background: linear-gradient(135deg, #E03A3E 0%, #C1D32F 100%);
+		background: #E03A3E;
 	}
 
 	&.team-bos {
-		background: linear-gradient(135deg, #007A33 0%, #BA9653 100%);
+		background: #007A33;
 	}
 
 	&.team-bkn {
-		background: linear-gradient(135deg, #000000 0%, #FFFFFF 100%);
+		background: #000000;
 	}
 
 	&.team-cha {
-		background: linear-gradient(135deg, #1D1160 0%, #00788C 100%);
+		background: #1D1160;
 	}
 
 	&.team-chi {
-		background: linear-gradient(135deg, #CE1141 0%, #000000 100%);
+		background: #CE1141;
 	}
 
 	&.team-cle {
-		background: linear-gradient(135deg, #860038 0%, #041E42 100%);
+		background: #860038;
 	}
 
 	&.team-dal {
-		background: linear-gradient(135deg, #00538C 0%, #002B5E 100%);
+		background: #00538C;
 	}
 
 	&.team-den {
-		background: linear-gradient(135deg, #0E2240 0%, #FEC524 100%);
+		background: #0E2240;
 	}
 
 	&.team-det {
-		background: linear-gradient(135deg, #C8102E 0%, #1D42BA 100%);
+		background: #C8102E;
 	}
 
 	&.team-gsw {
-		background: linear-gradient(135deg, #1D428A 0%, #FFC72C 100%);
+		background: #1D428A;
 	}
 
 	&.team-hou {
-		background: linear-gradient(135deg, #CE1141 0%, #000000 100%);
+		background: #CE1141;
 	}
 
 	&.team-ind {
-		background: linear-gradient(135deg, #002D62 0%, #FDBB30 100%);
+		background: #002D62;
 	}
 
 	&.team-lac {
-		background: linear-gradient(135deg, #C8102E 0%, #1D428A 100%);
+		background: #C8102E;
 	}
 
 	&.team-lal {
-		background: linear-gradient(135deg, #552583 0%, #FDB927 100%);
+		background: #552583;
 	}
 
 	&.team-mem {
-		background: linear-gradient(135deg, #5D76A9 0%, #12173F 100%);
+		background: #5D76A9;
 	}
 
 	&.team-mia {
-		background: linear-gradient(135deg, #98002E 0%, #F9A01B 100%);
+		background: #98002E;
 	}
 
 	&.team-mil {
-		background: linear-gradient(135deg, #00471B 0%, #EEE1C6 100%);
+		background: #00471B;
 	}
 
 	&.team-min {
-		background: linear-gradient(135deg, #0C2340 0%, #236192 100%);
+		background: #0C2340;
 	}
 
 	&.team-nop {
-		background: linear-gradient(135deg, #0C2340 0%, #C8102E 100%);
+		background: #0C2340;
 	}
 
 	&.team-nyk {
-		background: linear-gradient(135deg, #006BB6 0%, #F58426 100%);
+		background: #006BB6;
 	}
 
 	&.team-okc {
-		background: linear-gradient(135deg, #007AC1 0%, #EF3B24 100%);
+		background: #007AC1;
 	}
 
 	&.team-orl {
-		background: linear-gradient(135deg, #0077C0 0%, #C4CED4 100%);
+		background: #0077C0;
 	}
 
 	&.team-phi {
-		background: linear-gradient(135deg, #006BB6 0%, #ED174C 100%);
+		background: #006BB6;
 	}
 
 	&.team-phx {
-		background: linear-gradient(135deg, #1D1160 0%, #E56020 100%);
+		background: #1D1160;
 	}
 
 	&.team-por {
-		background: linear-gradient(135deg, #E03A3E 0%, #000000 100%);
+		background: #E03A3E;
 	}
 
 	&.team-sac {
-		background: linear-gradient(135deg, #5A2D81 0%, #63727A 100%);
+		background: #5A2D81;
 	}
 
 	&.team-sas {
-		background: linear-gradient(135deg, #C4CED4 0%, #000000 100%);
+		background: #000000;
 	}
 
 	&.team-tor {
-		background: linear-gradient(135deg, #CE1141 0%, #000000 100%);
+		background: #CE1141;
 	}
 
 	&.team-uta {
-		background: linear-gradient(135deg, #002B5C 0%, #00471B 100%);
+		background: #002B5C;
 	}
 
 	&.team-was {
-		background: linear-gradient(135deg, #002B5C 0%, #E31837 100%);
+		background: #002B5C;
 	}
 
 	.card-header {

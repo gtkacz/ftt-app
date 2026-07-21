@@ -157,9 +157,7 @@ const quickActions = computed(() => [
   padding: clamp(28px, 5vw, 72px);
   border: 1px solid var(--surface-border);
   border-radius: $border-radius-xl;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(var(--v-theme-secondary), 0.12), transparent 24rem),
-    linear-gradient(145deg, rgba(var(--v-theme-primary), 0.32), rgba(var(--v-theme-surface), 0.96) 62%);
+  background: rgb(var(--v-theme-surface));
   box-shadow: $shadow-md;
 }
 

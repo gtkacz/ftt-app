@@ -1407,9 +1407,7 @@ onMounted(async () => {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 85% 15%, rgba(var(--v-theme-secondary), 0.18), transparent 18rem),
-    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.96), rgba(var(--v-theme-surface), 0.96));
+  background: rgb(var(--v-theme-primary));
 
   &__court {
     position: absolute;

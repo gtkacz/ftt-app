@@ -517,7 +517,7 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
 
 .commissioner-trade-card.user-voted {
   border-left-color: rgb(var(--v-theme-success));
-  background: linear-gradient(to right, rgba(var(--v-theme-success), 0.05), transparent);
+  background: rgba(var(--v-theme-success), 0.05);
 }
 
 .commissioner-card__accent {
@@ -526,7 +526,7 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(180deg, rgb(var(--v-theme-warning)), rgb(var(--v-theme-warning-lighten-1)));
+  background: rgb(var(--v-theme-warning));
   transition: width 0.3s;
   z-index: 1;
   border-radius: 8px 0 0 8px;
@@ -588,7 +588,7 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
 
 .approval-status-card {
   padding: 12px;
-  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.4), rgba(var(--v-theme-surface-variant), 0.2));
+  background: rgba(var(--v-theme-surface-variant), 0.3);
   border-radius: 8px;
   border: 1px solid rgba(var(--v-theme-warning), 0.2);
 }
@@ -687,4 +687,3 @@ function getApprovalProgressColor(status: ApprovalStatus | null): string {
   }
 }
 </style>
-

@@ -410,23 +410,23 @@ function showActions(trade: Trade): boolean {
 }
 
 .trade-card__accent--info {
-  background: linear-gradient(180deg, rgb(var(--v-theme-info)), rgb(var(--v-theme-info-lighten-1)));
+  background: rgb(var(--v-theme-info));
 }
 
 .trade-card__accent--warning {
-  background: linear-gradient(180deg, rgb(var(--v-theme-warning)), rgb(var(--v-theme-warning-lighten-1)));
+  background: rgb(var(--v-theme-warning));
 }
 
 .trade-card__accent--success {
-  background: linear-gradient(180deg, rgb(var(--v-theme-success)), rgb(var(--v-theme-success-lighten-1)));
+  background: rgb(var(--v-theme-success));
 }
 
 .trade-card__accent--error {
-  background: linear-gradient(180deg, rgb(var(--v-theme-error)), rgb(var(--v-theme-error-lighten-1)));
+  background: rgb(var(--v-theme-error));
 }
 
 .trade-card__accent--grey {
-  background: linear-gradient(180deg, rgb(var(--v-theme-grey)), rgb(var(--v-theme-grey-lighten-1)));
+  background: rgb(var(--v-theme-grey));
 }
 
 .trade-card__header {

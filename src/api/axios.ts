@@ -12,7 +12,7 @@ const api = axios.create({
 });
 
 // Auth endpoints that should not trigger token refresh
-const AUTH_ENDPOINTS = ["/auth/login/", "/auth/register/", "/auth/refresh/"];
+const AUTH_ENDPOINTS = ["/auth/login/", "/auth/google/", "/auth/register/", "/auth/refresh/"];
 
 // Check if a URL is an auth endpoint
 function isAuthEndpoint(url: string | undefined): boolean {
